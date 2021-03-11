@@ -1,0 +1,393 @@
+---
+title: "San Antonio Energy and Time Use Survey"
+author: "..."
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    code_folding: hide
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(naniar) 
+library(readr)
+```
+
+```{r load, include=FALSE}
+# From Qualtrics we get the data as .csv with default options: Recode seen but unanswered questions as -99. Recode seen but unanswered multi-value fields as 0.
+# Change C:/Users/gpe637/Downloads for the correct path
+san <- read_csv("C:/Users/gpe637/Downloads/San+Antonio+Energy+and+Time+Use+Survey+-+Spanish_March+4,+2021_14.32.csv", col_names = T)
+san <- san[-c(1:9),] # delete responses before 22.02. These were responses from us. 912 responses.
+```
+
+```{r recode, include=FALSE}
+san <- san %>% 
+  filter(consent == "1" | disagree == "1", zipcode != "3") %>% # consent Agree and double check on survey participation. Keep only zip codes 78202 or 78230.
+  mutate(duration = round(as.numeric(`Duration (in seconds)`)/60, 1), # duration in minutes
+         yrbr = ifelse(as.numeric(year) >= 1, 2000-as.numeric(year), NA), # year of birth
+         age = 2021 - yrbr, # age
+         zip = if_else(zipcode == "1", "Elm Creek", "Jefferson Heights"), # recode zip codes
+         hisp = if_else(hispanic == "1", "Not Hispanic", if_else(hispanic == "2", "Hispanic", "Don't know")), # Hispanic origin
+         race2 = case_when(race %in% "1" ~ "White", # recode race
+                           race %in% "2" ~ "Black", 
+                           race %in% "3" ~ "Asian", 
+                           race %in% "4" ~ "AIAN", # American Indian or Alaskan Native
+                           race %in% "5" ~ "NHPI", # Native Hawaiian of Other Pacific Islander
+                           race %in% c("6", "7", "8") ~ "Other"), # Two or more races; Race and Ethnicity unknown|Don't know; Prefer not to answer
+         race_eth = if_else(hisp != "Hispanic" & race2 == "White", "NH-White", 
+                            if_else(hisp != "Hispanic" & race2 == "Black", "NH-Black", 
+                                    if_else(hisp != "Hispanic" & race2 == "Asian", "NH-Asian", 
+                                            if_else(hisp != "Hispanic" & race2 == "AIAN", "NH-AIAN",
+                                                    if_else(hisp != "Hispanic" & race2 == "NHPI", "NH-NHPI",
+                                                            if_else(hisp != "Hispanic" & race2 == "Other", "NH-Other", "Hispanic")))))),
+         gender = case_when(gender %in% "1" ~ "Female", 
+                            gender %in% "2" ~ "Male", 
+                            gender %in% c("3", "4", "5", "6", "7") ~ "Other"),
+         marital_st = case_when(marital %in% "1" ~ "Single",
+                                marital %in% c("2", "3") ~ "In a union", # married/living in a marriage-like relationship
+                                marital %in% c("4", "5", "6") ~ "Not in a union"), # widowed, separated, divorced
+         educ = case_when(education %in% "1" ~ "Less than HS", 
+                          education %in% c("2", "3") ~ "High School", # some high school, high school graduate or equivalent 
+                          education %in% c("4", "5", "6") ~ "College", # some college, AA, BA, BS
+                          education %in% "7" ~ "Graduate",
+                          education %in% "8" ~ "Don't know"),
+         health = case_when(health %in% "1" ~ "Excellent", health %in% "2" ~ "Very good", health %in% "3" ~ "Good", 
+                            health %in% "4" ~ "Fair", health %in% "5" ~ "Poor"))
+
+san$race_eth <- ordered(san$race_eth, levels = c("NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other", "Hispanic"))
+san$health <- ordered(san$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
+
+# Total responses 849
+
+length(unique(san$email)) # 815 minus one person who didn't provide an email
+```
+
+```{r, message=FALSE, warning=FALSE}
+# average duration by zipcode/race
+tab <- san %>% 
+  group_by(zip, race_eth) %>% 
+  dplyr::summarise(av.duration = round(mean(duration, na.rm = T), 1), sd.duration = round(sd(duration, na.rm = T), 1))
+
+kableExtra::kable(tab, format = "html")
+```
+
+```{r, message=FALSE, warning=FALSE}
+kableExtra::kable(table(san$zip, san$gender))
+
+kableExtra::kable(round(prop.table(table(san$zip, san$gender), 2)*100, 1))
+```
+
+```{r recode_health, include=FALSE, eval=FALSE}
+san <- san %>% 
+  filter(Finished == "1") %>% # what to do with the responses not finished
+  mutate(anxious = if_else(mental_health_anxious == "1", "Not at all",
+                           if_else(mental_health_anxious == "2", "Several days", 
+                                   if_else(mental_health_anxious == "3", "More than half",
+                                           if_else(mental_health_anxious == "4", "Nearly every day", 
+                                                   if_else(mental_health_anxious != c("1", "2", "3", "4"), "NA", mental_health_anxious))))),
+         worry = if_else(mental_health_worry == "1", "Not at all",
+                           if_else(mental_health_worry == "2", "Several days", 
+                                   if_else(mental_health_worry == "3", "More than half",
+                                           if_else(mental_health_worry == "4", "Nearly every day", 
+                                                   if_else(mental_health_worry != c("1", "2", "3", "4"), "NA", mental_health_worry))))),
+         interest = if_else(mental_health_interest == "1", "Not at all",
+                           if_else(mental_health_interest == "2", "Several days", 
+                                   if_else(mental_health_interest == "3", "More than half",
+                                           if_else(mental_health_interest == "4", "Nearly every day", 
+                                                   if_else(mental_health_interest != c("1", "2", "3", "4"), "NA", mental_health_interest))))),
+         down = if_else(mental_health_down == "1", "Not at all",
+                           if_else(mental_health_down == "2", "Several days", 
+                                   if_else(mental_health_down == "3", "More than half",
+                                           if_else(mental_health_down == "4", "Nearly every day", 
+                                                   if_else(mental_health_down != c("1", "2", "3", "4"), "NA", mental_health_down))))),
+         pre_c19_ph = if_else(pre_phy_health == "1", "Worse", 
+                              if_else(pre_phy_health == "2", "Same", 
+                                      if_else(pre_phy_health == "3", "Better", pre_phy_health))),
+         pre_c19_mh = if_else(pre_mental_health == "1", "Worse", 
+                              if_else(pre_mental_health == "2", "Same", 
+                                      if_else(pre_mental_health == "3", "Better", pre_mental_health))))
+
+san$anxious <- ordered(san$anxious, levels = c("Not at all", "Several days", "More than half", "Nearly every day"))
+san$worry <- ordered(san$worry, levels = c("Not at all", "Several days", "More than half", "Nearly every day"))
+san$interest <- ordered(san$interest, levels = c("Not at all", "Several days", "More than half", "Nearly every day"))
+san$down <- ordered(san$down, levels = c("Not at all", "Several days", "More than half", "Nearly every day"))
+san$pre_c19_ph <- ordered(san$pre_c19_ph, levels = c("Worse", "Same", "Better"))
+san$pre_c19_mh <- ordered(san$pre_c19_mh, levels = c("Worse", "Same", "Better"))
+
+save(san, file = "C:/Users/gpe637/Desktop/san_energy_survey.RData")
+```
+
+```{r, message=FALSE, warning=FALSE}
+load("C:/Users/gpe637/Desktop/san_energy_survey.RData")
+
+san %>% 
+  ggplot(aes(x = race_eth, fill = health)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2, color = "white") +
+  scale_fill_viridis_d(option = "B", begin = .2, end = .8) +
+  facet_grid(~zip) +
+  ggtitle("Responses by zip code and health status") +
+  xlab(NULL) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+
+san %>% 
+  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA") %>% 
+  ggplot(aes(x = race_eth, fill = anxious)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2) +
+  scale_fill_viridis_d(option = "E", begin = .2, end = .8) +
+  facet_grid(~zip) +
+  ggtitle("Responses by zip code and mental health status", 
+          subtitle = "How often have you been bothered by the feeling nervous, anxious, or on edge") +
+  xlab(NULL) + 
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+
+san %>% 
+  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA") %>% 
+  ggplot(aes(x = race_eth, fill = worry)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2) +
+  scale_fill_viridis_d(option = "E", begin = .2, end = .8) +
+  facet_grid(~ zip) +
+  ggtitle("Responses by zip code and mental health status", 
+          subtitle = "How often have you been bothered by not being able to stop or control worrying") +
+  xlab(NULL) + 
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+
+san %>% 
+  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA") %>% 
+  ggplot(aes(x = race_eth, fill = interest)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2) +
+  scale_fill_viridis_d(option = "E", begin = .2, end = .8) +
+  facet_grid(~ zip) +
+  ggtitle("Responses by zip code and mental health status", 
+          subtitle = "How often have you been bothered by having little interest or pleasure in doing things") +
+  xlab(NULL) + 
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+
+san %>% 
+  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA") %>% 
+  ggplot(aes(x = race_eth, fill = down)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(.5), vjust = 0, size = 2) +
+  scale_fill_viridis_d(option = "E", begin = .2, end = .8) +
+  facet_grid(~ zip) +
+  ggtitle("Responses by zip code and mental health status", 
+          subtitle = "How often have you been bothered by feeling down, depressed, or hopeless") +
+  xlab(NULL) + 
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+
+san %>% 
+  filter(pre_c19_ph != "NA", pre_c19_mh != "NA") %>% 
+  ggplot(aes(x = race_eth, fill = pre_c19_ph)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(.5), vjust = 0, size = 2) +
+  scale_fill_viridis_d(option = "D", begin = .2, end = .8) +
+  facet_grid(~ zip) +
+  ggtitle("Responses by zip code and physical health prior to COVID-19") +
+  xlab(NULL) + 
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+
+san %>% 
+  filter(pre_c19_ph != "NA", pre_c19_mh != "NA") %>% 
+  ggplot(aes(x = race_eth, fill = pre_c19_mh)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(.5), vjust = 0, size = 2) +
+  scale_fill_viridis_d(option = "D", begin = .2, end = .8) +
+  facet_grid(~ zip) +
+  ggtitle("Responses by zip code and mental health prior to COVID-19") +
+  xlab(NULL) + 
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+```
+
+```{r recode_employment, include=FALSE}
+san <- san %>% 
+  mutate(front = if_else(frontline == "1", "Yes", 
+                         if_else(frontline == "2", "No", "NA")),
+         work_hrs = as.numeric(hrs_work_3),
+         hsh_size = as.numeric(num_hsh),
+         hsh_child = as.numeric(num_children),
+         hsh_retire = as.numeric(num_retired))
+```
+
+```{r}
+san %>% 
+  filter(front != "NA") %>% 
+  ggplot(aes(x = race_eth, fill = front)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2, color = "white") +
+  scale_fill_viridis_d(option = "B", begin = .2, end = .8) +
+  facet_grid(~ zip) +
+  ggtitle("Responses by zip code and identification as frontline worker") +
+  xlab(NULL) + 
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+
+san %>% 
+  filter(front != "NA", gender != "Other", work_hrs > 0) %>% 
+  ggplot() +
+  geom_col(aes(x = work_hrs, y = race_eth, color = gender, fill = gender), position = "dodge", width = .5) +
+  scale_color_viridis_d(option = "E", begin = .2, end = .8, direction = -1) +
+  scale_fill_viridis_d(option = "E", begin = .2, end = .8, direction = -1) +
+  facet_grid(~ zip) +
+  ggtitle("Responses by zip code and working hours per week") +
+  xlab("Hours per week") + 
+  ylab(NULL) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+```
+
+### Replicated email addresses 
+```{r}
+rep_emails <- c("AdrianaHudsonwhp@yahoo.com", "AliRushwynf@yahoo.com", "altenwerthvbwht42@gmail.com", "ArdenHubbardvqk@yahoo.com",
+               "ArnoldRatigmw@gmail.com", "AthenaHerringjuw@yahoo.com", "augustusyzlk19@gmail.com", "charlesfpsk94@gmail.com",
+               "choeaqzn14@gmail.com", "choeaqzn14@gmail.com", "ChristinaEdwardsaocv@yahoo.com", "deboeremh85@gmail.com", 
+               "DianaRiosavb@yahoo.com", "dooleyqigx99@gmail.com", "EliGrahamfsxa@yahoo.com", "fochttdlfv47@gmail.com",
+               "harrisckzi97@gmail.com", "hubbardpaul564@gmail.com", "IngridBuckleyuqgg@yahoo.com", "JaelynPettyvah@yahoo.com",
+               "JeffreyRojaseeko@yahoo.com", "LatoyaParkermkiu@yahoo.com", "MalcomRyantom@yahoo.com", "NanetteWrighthys@yahoo.com",
+               "PedroDawsonsifc@yahoo.com", "PhillipBuckleygmmm@yahoo.com", "RafaelManningygoo@yahoo.com", "rodggersmmaison@gmail.com",
+               "SheaMillerkcbe@yahoo.com", "tameracaqcx43@gmail.com", "TraciRivasrqy@yahoo.com", "TyrellCowanjqm@yahoo.com", 
+               "ValerieLevyiuaz@yahoo.com", "wheelerjoselyn@gmail.com")
+san <- san %>% 
+  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry"))
+
+san2 <- san %>% 
+  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
+  filter(email %in% rep_emails) %>% 
+  arrange(email)
+
+```
+
+```{r}
+tab21 <- san2 %>% 
+  group_by(rep_email) %>% 
+  dplyr::summarise(av.duration = round(mean(duration, na.rm = T), 1), sd.duration = round(sd(duration, na.rm = T), 1))
+
+tab22 <- san2 %>% 
+  group_by(zip, rep_email) %>% 
+  dplyr::summarise(av.duration = round(mean(duration, na.rm = T), 1), sd.duration = round(sd(duration, na.rm = T), 1))
+
+
+kableExtra::kable(x = list(tab21, tab22), format = "html")
+```
+
+```{r, message=FALSE, warning=FALSE}
+san %>% 
+  ggplot(aes(x = race_eth, fill = health)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2, color = "white") +
+  scale_fill_viridis_d(option = "B", begin = .2, end = .8) +
+  facet_grid(~zip) +
+  ggtitle("Responses by zip code and health status") +
+  xlab(NULL) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+
+san2 %>% 
+  ggplot(aes(x = race_eth, fill = health)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2, color = "white") +
+  scale_fill_viridis_d(option = "B", begin = .2, end = .8) +
+  facet_grid(rep_email~zip) +
+  ggtitle("Responses by zip code and health status") +
+  xlab(NULL) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9))
+```
+
+```{r, message=FALSE, warning=FALSE}
+san %>% 
+  filter(race_eth != "NH-NHPI" & race_eth != "NH-Other") %>% 
+  ggplot(aes(x = health, group = race_eth)) +
+  geom_bar(aes(y = ..prop.., fill = race_eth), stat = "count") +
+  geom_text(aes(label = scales::percent(..prop.., accuracy = 1), y = ..prop..), stat = "count", vjust = -.5, size = 2) +
+  labs(y = "Percent", fill = "health status") +
+  facet_grid(zip~race_eth) +
+  scale_y_continuous(labels = scales::label_percent(accuracy = 1), limits = c(0,1)) +
+  scale_fill_viridis_d(option = "B", begin = .19, end = .9) +
+  ggtitle("Health status by zip code and race and ethnicity") +
+  xlab(NULL) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, size = 9), 
+        legend.position = "none")
+```
+
+```{r}
+poorh <- san %>% 
+  mutate(ageg = case_when(age %in% min(age):29 ~ "20-29",
+                          age %in% 30:39 ~ "30-39",
+                          age %in% 40:49 ~ "40-49",
+                          age %in% 50:59 ~ "50-59",
+                          age %in% 60:max(age) ~ "60+")) %>% 
+  group_by(race_eth, zip, gender) %>% 
+  dplyr::summarise(poorh = round(mean(as.numeric(days_poor_health), na.rm = T),1)) %>% 
+  ungroup() %>% 
+  select(race_eth, zip, gender, poorh) %>% 
+  glimpse()
+
+poorh %>% 
+  filter(gender != "Other", race_eth!= "NH-Other") %>% 
+  mutate(label = poorh) %>% 
+  ggplot(aes(x = poorh, y = race_eth)) +
+  geom_line(color = "gray50", size = 1) +
+  geom_point(aes(fill = as.factor(gender), color = as.factor(gender)), size = 4, shape = 19) +
+  facet_grid(~zip) +
+  geom_text(aes(label = label, x = poorh), nudge_y = 0.25, size = 3.2) +
+  geom_text(aes(label = gender, x = poorh), nudge_y = -0.25, size = 3.2) +
+  scale_fill_viridis_d(option = "B", begin = .2, end = .8, direction = 1) +
+  scale_color_viridis_d(option = "B", begin = .2, end = .8, direction = 1) +
+  labs(title = "Days of poor health | Women and Men",
+    subtitle = "January 2021",
+    x = "Average number of days with poor physical or mental health",
+    y = "Days with poor healht", 
+    caption = "Source: San Antonio Energy and Time Use Survey") +
+  theme_light() +
+  theme(plot.title = element_text(face = "bold", size = 12), plot.subtitle = element_text(size = 11), 
+        legend.position = "none", legend.title = element_blank(), 
+        axis.title = element_text(size = 10), 
+        axis.text = element_text(size = 10), 
+        axis.text.y = element_text(size =10, face = "bold"),
+        plot.title.position = "plot", 
+        plot.caption = element_text(size = 8), 
+        strip.background = element_rect(color = "gray20", linetype = "solid"), 
+        strip.text = element_text(color = "black", size = 8))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
