@@ -134,7 +134,7 @@ san <- san %>%
 ```
 
 ```{r health_status_plot, message=FALSE, warning=FALSE}
-load("C:/Users/gpe637/Desktop/san_energy_survey.RData")
+load("~/GitHub/san/sa_survey.RData")
 
 san %>% 
   filter(health != "NA") %>% 
