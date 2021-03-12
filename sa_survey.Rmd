@@ -275,6 +275,9 @@ san_re <- san %>%
 save(san, file = "~/GitHub/san/sa_survey.RData")
 save(san_re, file = "~/GitHub/san/sa_survey_rep_emails.RData")
 write.csv(x = rep_emails, file = "~/GitHub/san/repeated_emails.csv")
+
+write.csv(x = san, file = "~/GitHub/san/sa_energy_survey.csv", row.names = F)
+write.csv(x = san_re, file = "~/GitHub/san/sa_energy_survey_rep_emails.csv", row.names = F)
 ```
 
 ```{r}
@@ -329,6 +332,7 @@ filter(gender != "Other" & (race_eth != "NH-Other" & race_eth != "NH-NHPI")) %>%
   scale_fill_distiller(palette = "Spectral") +
   theme_light()
 ```
+
 
 
 
