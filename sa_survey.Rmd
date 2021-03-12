@@ -297,16 +297,16 @@ poorh %>%
   geom_line(color = "gray50", size = 1) +
   geom_point(aes(fill = as.factor(gender), color = as.factor(gender)), size = 4, shape = 19) +
   facet_grid(~zip) +
-  geom_text(aes(label = label, x = poorh), nudge_y = 0.25, size = 3.2) +
-  geom_text(aes(label = gender, x = poorh), nudge_y = -0.25, size = 3.2) +
-  scale_fill_viridis_d(option = "B", begin = .2, end = .8, direction = 1) +
-  scale_color_viridis_d(option = "B", begin = .2, end = .8, direction = 1) +
+  geom_text(aes(label = label, x = poorh), nudge_y = 0.25, size = 3) +
+  geom_text(aes(label = gender, x = poorh), nudge_y = -0.25, size = 3) +
+  scale_color_brewer(type = "qual") +
+  scale_fill_brewer(type = "qual") +
   labs(title = "Days of poor health | Women and Men",
     subtitle = "January 2021",
     x = "Average number of days with poor physical or mental health",
     y = "Days with poor healht", 
     caption = "Source: San Antonio Energy and Time Use Survey") +
-  theme_light() +
+  theme_minimal() +
   theme(plot.title = element_text(face = "bold", size = 12), plot.subtitle = element_text(size = 11), 
         legend.position = "none", legend.title = element_blank(), 
         axis.title = element_text(size = 10), 
@@ -320,6 +320,15 @@ poorh %>%
 
 
 
+```{r}
+poorh %>% 
+filter(gender != "Other" & (race_eth != "NH-Other" & race_eth != "NH-NHPI")) %>% 
+  ggplot() +
+  geom_tile(aes(gender, race_eth, fill = poorh)) +
+  facet_grid(~zip) +
+  scale_fill_distiller(palette = "Spectral") +
+  theme_light()
+```
 
 
 
