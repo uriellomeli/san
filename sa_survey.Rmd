@@ -22,13 +22,14 @@ library(readr)
 ```{r load, include=FALSE}
 # From Qualtrics we get the data as .csv with default options: Recode seen but unanswered questions as -99. Recode seen but unanswered multi-value fields as 0.
 # Change C:/Users/gpe637/Downloads for the correct path
-san <- read_csv("C:/Users/gpe637/Downloads/San+Antonio+Energy+and+Time+Use+Survey+-+Spanish_March+4,+2021_14.32.csv", col_names = T)
+san <- read_csv("~/GitHub/san/San+Antonio+Energy+and+Time+Use+Survey+-+Spanish_March+10,+2021_11.54 (1).csv", col_names = T)
 san <- san[-c(1:9),] # delete responses before 22.02. These were responses from us. 912 responses.
 ```
 
 ```{r recode, include=FALSE}
 san <- san %>% 
-  filter(consent == "1" | disagree == "1", zipcode != "3") %>% # consent Agree and double check on survey participation. Keep only zip codes 78202 or 78230.
+  # consent Agree and double check on survey participation. Keep only zip codes 78202 or 78230.
+  filter(consent == "1" | disagree == "1", as.numeric(Progress) > 66, zipcode != "3") %>% 
   mutate(duration = round(as.numeric(`Duration (in seconds)`)/60, 1), # duration in minutes
          yrbr = ifelse(as.numeric(year) >= 1, 2000-as.numeric(year), NA), # year of birth
          age = 2021 - yrbr, # age
@@ -63,9 +64,10 @@ san <- san %>%
 san$race_eth <- ordered(san$race_eth, levels = c("NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other", "Hispanic"))
 san$health <- ordered(san$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
 
-# Total responses 849
+# Total responses 849 - not including responses "no Finished"
+# Total responses 857 - including responses "no Finished"
 
-length(unique(san$email)) # 815 minus one person who didn't provide an email
+length(unique(san$email)) # 816 minus one person who didn't provide an email
 ```
 
 ```{r, message=FALSE, warning=FALSE}
@@ -120,25 +122,14 @@ san$down <- ordered(san$down, levels = c("Not at all", "Several days", "More tha
 san$pre_c19_ph <- ordered(san$pre_c19_ph, levels = c("Worse", "Same", "Better"))
 san$pre_c19_mh <- ordered(san$pre_c19_mh, levels = c("Worse", "Same", "Better"))
 
-save(san, file = "C:/Users/gpe637/Desktop/san_energy_survey.RData")
+#save(san, file = "C:/Users/gpe637/Desktop/san_energy_survey.RData")
 ```
 
 ```{r, message=FALSE, warning=FALSE}
-load("C:/Users/gpe637/Desktop/san_energy_survey.RData")
+#load("C:/Users/gpe637/Desktop/san_energy_survey.RData")
 
 san %>% 
-  ggplot(aes(x = race_eth, fill = health)) +
-  geom_bar() +
-  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2, color = "white") +
-  scale_fill_viridis_d(option = "B", begin = .2, end = .8) +
-  facet_grid(~zip) +
-  ggtitle("Responses by zip code and health status") +
-  xlab(NULL) +
-  theme_light() +
-  theme(axis.text.x = element_text(angle = 90, size = 9))
-
-san %>% 
-  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA") %>% 
+  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA", !is.na(race_eth)) %>% 
   ggplot(aes(x = race_eth, fill = anxious)) +
   geom_bar() +
   geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2) +
@@ -151,7 +142,7 @@ san %>%
   theme(axis.text.x = element_text(angle = 90, size = 9))
 
 san %>% 
-  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA") %>% 
+  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA", !is.na(race_eth)) %>% 
   ggplot(aes(x = race_eth, fill = worry)) +
   geom_bar() +
   geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2) +
@@ -164,7 +155,7 @@ san %>%
   theme(axis.text.x = element_text(angle = 90, size = 9))
 
 san %>% 
-  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA") %>% 
+  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA", !is.na(race_eth)) %>% 
   ggplot(aes(x = race_eth, fill = interest)) +
   geom_bar() +
   geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2) +
@@ -177,7 +168,7 @@ san %>%
   theme(axis.text.x = element_text(angle = 90, size = 9))
 
 san %>% 
-  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA") %>% 
+  filter(anxious != "NA", worry != "NA", interest != "NA", down!= "NA", !is.na(race_eth)) %>% 
   ggplot(aes(x = race_eth, fill = down)) +
   geom_bar() +
   geom_text(aes(label = ..count..), stat = "count", position=position_stack(.5), vjust = 0, size = 2) +
@@ -190,7 +181,7 @@ san %>%
   theme(axis.text.x = element_text(angle = 90, size = 9))
 
 san %>% 
-  filter(pre_c19_ph != "NA", pre_c19_mh != "NA") %>% 
+  filter(pre_c19_ph != "NA", pre_c19_mh != "NA", !is.na(race_eth)) %>% 
   ggplot(aes(x = race_eth, fill = pre_c19_ph)) +
   geom_bar() +
   geom_text(aes(label = ..count..), stat = "count", position=position_stack(.5), vjust = 0, size = 2) +
@@ -202,7 +193,7 @@ san %>%
   theme(axis.text.x = element_text(angle = 90, size = 9))
 
 san %>% 
-  filter(pre_c19_ph != "NA", pre_c19_mh != "NA") %>% 
+  filter(pre_c19_ph != "NA", pre_c19_mh != "NA", !is.na(race_eth)) %>% 
   ggplot(aes(x = race_eth, fill = pre_c19_mh)) +
   geom_bar() +
   geom_text(aes(label = ..count..), stat = "count", position=position_stack(.5), vjust = 0, size = 2) +
@@ -238,12 +229,12 @@ san %>%
   theme(axis.text.x = element_text(angle = 90, size = 9))
 
 san %>% 
-  filter(front != "NA", gender != "Other", work_hrs > 0) %>% 
+  filter(front != "NA",  gender != "NA", work_hrs > 0 ) %>% 
   ggplot() +
   geom_col(aes(x = work_hrs, y = race_eth, color = gender, fill = gender), position = "dodge", width = .5) +
-  scale_color_viridis_d(option = "E", begin = .2, end = .8, direction = -1) +
-  scale_fill_viridis_d(option = "E", begin = .2, end = .8, direction = -1) +
   facet_grid(~ zip) +
+  scale_color_viridis_d(option = "E", begin = .2, end = .8) +
+  scale_fill_viridis_d(option = "E", begin = .2, end = .8) +
   ggtitle("Responses by zip code and working hours per week") +
   xlab("Hours per week") + 
   ylab(NULL) +
