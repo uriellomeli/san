@@ -1,0 +1,230 @@
+---
+title: "sa_energy"
+author: "uriel lomeli"
+date: "3/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(validate)
+library(readr)
+library(dplyr)
+library(stringr)
+```
+
+```{r load, include=FALSE}
+# From Qualtrics we get the data as .csv with default options: Recode seen but unanswered questions as -99. Recode seen but unanswered multi-value fields as 0.
+# Delete responses before 22.02.2021
+san <- read_csv("~/GitHub/saetus/San+Antonio+Energy+and+Time+Use+Survey+-+Spanish_March+10,+2021_11.54 (1).csv", col_names = T)
+```
+
+```{r}
+rule <- validator(!is.na(san$zipcode),
+                  !is.na(san$email),
+                  !is.na(san$gender))
+out <- confront(san, rule)
+summary(out)
+
+plot(out)
+```
+
+## Uniqueness
+```{r}
+unique <- validator(is_unique(san$email, san$zipcode))
+out2 <- confront(san, unique)
+summary(out2)
+v <- violating(san, unique)
+```
+
+## Availability of records
+```{r}
+varnames <- names(san)
+
+records <- validator(
+  contains_at_least(keys = san[san$Progress > 90, ], 
+                    by = list(san$zipcode, san$gender)))
+
+out.r <- confront(san, records)
+
+summary(out.r)
+```
+
+## Completeness of records
+```{r}
+complete <- validator(
+  is_complete(san$ResponseId, san$email),
+  is_complete(san$ResponseId, san$email, san$zipcode, san$gender, san$year, san$gender),
+  is_complete(san$Progress))
+
+out.c <- confront(san, complete)
+
+summary(out.c)
+
+violating(san, out.c)
+```
+
+## Balance equalities and inequalities
+```{r}
+equal <- validator(
+  san$Progress >= 90,
+  san$Progress >= 50,
+  san$`Duration (in seconds)` <= 3600,
+  san$`Duration (in seconds)` <= 2700,
+  san$`Duration (in seconds)` <= mean(san$`Duration (in seconds)`, na.rm = T))
+
+out.e <- confront(san, equal)
+
+summary(out.e)
+```
+
+## Conditinal restrictions
+```{r}
+cond <- validator(if(san$Progress >= 75) san$`Duration (in seconds)` <= 2700)
+
+out.cond <- confront(san, cond)
+
+summary(out.cond)
+```
+
+## Statistical and groupwise characteristics
+```{r}
+stats <- validator(
+  san$`Duration (in seconds)` <= do_by(san$`Duration (in seconds)`, by = san$zipcode, fun = mean, na.rm = T),
+  san$`Duration (in seconds)` <= do_by(san$`Duration (in seconds)`, by = san$zipcode, fun = median, na.rm = T))
+out.s <- confront(san, stats)
+summary(out.s)
+
+means <- with(san, do_by(san$`Duration (in seconds)`, by = san$zipcode, fun = mean, na.rm = T))
+head(data.frame(id = san$ResponseId, mean = means), 10)
+```
+
+## Indicators
+```{r}
+indi <- indicator(too_much_t = san$`Duration (in seconds)`,
+                  mean_t = mean(san$`Duration (in seconds)`, na.rm = T),
+                  sd_t = sd(san$`Duration (in seconds)`, na.rm = T))
+out.indi <- confront(san, indi)
+summary(out.indi)
+
+as.data.frame(out.indi)
+add_indicators(san, out.indi)
+```
+
+
+```{r}
+rules <- validator(!is.na(.))
+out.rules <- confront(san, rules)
+summary(out.rules)
+```
+
+```{r}
+isDuplicated<- function(str_lst){
+  # Function to check if each value in a list contain a duplicate value
+  # Args : list of values
+  # Returns : list of TRUE/FALSE/NA corresponding to each vaue on if it contains
+  #   duplicates or not
+  str_dup <- str_lst[duplicated(str_lst)]
+  result_lst<- c()
+  for(i in 1:length(str_lst)){
+    result_lst[i]<- case_when(is.na(str_lst[i]) ~ NA,
+                              (str_lst[i] %in% str_dup) ~F,
+                              TRUE ~ T)
+  }
+  return(result_lst)
+}
+
+labels_lst <- c("id - unique",  
+                "progress - 75% or more",
+                "duration - no less than 15 min",
+                "duration - no more than 45 min",
+                "email - is unique",
+                "gender - either F or M")
+
+rules_lst <- c(
+  # id
+  "isDuplicated(san$ResponseId) == T",
+  # progress
+  "san$Progress >= 75",
+  # duration
+  "san$`Duration (in seconds)` >= 900",
+  "san$`Duration (in seconds)` <= 2700",
+  # email
+  "isDuplicated(san$email) == T",
+  # gender
+  "ifelse(!is.na(san$gender), san$gender %in% c(1,2), NA) == T")
+
+checks <- data.frame(label = labels_lst, rule = rules_lst)
+valid <- validator(.data = checks)
+output <- confront(san, valid)
+quality <- as.data.frame(summary(output))
+
+measure <- as.data.frame(valid)
+results_validation <- (merge(quality, measure)) %>% 
+  select(label, items, passes, fails, nNA, error, warning)
+```
+
+
+```{r}
+result_validation_error <- results_validation %>% filter(error == F)
+if(nrow(result_validation_error) != 0) {
+  print("WARNING: Following data validation rules contain errors")
+  print(result_validation_error$label)
+} else {
+  print("INFO: No errors in the data validation rules")
+  # Data that fails validation are pulled out only if there are no errors in the data validation rules
+  fail_vals <- data.frame(values(output))
+  names(fail_vals) <- labels_lst
+  fail_vals <- as.matrix(fail_vals)
+  fail_vals<- as.data.frame(which(fail_vals==0, arr.ind=TRUE))
+  fail_vals <- mutate(fail_vals, label = labels_lst[fail_vals$col])%>% 
+    select(-col) %>%
+    mutate(id = san[fail_vals$row, 1])
+  vals <- c()  
+  for (i in 1:nrow(fail_vals)){
+    #i = 335
+    vals[i] <- san[fail_vals$row[i],
+                   str_split(fail_vals$label[i], " - ")[[1]][1]]
+    print(fail_vals$row[i])
+    print(str_split(fail_vals$label[i], " - ")[[1]][1])
+    
+  }
+  fail_vals <- cbind(fail_vals, vals)
+} 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
