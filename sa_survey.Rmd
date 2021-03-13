@@ -260,6 +260,7 @@ san %>%
 
 ### Replicated email addresses 
 ```{r, include=FALSE}
+unique_emails <- unique(san$email)
 rep_emails <- c("AdrianaHudsonwhp@yahoo.com", "AliRushwynf@yahoo.com", "altenwerthvbwht42@gmail.com", "ArdenHubbardvqk@yahoo.com",
                "ArnoldRatigmw@gmail.com", "AthenaHerringjuw@yahoo.com", "augustusyzlk19@gmail.com", "charlesfpsk94@gmail.com",
                "choeaqzn14@gmail.com", "choeaqzn14@gmail.com", "ChristinaEdwardsaocv@yahoo.com", "deboeremh85@gmail.com", 
@@ -279,6 +280,8 @@ san_re <- san %>%
 
 save(san, file = "~/GitHub/san/sa_survey.RData")
 save(san_re, file = "~/GitHub/san/sa_survey_rep_emails.RData")
+
+write.csv(x = unique_emails, file = "~/GitHub/san/unique_emails.csv")
 write.csv(x = rep_emails, file = "~/GitHub/san/repeated_emails.csv")
 
 write.csv(x = san, file = "~/GitHub/san/sa_energy_survey.csv", row.names = F)
@@ -383,6 +386,15 @@ round(prop.table(table(test$front, test$zip), 2)*100, 1)
 ```
 
 
+```{r}
+### make a flag for no response
+## make a google shared folder
+length(unique(san$ResponseId))
+length(unique(san$email))
+
+length(unique(san$LocationLatitude))
+length(unique(san$LocationLongitude))
+```
 
 
 
