@@ -23,7 +23,7 @@ library(showtext)
 
 ```{r load, include=FALSE}
 # From Qualtrics we get the data as .csv with default options: Recode seen but unanswered questions as -99. Recode seen but unanswered multi-value fields as 0.
-# Change C:/Users/gpe637/Downloads for the correct path
+# Change path
 san <- read_csv("~/GitHub/san/San+Antonio+Energy+and+Time+Use+Survey+-+Spanish_March+10,+2021_11.54 (1).csv", col_names = T)
 san <- san[-c(1:9),] # delete responses before 22.02. These were responses from us. 912 responses.
 ```
