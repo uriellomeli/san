@@ -374,30 +374,6 @@ san %>%
 ```
 
 
-```{r, include=FALSE}
-names(san)
-
-test <- san %>% 
-  select(zip, per_care_1:other_eip, depen, num_rooms:welfare_7,gender, age, ageg, race_eth, marital_st, educ, anxious:rep_email)
-
-round(prop.table(table(test$front, test$zip), 2)*100, 1)
-
-
-```
-
-
-```{r}
-### make a flag for no response
-## make a google shared folder
-length(unique(san$ResponseId))
-length(unique(san$email))
-
-length(unique(san$LocationLatitude))
-length(unique(san$LocationLongitude))
-```
-
-
-
 
 
 
