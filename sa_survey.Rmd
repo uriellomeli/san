@@ -278,6 +278,13 @@ san_re <- san %>%
   filter(email %in% rep_emails) %>% 
   arrange(email)
 
+#### IDs
+emails <- san %>% 
+  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
+  filter(rep_email == "first_entry" & zipcode != 3) %>% 
+  select(ResponseId, email, Finished, Progress, zip, duration) %>%  
+  arrange(zip, duration, email)
+
 save(san, file = "~/GitHub/san/sa_survey.RData")
 save(san_re, file = "~/GitHub/san/sa_survey_rep_emails.RData")
 
@@ -286,6 +293,8 @@ write.csv(x = rep_emails, file = "~/GitHub/san/repeated_emails.csv")
 
 write.csv(x = san, file = "~/GitHub/san/sa_energy_survey.csv", row.names = F)
 write.csv(x = san_re, file = "~/GitHub/san/sa_energy_survey_rep_emails.csv", row.names = F)
+
+write.csv(x = emails, file = "~/GitHub/saetus/emails.csv", row.names = F)
 ```
 
 ```{r, include=FALSE, message=FALSE, warning=FALSE}
@@ -304,6 +313,7 @@ themeu <- theme(plot.title = element_text(size = 22, face = "bold"),
                 strip.background = element_rect(fill = NULL, linetype = "solid"), 
                 strip.text = element_text(color = "white", size = 18, face = "bold"))
 ```
+
 ```{r, message=FALSE, warning=FALSE}
 san %>% 
   group_by(race_eth, zip, gender) %>% 
