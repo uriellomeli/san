@@ -4,6 +4,7 @@ author: "..."
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   html_document:
+    toc: true
     code_folding: hide
     highlight: tango
 ---
@@ -13,27 +14,66 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r libraries, include=FALSE}
+library(readxl)
 library(dplyr)
 library(ggplot2)
+library(plotly)
 library(naniar) 
 library(readr)
 library(patchwork)
 library(showtext)
+library(kableExtra)
+library(validate)
+library(summarytools)
 ```
 
 ```{r load, include=FALSE}
 # From Qualtrics we get the data as .csv with default options: Recode seen but unanswered questions as -99. Recode seen but unanswered multi-value fields as 0.
 # Change path
-san <- read_csv("~/GitHub/san/San+Antonio+Energy+and+Time+Use+Survey+-+Spanish_March+10,+2021_11.54 (1).csv", col_names = T)
-san <- san[-c(1:9),] # delete responses before 22.02. These were responses from us. 912 responses.
+san <- read_excel("~/GitHub/saetus/San Antonio Energy and Time Use Survey (03.10).xlsx", col_names = T)
+# delete responses before 22.02. These were responses from us. Delete some defaults columns, only have NA values.
+san <- san[-c(1:9), - c(10:13)] 
+```
+
+```{r NAs, include=FALSE}
+# 174 variables when uploaded.  175 after this point.
+# disagree; other_major_imp; other_impairment_hsh; other_eip
+
+san <- san %>% 
+  # I'm subtracting the column (rewrite_email) since nobody answer the question
+  mutate(number_missing_value = rowSums(is.na(san))-1,
+         # 174 total possible responses
+         nas_pct = round((number_missing_value/174*100), 1))
+
+### NAs
+summary(san$number_missing_value)
+
+### by Peter
+san <- san %>%
+  mutate(duration = round(as.numeric(`Duration (in seconds)`)/60, 1),
+         upper_out = quantile(duration, probs = 0.975, na.rm = T),
+         upper_out2 = quantile(duration, probs = 0.95, na.rm = T), 
+         lower_out = quantile(duration, probs = 0.025, na.rm = T),
+         lower_out2 = quantile(duration, probs = 0.05, na.rm = T),
+         na_low = quantile(nas_pct, probs = 0.10),
+         na_upp = quantile(nas_pct, probs = 0.90),
+         duration_min_out = if_else(duration <= lower_out, "Spend too little time", 
+                                           if_else(duration >= upper_out, "Spend too much time", "Normal")),
+         duration_min_out2 = if_else(duration <= lower_out2, "Below 5% quantile", 
+                                           if_else(duration >= upper_out2, "Above 95% quantile", "Normal")),
+         nas_out = if_else(nas_pct <= na_low, "Below 10% quantile",
+                           if_else(nas_pct >= na_upp, "Above 90% quantile", "Normal")))
+
+san$duration_min_out <- ordered(san$duration_min_out, levels = c("Spend too much time", "Normal", "Spend too little time"))
+san$duration_min_out2 <- ordered(san$duration_min_out2, levels = c("Above 95% quantile", "Normal", "Below 5% quantile"))
+san$nas_out <- ordered(san$nas_out, levels = c("Above 90% quantile", "Normal", "Below 10% quantile"))
 ```
 
 ```{r recode, include=FALSE}
 san <- san %>% 
   # consent Agree and double check on survey participation. Keep only zip codes 78202 or 78230.
-  filter(consent == "1" | disagree == "1", as.numeric(Progress) > 66, zipcode != "3") %>% 
-  mutate(duration = round(as.numeric(`Duration (in seconds)`)/60, 1), # duration in minutes
-         yrbr = ifelse(as.numeric(year) >= 1, 2000 - as.numeric(year), NA), # year of birth
+  #filter(consent == "1" | disagree == "1", zipcode != "3") %>% 
+  mutate(yrbr = ifelse(as.numeric(year) >= 1, 2000 - as.numeric(year), NA), # year of birth
          age = 2021 - yrbr, # age
          zip = if_else(zipcode == "1", "Elm Creek", "Jefferson Heights"), # recode zip codes
          hisp = if_else(hispanic == "1", "Not Hispanic", if_else(hispanic == "2", "Hispanic", "Don't know")), # Hispanic origin
@@ -68,31 +108,132 @@ san$health <- ordered(san$health, levels = c("Excellent", "Very good", "Good", "
 
 # Total responses 849 - not including responses "no Finished"
 # Total responses 857 - including responses "no Finished"
-
-length(unique(san$email)) # 816 minus one person who didn't provide an email
+# length(unique(san$email)) 
 ```
 
+
+1) Locate "odd responses" based on duration and number of NA in each response
+2) Duration: a) Keep responses in (2.5%, 97.5%), b) responses in (5%, 95%)
+3) NAs: a) Responses in (10%, 90%)
+
 ```{r, message=FALSE, warning=FALSE}
+san %>% 
+  #filter(!is.na(zipcode)) %>% 
+  ggplot(aes(x = zipcode, fill = duration_min_out)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2, color = "black") +
+  scale_fill_brewer(type = "div", palette = 'Spectral') +
+  #facet_grid(~ zipcode) +
+  ggtitle("Duration between 0.7 min and 97.3 min = NORMAL (95% of responses)") +
+  xlab("Zip code") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, size = 9), 
+        panel.background = element_rect(fill = "gray95"))
+
+san %>% 
+  #filter(!is.na(zipcode)) %>% 
+  ggplot(aes(x = zipcode, fill = duration_min_out2)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2, color = "black") +
+  scale_fill_brewer(type = "div", palette = 'Spectral') +
+  #facet_grid(~ zipcode) +
+  ggtitle("Duration between 1.36 min and 71.2 min = NORMAL (90% of reponses)") +
+  xlab("Zip code") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, size = 9), 
+        panel.background = element_rect(fill = "gray95"))
+
+san %>% 
+  #filter(!is.na(zipcode)) %>% 
+  ggplot(aes(x = zipcode, fill = nas_out)) +
+  geom_bar() +
+  geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2, color = "black") +
+  scale_fill_brewer(type = "div", palette = 'Spectral') +
+  #facet_grid(~ zipcode) +
+  ggtitle("Number of NAs between 6 and 91 = NORMAL") +
+  xlab("Zip code") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, size = 9), 
+        panel.background = element_rect(fill = "gray95"))
+
+
+
+plot_ly(data = san, x = ~nas_pct, y = ~duration, color = ~duration_min_out2) %>% 
+  layout(title = "Duration (min) by NAs by response (%)", 
+         yaxis = list(title = "Duration (min)"),
+         xaxis = list(title = "Percentage of NA values"))
+
+san %>% 
+  filter(!is.na(zipcode)) %>% 
+  ggplot() +
+  geom_boxplot(aes(y = nas_pct, x = duration_min_out)) +
+  scale_fill_brewer(type = "div", palette = 'Spectral') +
+  ggtitle("NA dist. by duration in minutes") +
+  xlab("Duration between 0.7 min and 97.3 min = NORMAL (95% of responses)") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 9), 
+        panel.background = element_rect(fill = "gray95"))
+
+san %>% 
+  filter(!is.na(zipcode)) %>% 
+  ggplot() +
+  geom_boxplot(aes(y = nas_pct, x = duration_min_out, fill = as.factor(zipcode))) +
+  scale_fill_brewer(type = "div", palette = 'Spectral') +
+  ggtitle("NA dist. by duration in minutes by zip code") +
+  xlab("Duration between 0.7 min and 97.3 min = NORMAL (95% of responses)") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 9), 
+        panel.background = element_rect(fill = "gray95"))
+
+san %>% 
+  filter(!is.na(zipcode), duration < 900) %>% 
+  ggplot() +
+  geom_boxplot(aes(y = duration, fill = as.factor(zipcode), x = nas_out)) +
+  scale_fill_brewer(type = "div", palette = 'Spectral') +
+  ggtitle("Duration (min) by zip code and NA distribution") +
+  xlab("Zip code") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 9), 
+        panel.background = element_rect(fill = "gray95"))
+```
+
+```{r, include=FALSE, message=FALSE, warning=FALSE}
 # average duration by zipcode/race
 tab <- san %>% 
   group_by(zip, race_eth) %>% 
   dplyr::summarise(av.duration = round(mean(duration, na.rm = T), 1), sd.duration = round(sd(duration, na.rm = T), 1))
 
-kableExtra::kable(tab, format = "html")
+tab.z <- san %>% 
+  group_by(zip) %>% 
+  dplyr::summarise(av.duration = round(mean(duration, na.rm = T), 1), sd.duration = round(sd(duration, na.rm = T), 1))
 
-kableExtra::kable(table(san$zip, san$gender))
+kable(tab, format = "html")
 
-kableExtra::kable(round(prop.table(table(san$zip, san$gender), 2)*100, 1))
+kable(tab.z, format = "html")
+
+#kableExtra::kable(table(san$zip, san$gender))
+#kableExtra::kable(round(prop.table(table(san$zip, san$gender), 2)*100, 1))
 ```
 
 ```{r recode_health, include=FALSE, eval=FALSE}
+test <- san %>% 
+  #filter(!is.na(age)) %>% # what to do with the responses not finished
+  mutate(ageg = case_when(age %in% min(age):29 ~ "20-29",
+                                                 age %in% 30:39 ~ "30-39",
+                                                 age %in% 40:49 ~ "40-49",
+                                                 age %in% 50:59 ~ "50-59",
+                                                 age %in% 60:max(age) ~ "60+"))
+
+
+min(san$age)
+
 san <- san %>% 
-  filter(Finished == "1") %>% # what to do with the responses not finished
+  #filter(Finished == "1") %>% # what to do with the responses not finished
   mutate(ageg = case_when(age %in% min(age):29 ~ "20-29",
                           age %in% 30:39 ~ "30-39",
                           age %in% 40:49 ~ "40-49",
                           age %in% 50:59 ~ "50-59",
-                          age %in% 60:max(age) ~ "60+"),
+                          age %in% 60:max(age) ~ "60+", FALSE ~ NA_character_),
          anxious = if_else(mental_health_anxious == "1", "Not at all",
                            if_else(mental_health_anxious == "2", "Several days", 
                                    if_else(mental_health_anxious == "3", "More than half",
@@ -128,7 +269,7 @@ san$pre_c19_ph <- ordered(san$pre_c19_ph, levels = c("Worse", "Same", "Better"))
 san$pre_c19_mh <- ordered(san$pre_c19_mh, levels = c("Worse", "Same", "Better"))
 ```
 
-```{r recode_employment, include=FALSE}
+```{r recode_employment, include=FALSE, eval=FALSE}
 san <- san %>% 
   mutate(front = if_else(frontline == "1", "Yes", 
                          if_else(frontline == "2", "No", "NA")),
@@ -138,8 +279,8 @@ san <- san %>%
          hsh_retire = as.numeric(num_retired))
 ```
 
-```{r health_status_plot, message=FALSE, warning=FALSE}
-load("~/GitHub/san/sa_survey.RData")
+```{r health_status_plot, message=FALSE, warning=FALSE, eval=FALSE}
+load("~/GitHub/saetus/sa_survey.RData")
 
 san %>% 
   filter(health != "NA") %>% 
@@ -231,7 +372,7 @@ san %>%
   theme(axis.text.x = element_text(angle = 90, size = 9))
 ```
 
-```{r frontline_plot}
+```{r frontline_plot, eval=FALSE}
 san %>% 
   filter(front != "NA") %>% 
   ggplot(aes(x = race_eth, fill = front)) +
@@ -258,8 +399,8 @@ san %>%
   theme(axis.text.x = element_text(angle = 90, size = 9))
 ```
 
+```{r rep_emails, include=FALSE, eval=FALSE}
 ### Replicated email addresses 
-```{r, include=FALSE}
 unique_emails <- unique(san$email)
 rep_emails <- c("AdrianaHudsonwhp@yahoo.com", "AliRushwynf@yahoo.com", "altenwerthvbwht42@gmail.com", "ArdenHubbardvqk@yahoo.com",
                "ArnoldRatigmw@gmail.com", "AthenaHerringjuw@yahoo.com", "augustusyzlk19@gmail.com", "charlesfpsk94@gmail.com",
@@ -278,13 +419,6 @@ san_re <- san %>%
   filter(email %in% rep_emails) %>% 
   arrange(email)
 
-#### IDs
-emails <- san %>% 
-  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
-  filter(rep_email == "first_entry" & zipcode != 3) %>% 
-  select(ResponseId, email, Finished, Progress, zip, duration) %>%  
-  arrange(zip, duration, email)
-
 save(san, file = "~/GitHub/san/sa_survey.RData")
 save(san_re, file = "~/GitHub/san/sa_survey_rep_emails.RData")
 
@@ -293,11 +427,26 @@ write.csv(x = rep_emails, file = "~/GitHub/san/repeated_emails.csv")
 
 write.csv(x = san, file = "~/GitHub/san/sa_energy_survey.csv", row.names = F)
 write.csv(x = san_re, file = "~/GitHub/san/sa_energy_survey_rep_emails.csv", row.names = F)
+```
+
+```{r emails, include=FALSE, eval=FALSE}
+### EMAILS
+#### IDs
+emails <- san %>% 
+  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry"),
+         mean_duration = round(mean(duration, na.rm = T), 1),
+         median_duration = median(duration, na.rm = T),
+         nas = rowSums(is.na(.)) - 4,
+         na_pct = round(nas/161 * 100, 1)) %>% 
+  filter(rep_email == "first_entry" & zip != 3) %>% 
+  select(ResponseId, email, zip, duration, mean_duration, median_duration, nas, na_pct) %>%  
+  arrange(duration, na_pct)
+
 
 write.csv(x = emails, file = "~/GitHub/saetus/emails.csv", row.names = F)
 ```
 
-```{r, include=FALSE, message=FALSE, warning=FALSE}
+```{r, include=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 font_add_google(name = "Barlow", family = "foo")
 showtext::showtext_auto()
 
@@ -314,7 +463,7 @@ themeu <- theme(plot.title = element_text(size = 22, face = "bold"),
                 strip.text = element_text(color = "white", size = 18, face = "bold"))
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r, include=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 san %>% 
   group_by(race_eth, zip, gender) %>% 
   dplyr::summarise(poorh = round(mean(as.numeric(days_poor_health), na.rm = T), 1)) %>% 
@@ -383,7 +532,43 @@ san %>%
   themeu
 ```
 
+```{r dfSummary, message=FALSE, warning=FALSE}
+view(dfSummary(san[, 5:173], style = "grid", plain.ascii = F, graph.magnif = 2), method = "render")
+```
 
+### Which responses to keep?
+
+1) Consider odd response those outside the "normal" range of duration (1.36, 71) AND above 91 NA values 
+2) Summary table: responses that Agree to participate, valid zip code (78202 or 78230), not an odd response
+
+```{r, message=FALSE, warning=FALSE}
+### Duration and number of NAs
+kable(table(san$nas_out, san$duration_min_out), caption = "NAs (%) vs Duration (min)") %>% 
+  kable_classic(full_width = F) %>% 
+  footnote(general = "NAs in (10%, 90%); duration in (2.5%, 97.5%)")
+
+kable(table(san$nas_out, san$duration_min_out2), caption = "NAs (%) vs Duration (min)") %>% 
+  kable_classic(full_width = F) %>% 
+  footnote(general = "NAs in (10%, 90%); duration in (5%, 95%)")  
+
+san <- san %>% 
+  mutate(odd_r = if_else(duration_min_out != "Normal" & nas_out == "Above 90% quantile", "Odd response", "Normal"),
+         odd_r2 = if_else(duration_min_out2 != "Normal" & nas_out == "Above 90% quantile", "Odd response", "Normal"))
+
+kable(table(san$odd_r2), caption = "Odd responses") %>% 
+  kable_classic(full_width = F)
+
+
+sank <- san %>% 
+  # consent Agree and double check on survey participation. Keep only zip codes 78202 or 78230. And keep only the first answer for unique emails
+  filter(consent == "1" | disagree == "1", zipcode != 3, odd_r2 == "Normal") %>% 
+  mutate(zipcode = if_else(zipcode == "1", "Elm Creek", 
+                           if_else(zipcode == "2", "Jefferson Heights", NA_character_)),
+         rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
+  filter(rep_email == "first_entry")
+
+view(dfSummary(sank[, 5:173], style = "grid", plain.ascii = F, graph.magnif = 2), method = "render")
+```
 
 
 
