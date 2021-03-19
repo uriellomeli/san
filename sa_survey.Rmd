@@ -580,7 +580,7 @@ sank <- san %>%
 ```{r section_iv, message=FALSE, warning=FALSE}
 sank %>%
   select(146, 148:171, 175, 178:189) %>% 
-  tbl_summary(by = duration_min_out, 
+  tbl_summary(by = zipcode, 
               statistic = list(all_continuous() ~ "{mean} ({sd})",
                                all_categorical() ~ "{n} ({p}%)"),
               digits = list(all_continuous() ~ c(1, 1))) %>% 
