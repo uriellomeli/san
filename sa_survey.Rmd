@@ -18,12 +18,9 @@ library(readxl)
 library(dplyr)
 library(ggplot2)
 library(plotly)
-library(naniar) 
-library(readr)
 library(patchwork)
 library(showtext)
 library(kableExtra)
-library(validate)
 library(summarytools)
 ```
 
@@ -533,7 +530,7 @@ san %>%
 ```
 
 ```{r dfSummary, message=FALSE, warning=FALSE}
-view(dfSummary(san[, 5:173], style = "grid", plain.ascii = F, graph.magnif = 2), method = "render")
+view(dfSummary(san[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
 ```
 
 ### Which responses to keep?
@@ -567,10 +564,21 @@ sank <- san %>%
          rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
   filter(rep_email == "first_entry")
 
-view(dfSummary(sank[, 5:173], style = "grid", plain.ascii = F, graph.magnif = 2), method = "render")
+view(dfSummary(sank[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
 ```
 
 
+```{r section_1a}
+library(psych)
+
+t1<-describeBy(san$duration, san$duration_min_out, mat = T)
+
+kable(t1)
+
+library(gtsummary)
+
+
+```
 
 
 
