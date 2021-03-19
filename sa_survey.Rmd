@@ -579,7 +579,11 @@ sank <- san %>%
 
 ```{r section_iv, message=FALSE, warning=FALSE}
 sank %>%
+<<<<<<< HEAD
   select(16, 146, 148:171, 175, 178:189) %>% 
+=======
+  select(146, 148:171, 175, 178:189) %>% 
+>>>>>>> f1fcb7a0f07dfade34b2992b98c3fb2571364b8b
   tbl_summary(by = zipcode, 
               statistic = list(all_continuous() ~ "{mean} ({sd})",
                                all_categorical() ~ "{n} ({p}%)"),
