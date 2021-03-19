@@ -5,6 +5,7 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   html_document:
     toc: true
+    toc_float: true
     code_folding: hide
     highlight: tango
 ---
@@ -22,12 +23,13 @@ library(patchwork)
 library(showtext)
 library(kableExtra)
 library(summarytools)
+library(gtsummary)
 ```
 
 ```{r load, include=FALSE}
 # From Qualtrics we get the data as .csv with default options: Recode seen but unanswered questions as -99. Recode seen but unanswered multi-value fields as 0.
 # Change path
-san <- read_excel("~/GitHub/saetus/San Antonio Energy and Time Use Survey (03.10).xlsx", col_names = T)
+san <- read_excel("~/GitHub/san/San Antonio Energy and Time Use Survey (03.10).xlsx", col_names = T)
 # delete responses before 22.02. These were responses from us. Delete some defaults columns, only have NA values.
 san <- san[-c(1:9), - c(10:13)] 
 ```
@@ -64,6 +66,11 @@ san <- san %>%
 san$duration_min_out <- ordered(san$duration_min_out, levels = c("Spend too much time", "Normal", "Spend too little time"))
 san$duration_min_out2 <- ordered(san$duration_min_out2, levels = c("Above 95% quantile", "Normal", "Below 5% quantile"))
 san$nas_out <- ordered(san$nas_out, levels = c("Above 90% quantile", "Normal", "Below 10% quantile"))
+
+
+san <- san %>% 
+  mutate(odd_r = if_else(duration_min_out != "Normal" & nas_out == "Above 90% quantile", "Odd response", "Normal"),
+         odd_r2 = if_else(duration_min_out2 != "Normal" & nas_out == "Above 90% quantile", "Odd response", "Normal"))
 ```
 
 ```{r recode, include=FALSE}
@@ -107,7 +114,6 @@ san$health <- ordered(san$health, levels = c("Excellent", "Very good", "Good", "
 # Total responses 857 - including responses "no Finished"
 # length(unique(san$email)) 
 ```
-
 
 1) Locate "odd responses" based on duration and number of NA in each response
 2) Duration: a) Keep responses in (2.5%, 97.5%), b) responses in (5%, 95%)
@@ -277,7 +283,7 @@ san <- san %>%
 ```
 
 ```{r health_status_plot, message=FALSE, warning=FALSE, eval=FALSE}
-load("~/GitHub/saetus/sa_survey.RData")
+load("~/GitHub/san/sa_survey.RData")
 
 san %>% 
   filter(health != "NA") %>% 
@@ -529,9 +535,13 @@ san %>%
   themeu
 ```
 
+## Part I.
+
 ```{r dfSummary, message=FALSE, warning=FALSE}
 view(dfSummary(san[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
 ```
+
+## Part II.
 
 ### Which responses to keep?
 
@@ -548,9 +558,7 @@ kable(table(san$nas_out, san$duration_min_out2), caption = "NAs (%) vs Duration 
   kable_classic(full_width = F) %>% 
   footnote(general = "NAs in (10%, 90%); duration in (5%, 95%)")  
 
-san <- san %>% 
-  mutate(odd_r = if_else(duration_min_out != "Normal" & nas_out == "Above 90% quantile", "Odd response", "Normal"),
-         odd_r2 = if_else(duration_min_out2 != "Normal" & nas_out == "Above 90% quantile", "Odd response", "Normal"))
+
 
 kable(table(san$odd_r2), caption = "Odd responses") %>% 
   kable_classic(full_width = F)
@@ -564,20 +572,88 @@ sank <- san %>%
          rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
   filter(rep_email == "first_entry")
 
-view(dfSummary(sank[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
+#view(dfSummary(sank[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
+```
+
+### Section IV. Background Characteristics
+
+```{r section_iv, message=FALSE, warning=FALSE}
+sank %>%
+  select(146, 148:171, 175, 178:189) %>% 
+  tbl_summary(by = duration_min_out, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section IV. Background characteristics (N = {N})**") %>% 
+  bold_labels()
+```
+
+### Section Ia. Time Use
+
+```{r section_ia, message=FALSE, warning=FALSE}
+sank %>%
+  select(16:80, 175, 178:189) %>% 
+  tbl_summary(by = duration_min_out, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section Ia. Time Use (N = {N})**") %>% 
+  bold_labels()
 ```
 
 
-```{r section_1a}
-library(psych)
+### Section Ib. Energy Use
 
-t1<-describeBy(san$duration, san$duration_min_out, mat = T)
+```{r section_ib, message=FALSE, warning=FALSE}
+sank %>%
+  select(81:87, 175, 178:189) %>% 
+  tbl_summary(by = duration_min_out, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section Ib. Energy Use (N = {N})**") %>% 
+  bold_labels()
+```
 
-kable(t1)
+### Section II. Health Conditions
 
-library(gtsummary)
+```{r section_ii, message=FALSE, warning=FALSE}
+sank %>%
+  select(88:101, 103, 105:119, 175, 178:189) %>% 
+  tbl_summary(by = duration_min_out, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section II. Health Conditions (N = {N})**") %>% 
+  bold_labels()
+```
 
+### Section III. Employment
 
+```{r section_iii, message=FALSE, warning=FALSE}
+sank %>%
+  select(121:143, 175, 178:189) %>% 
+  tbl_summary(by = duration_min_out, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section III. Employment (N = {N})**") %>% 
+  bold_labels()
 ```
 
 
