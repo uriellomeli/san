@@ -29,7 +29,7 @@ library(gtsummary)
 ```{r load, include=FALSE}
 # From Qualtrics we get the data as .csv with default options: Recode seen but unanswered questions as -99. Recode seen but unanswered multi-value fields as 0.
 # Change path
-san <- read_excel("~/GitHub/san/San Antonio Energy and Time Use Survey (03.10).xlsx", col_names = T)
+san <- read_excel("~/GitHub/saetus/San Antonio Energy and Time Use Survey (03.10).xlsx", col_names = T)
 # delete responses before 22.02. These were responses from us. Delete some defaults columns, only have NA values.
 san <- san[-c(1:9), - c(10:13)] 
 ```
@@ -575,12 +575,12 @@ sank <- san %>%
 #view(dfSummary(sank[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
 ```
 
-### Section IV. Background Characteristics
+### Section IV. Background Characteristics by Zip code
 
 ```{r section_iv, message=FALSE, warning=FALSE}
 sank %>%
-  select(146, 148:171, 175, 178:189) %>% 
-  tbl_summary(by = duration_min_out, 
+  select(16, 146, 148:171, 175, 178:189) %>% 
+  tbl_summary(by = zipcode, 
               statistic = list(all_continuous() ~ "{mean} ({sd})",
                                all_categorical() ~ "{n} ({p}%)"),
               digits = list(all_continuous() ~ c(1, 1))) %>% 
@@ -591,12 +591,12 @@ sank %>%
   bold_labels()
 ```
 
-### Section Ia. Time Use
+### Section Ia. Time Use by Zip code
 
 ```{r section_ia, message=FALSE, warning=FALSE}
 sank %>%
   select(16:80, 175, 178:189) %>% 
-  tbl_summary(by = duration_min_out, 
+  tbl_summary(by = zipcode, 
               statistic = list(all_continuous() ~ "{mean} ({sd})",
                                all_categorical() ~ "{n} ({p}%)"),
               digits = list(all_continuous() ~ c(1, 1))) %>% 
@@ -608,12 +608,12 @@ sank %>%
 ```
 
 
-### Section Ib. Energy Use
+### Section Ib. Energy Use by Zip code
 
 ```{r section_ib, message=FALSE, warning=FALSE}
 sank %>%
-  select(81:87, 175, 178:189) %>% 
-  tbl_summary(by = duration_min_out, 
+  select(16, 81:87, 175, 178:189) %>% 
+  tbl_summary(by = zipcode, 
               statistic = list(all_continuous() ~ "{mean} ({sd})",
                                all_categorical() ~ "{n} ({p}%)"),
               digits = list(all_continuous() ~ c(1, 1))) %>% 
@@ -624,12 +624,12 @@ sank %>%
   bold_labels()
 ```
 
-### Section II. Health Conditions
+### Section II. Health Conditions by Zip code
 
 ```{r section_ii, message=FALSE, warning=FALSE}
 sank %>%
-  select(88:101, 103, 105:119, 175, 178:189) %>% 
-  tbl_summary(by = duration_min_out, 
+  select(16, 88:101, 103, 105:119, 175, 178:189) %>% 
+  tbl_summary(by = zipcode, 
               statistic = list(all_continuous() ~ "{mean} ({sd})",
                                all_categorical() ~ "{n} ({p}%)"),
               digits = list(all_continuous() ~ c(1, 1))) %>% 
@@ -640,12 +640,12 @@ sank %>%
   bold_labels()
 ```
 
-### Section III. Employment
+### Section III. Employment by Zip code
 
 ```{r section_iii, message=FALSE, warning=FALSE}
 sank %>%
-  select(121:143, 175, 178:189) %>% 
-  tbl_summary(by = duration_min_out, 
+  select(16, 121:143, 175, 178:189) %>% 
+  tbl_summary(by = zipcode, 
               statistic = list(all_continuous() ~ "{mean} ({sd})",
                                all_categorical() ~ "{n} ({p}%)"),
               digits = list(all_continuous() ~ c(1, 1))) %>% 
