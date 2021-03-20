@@ -26,6 +26,23 @@ library(summarytools)
 library(gtsummary)
 ```
 
+```{r themeu, include=FALSE, message=FALSE, warning=FALSE}
+font_add_google(name = "Barlow", family = "foo")
+showtext::showtext_auto()
+
+themeu <- theme(plot.title = element_text(size = 22, face = "bold"), 
+                plot.subtitle = element_text(size = 11),
+                legend.position = "none", 
+                legend.title = element_blank(), 
+                axis.title = element_text(size = 17), 
+                axis.text = element_text(size = 17), 
+                axis.text.y = element_text(size = 17, color = "black"),
+                plot.caption = element_text(size = 12), 
+                panel.grid = element_blank(),
+                strip.background = element_rect(fill = NULL, linetype = "solid"), 
+                strip.text = element_text(color = "white", size = 18, face = "bold"))
+```
+
 ```{r load, include=FALSE}
 # From Qualtrics we get the data as .csv with default options: Recode seen but unanswered questions as -99. Recode seen but unanswered multi-value fields as 0.
 # Change path
@@ -34,18 +51,17 @@ san <- read_excel("~/GitHub/saetus/San Antonio Energy and Time Use Survey (03.10
 san <- san[-c(1:9), - c(10:13)] 
 ```
 
-```{r NAs, include=FALSE}
-# 174 variables when uploaded.  175 after this point.
-# disagree; other_major_imp; other_impairment_hsh; other_eip
-
+```{r duration_nas, include=FALSE}
+# 174 variables when uploaded.  
 san <- san %>% 
-  # I'm subtracting the column (rewrite_email) since nobody answer the question
-  mutate(number_missing_value = rowSums(is.na(san))-1,
-         # 174 total possible responses
-         nas_pct = round((number_missing_value/174*100), 1))
+  # I'm subtracting the columns (rewrite_email, gender_text, and disagree) since nobody answer the question
+  mutate(number_missing_value = rowSums(is.na(san))-3,
+         # 171 total possible responses (not included rewrite_email, gender_text, and disagree)
+         nas_pct = round((number_missing_value/171*100)))
 
 ### NAs
 summary(san$number_missing_value)
+summary(san$nas_pct)
 
 ### by Peter
 san <- san %>%
@@ -55,71 +71,24 @@ san <- san %>%
          lower_out = quantile(duration, probs = 0.025, na.rm = T),
          lower_out2 = quantile(duration, probs = 0.05, na.rm = T),
          na_low = quantile(nas_pct, probs = 0.10),
-         na_upp = quantile(nas_pct, probs = 0.90),
+         na_upp = quantile(nas_pct, probs = 0.85),
          duration_min_out = if_else(duration <= lower_out, "Spend too little time", 
                                            if_else(duration >= upper_out, "Spend too much time", "Normal")),
          duration_min_out2 = if_else(duration <= lower_out2, "Below 5% quantile", 
                                            if_else(duration >= upper_out2, "Above 95% quantile", "Normal")),
          nas_out = if_else(nas_pct <= na_low, "Below 10% quantile",
-                           if_else(nas_pct >= na_upp, "Above 90% quantile", "Normal")))
+                           if_else(nas_pct >= na_upp, "Above 85% quantile", "Normal")))
 
 san$duration_min_out <- ordered(san$duration_min_out, levels = c("Spend too much time", "Normal", "Spend too little time"))
 san$duration_min_out2 <- ordered(san$duration_min_out2, levels = c("Above 95% quantile", "Normal", "Below 5% quantile"))
-san$nas_out <- ordered(san$nas_out, levels = c("Above 90% quantile", "Normal", "Below 10% quantile"))
-
+san$nas_out <- ordered(san$nas_out, levels = c("Above 85% quantile", "Normal", "Below 10% quantile"))
 
 san <- san %>% 
-  mutate(odd_r = if_else(duration_min_out != "Normal" & nas_out == "Above 90% quantile", "Odd response", "Normal"),
-         odd_r2 = if_else(duration_min_out2 != "Normal" & nas_out == "Above 90% quantile", "Odd response", "Normal"))
+  mutate(odd_r = if_else(duration_min_out != "Normal" & nas_out == "Above 85% quantile", "Odd response", "Normal"),
+         odd_r2 = if_else(duration_min_out2 != "Normal" & nas_out == "Above 85% quantile", "Odd response", "Normal"))
 ```
 
-```{r recode, include=FALSE}
-san <- san %>% 
-  # consent Agree and double check on survey participation. Keep only zip codes 78202 or 78230.
-  #filter(consent == "1" | disagree == "1", zipcode != "3") %>% 
-  mutate(yrbr = ifelse(as.numeric(year) >= 1, 2000 - as.numeric(year), NA), # year of birth
-         age = 2021 - yrbr, # age
-         zip = if_else(zipcode == "1", "Elm Creek", "Jefferson Heights"), # recode zip codes
-         hisp = if_else(hispanic == "1", "Not Hispanic", if_else(hispanic == "2", "Hispanic", "Don't know")), # Hispanic origin
-         race2 = case_when(race %in% "1" ~ "White", # recode race
-                           race %in% "2" ~ "Black", 
-                           race %in% "3" ~ "Asian", 
-                           race %in% "4" ~ "AIAN", # American Indian or Alaskan Native
-                           race %in% "5" ~ "NHPI", # Native Hawaiian of Other Pacific Islander
-                           race %in% c("6", "7", "8") ~ "Other"), # Two or more races; Unknown|Don't know; Prefer not to answer
-         race_eth = if_else(hisp != "Hispanic" & race2 == "White", "NH-White", 
-                            if_else(hisp != "Hispanic" & race2 == "Black", "NH-Black", 
-                                    if_else(hisp != "Hispanic" & race2 == "Asian", "NH-Asian", 
-                                            if_else(hisp != "Hispanic" & race2 == "AIAN", "NH-AIAN",
-                                                    if_else(hisp != "Hispanic" & race2 == "NHPI", "NH-NHPI",
-                                                            if_else(hisp != "Hispanic" & race2 == "Other", "NH-Other", "Hispanic")))))),
-         gender = case_when(gender %in% "1" ~ "Female", 
-                            gender %in% "2" ~ "Male", 
-                            gender %in% c("3", "4", "5", "6", "7") ~ "Other"),
-         marital_st = case_when(marital %in% "1" ~ "Single",
-                                marital %in% c("2", "3") ~ "In a union", # married/living in a marriage-like relationship
-                                marital %in% c("4", "5", "6") ~ "Not in a union"), # widowed, separated, divorced
-         educ = case_when(education %in% "1" ~ "Less than HS", 
-                          education %in% c("2", "3") ~ "High School", # some high school, high school graduate or equivalent 
-                          education %in% c("4", "5", "6") ~ "College", # some college, AA, BA, BS
-                          education %in% "7" ~ "Graduate",
-                          education %in% "8" ~ "Don't know"),
-         health = case_when(health %in% "1" ~ "Excellent", health %in% "2" ~ "Very good", health %in% "3" ~ "Good", 
-                            health %in% "4" ~ "Fair", health %in% "5" ~ "Poor"))
-
-san$race_eth <- ordered(san$race_eth, levels = c("NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other", "Hispanic"))
-san$health <- ordered(san$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
-
-# Total responses 849 - not including responses "no Finished"
-# Total responses 857 - including responses "no Finished"
-# length(unique(san$email)) 
-```
-
-1) Locate "odd responses" based on duration and number of NA in each response
-2) Duration: a) Keep responses in (2.5%, 97.5%), b) responses in (5%, 95%)
-3) NAs: a) Responses in (10%, 90%)
-
-```{r, message=FALSE, warning=FALSE}
+```{r plots_parti, message=FALSE, warning=FALSE}
 san %>% 
   #filter(!is.na(zipcode)) %>% 
   ggplot(aes(x = zipcode, fill = duration_min_out)) +
@@ -153,13 +122,11 @@ san %>%
   geom_text(aes(label = ..count..), stat = "count", position=position_stack(0.5), vjust = 0, size = 2, color = "black") +
   scale_fill_brewer(type = "div", palette = 'Spectral') +
   #facet_grid(~ zipcode) +
-  ggtitle("Number of NAs between 6 and 91 = NORMAL") +
+  ggtitle("Number of NAs between 5 and 58 = NORMAL") +
   xlab("Zip code") + 
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90, size = 9), 
         panel.background = element_rect(fill = "gray95"))
-
-
 
 plot_ly(data = san, x = ~nas_pct, y = ~duration, color = ~duration_min_out2) %>% 
   layout(title = "Duration (min) by NAs by response (%)", 
@@ -200,36 +167,216 @@ san %>%
         panel.background = element_rect(fill = "gray95"))
 ```
 
-```{r, include=FALSE, message=FALSE, warning=FALSE}
-# average duration by zipcode/race
-tab <- san %>% 
-  group_by(zip, race_eth) %>% 
-  dplyr::summarise(av.duration = round(mean(duration, na.rm = T), 1), sd.duration = round(sd(duration, na.rm = T), 1))
+1) Locate "odd responses" based on duration and number of NA in each response
+2) Duration: a) Keep responses in (2.5%, 97.5%), b) responses in (5%, 95%)
+3) NAs: a) Responses in (10%, 90%)
 
-tab.z <- san %>% 
-  group_by(zip) %>% 
-  dplyr::summarise(av.duration = round(mean(duration, na.rm = T), 1), sd.duration = round(sd(duration, na.rm = T), 1))
+## Part I.
 
-kable(tab, format = "html")
+```{r dfSummary, message=FALSE, warning=FALSE}
+view(dfSummary(san[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
+```
 
-kable(tab.z, format = "html")
+## Part II.
 
-#kableExtra::kable(table(san$zip, san$gender))
-#kableExtra::kable(round(prop.table(table(san$zip, san$gender), 2)*100, 1))
+### Which responses to keep?
+
+1) Consider odd response those outside the "normal" range of duration (1.36, 71) AND above 91 NA values 
+2) Summary table: responses that Agree to participate, valid zip code (78202 or 78230), not an odd response
+
+```{r, message=FALSE, warning=FALSE}
+### Duration and number of NAs
+kable(table(san$nas_out, san$duration_min_out), caption = "NAs (%) vs Duration (min)") %>% 
+  kable_classic(full_width = F) %>% 
+  footnote(general = "NAs in (10%, 90%); duration in (2.5%, 97.5%)")
+
+kable(table(san$nas_out, san$duration_min_out2), caption = "NAs (%) vs Duration (min)") %>% 
+  kable_classic(full_width = F) %>% 
+  footnote(general = "NAs in (10%, 90%); duration in (5%, 95%)")  
+
+kable(table(san$odd_r2), caption = "Odd responses") %>% 
+  kable_classic(full_width = F)
+
+san2 <- san %>% 
+  # consent Agree and double check on survey participation. Keep zip code 78202 or 78230. Keep the first answer for unique emails
+  filter(consent == "1" | disagree == "1", zipcode != 3, odd_r2 == "Normal") %>% 
+  mutate(zipcode = if_else(zipcode == "1", "Elm Creek", 
+                           if_else(zipcode == "2", "Jefferson Heights", NA_character_)),
+         rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
+  # Keep only the first response for those repeated emails 
+  filter(rep_email == "first_entry")
+
+#view(dfSummary(san2[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
+```
+
+### Section IV. Background Characteristics by Zip code
+
+```{r section_iv, message=FALSE, warning=FALSE}
+san2 %>%
+  select(16, 146, 148:171, 175, 178:189) %>% 
+  tbl_summary(by = zipcode, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section IV. Background characteristics (N = {N})**") %>% 
+  bold_labels()
+```
+
+### Section Ia. Time Use by Zip code
+
+```{r section_ia, message=FALSE, warning=FALSE}
+san2 %>%
+  select(16:80, 175, 178:189) %>% 
+  tbl_summary(by = zipcode, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section Ia. Time Use (N = {N})**") %>% 
+  bold_labels()
+```
+
+### Section Ib. Energy Use by Zip code
+
+```{r section_ib, message=FALSE, warning=FALSE}
+san2 %>%
+  select(16, 81:87, 175, 178:189) %>% 
+  tbl_summary(by = zipcode, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section Ib. Energy Use (N = {N})**") %>% 
+  bold_labels()
+```
+
+### Section II. Health Conditions by Zip code
+
+```{r section_ii, message=FALSE, warning=FALSE}
+san2 %>%
+  select(16, 88:101, 103, 105:119, 175, 178:189) %>% 
+  tbl_summary(by = zipcode, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section II. Health Conditions (N = {N})**") %>% 
+  bold_labels()
+```
+
+### Section III. Employment by Zip code
+
+```{r section_iii, message=FALSE, warning=FALSE}
+san2 %>%
+  select(16, 121:143, 175, 178:189) %>% 
+  tbl_summary(by = zipcode, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section III. Employment (N = {N})**") %>% 
+  bold_labels()
+```
+
+## Part III.
+
+```{r recode, include=FALSE}
+san <- san %>% 
+  # consent Agree and double check on survey participation. Keep only zip codes 78202 or 78230.
+  #filter(consent == "1" | disagree == "1", zipcode != "3") %>% 
+  mutate(yrbr = ifelse(as.numeric(year) >= 1, 2000 - as.numeric(year), NA), # year of birth
+         age = 2021 - yrbr, # age
+         zip = if_else(zipcode == "1", "Elm Creek", "Jefferson Heights"), # recode zip codes
+         hisp = if_else(hispanic == "1", "Not Hispanic", if_else(hispanic == "2", "Hispanic", "Don't know")), # Hispanic origin
+         race2 = case_when(race %in% "1" ~ "White", # recode race
+                           race %in% "2" ~ "Black", 
+                           race %in% "3" ~ "Asian", 
+                           race %in% "4" ~ "AIAN", # American Indian or Alaskan Native
+                           race %in% "5" ~ "NHPI", # Native Hawaiian of Other Pacific Islander
+                           race %in% c("6", "7", "8") ~ "Other"), # Two or more races; Unknown|Don't know; Prefer not to answer
+         race_eth = if_else(hisp != "Hispanic" & race2 == "White", "NH-White", 
+                            if_else(hisp != "Hispanic" & race2 == "Black", "NH-Black", 
+                                    if_else(hisp != "Hispanic" & race2 == "Asian", "NH-Asian", 
+                                            if_else(hisp != "Hispanic" & race2 == "AIAN", "NH-AIAN",
+                                                    if_else(hisp != "Hispanic" & race2 == "NHPI", "NH-NHPI",
+                                                            if_else(hisp != "Hispanic" & race2 == "Other", "NH-Other", "Hispanic")))))),
+         gender = case_when(gender %in% "1" ~ "Female", 
+                            gender %in% "2" ~ "Male", 
+                            gender %in% c("3", "4", "5", "6", "7") ~ "Other"),
+         marital_st = case_when(marital %in% "1" ~ "Single",
+                                marital %in% c("2", "3") ~ "In a union", # married/living in a marriage-like relationship
+                                marital %in% c("4", "5", "6") ~ "Not in a union"), # widowed, separated, divorced
+         educ = case_when(education %in% "1" ~ "Less than HS", 
+                          education %in% c("2", "3") ~ "High School", # some high school, high school graduate or equivalent 
+                          education %in% c("4", "5", "6") ~ "College", # some college, AA, BA, BS
+                          education %in% "7" ~ "Graduate",
+                          education %in% "8" ~ "Don't know"),
+         health = case_when(health %in% "1" ~ "Excellent", health %in% "2" ~ "Very good", health %in% "3" ~ "Good", 
+                            health %in% "4" ~ "Fair", health %in% "5" ~ "Poor"))
+
+san$race_eth <- ordered(san$race_eth, levels = c("NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other", "Hispanic"))
+san$health <- ordered(san$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
+```
+
+```{r rep_emails, include=FALSE, eval=FALSE}
+### Replicated email addresses 
+unique_emails <- unique(san$email)
+rep_emails <- c("AdrianaHudsonwhp@yahoo.com", "AliRushwynf@yahoo.com", "altenwerthvbwht42@gmail.com", "ArdenHubbardvqk@yahoo.com",
+               "ArnoldRatigmw@gmail.com", "AthenaHerringjuw@yahoo.com", "augustusyzlk19@gmail.com", "charlesfpsk94@gmail.com",
+               "choeaqzn14@gmail.com", "choeaqzn14@gmail.com", "ChristinaEdwardsaocv@yahoo.com", "deboeremh85@gmail.com", 
+               "DianaRiosavb@yahoo.com", "dooleyqigx99@gmail.com", "EliGrahamfsxa@yahoo.com", "fochttdlfv47@gmail.com",
+               "harrisckzi97@gmail.com", "hubbardpaul564@gmail.com", "IngridBuckleyuqgg@yahoo.com", "JaelynPettyvah@yahoo.com",
+               "JeffreyRojaseeko@yahoo.com", "LatoyaParkermkiu@yahoo.com", "MalcomRyantom@yahoo.com", "NanetteWrighthys@yahoo.com",
+               "PedroDawsonsifc@yahoo.com", "PhillipBuckleygmmm@yahoo.com", "RafaelManningygoo@yahoo.com", "rodggersmmaison@gmail.com",
+               "SheaMillerkcbe@yahoo.com", "tameracaqcx43@gmail.com", "TraciRivasrqy@yahoo.com", "TyrellCowanjqm@yahoo.com", 
+               "ValerieLevyiuaz@yahoo.com", "wheelerjoselyn@gmail.com")
+san <- san %>% 
+  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry"))
+
+san_re <- san %>% 
+  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
+  filter(email %in% rep_emails) %>% 
+  arrange(email)
+
+save(san, file = "~/GitHub/san/sa_survey.RData")
+save(san_re, file = "~/GitHub/san/sa_survey_rep_emails.RData")
+
+write.csv(x = unique_emails, file = "~/GitHub/san/unique_emails.csv")
+write.csv(x = rep_emails, file = "~/GitHub/san/repeated_emails.csv")
+
+write.csv(x = san, file = "~/GitHub/san/sa_energy_survey.csv", row.names = F)
+write.csv(x = san_re, file = "~/GitHub/san/sa_energy_survey_rep_emails.csv", row.names = F)
+```
+
+```{r emails, include=FALSE, eval=FALSE}
+### EMAILS
+#### IDs
+emails <- san %>% 
+  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry"),
+         mean_duration = round(mean(duration, na.rm = T), 1),
+         median_duration = median(duration, na.rm = T),
+         nas = rowSums(is.na(.)) - 4,
+         na_pct = round(nas/161 * 100, 1)) %>% 
+  filter(rep_email == "first_entry" & zip != 3) %>% 
+  select(ResponseId, email, zip, duration, mean_duration, median_duration, nas, na_pct) %>%  
+  arrange(duration, na_pct)
+
+
+write.csv(x = emails, file = "~/GitHub/saetus/emails.csv", row.names = F)
 ```
 
 ```{r recode_health, include=FALSE, eval=FALSE}
-test <- san %>% 
-  #filter(!is.na(age)) %>% # what to do with the responses not finished
-  mutate(ageg = case_when(age %in% min(age):29 ~ "20-29",
-                                                 age %in% 30:39 ~ "30-39",
-                                                 age %in% 40:49 ~ "40-49",
-                                                 age %in% 50:59 ~ "50-59",
-                                                 age %in% 60:max(age) ~ "60+"))
-
-
-min(san$age)
-
 san <- san %>% 
   #filter(Finished == "1") %>% # what to do with the responses not finished
   mutate(ageg = case_when(age %in% min(age):29 ~ "20-29",
@@ -402,70 +549,6 @@ san %>%
   theme(axis.text.x = element_text(angle = 90, size = 9))
 ```
 
-```{r rep_emails, include=FALSE, eval=FALSE}
-### Replicated email addresses 
-unique_emails <- unique(san$email)
-rep_emails <- c("AdrianaHudsonwhp@yahoo.com", "AliRushwynf@yahoo.com", "altenwerthvbwht42@gmail.com", "ArdenHubbardvqk@yahoo.com",
-               "ArnoldRatigmw@gmail.com", "AthenaHerringjuw@yahoo.com", "augustusyzlk19@gmail.com", "charlesfpsk94@gmail.com",
-               "choeaqzn14@gmail.com", "choeaqzn14@gmail.com", "ChristinaEdwardsaocv@yahoo.com", "deboeremh85@gmail.com", 
-               "DianaRiosavb@yahoo.com", "dooleyqigx99@gmail.com", "EliGrahamfsxa@yahoo.com", "fochttdlfv47@gmail.com",
-               "harrisckzi97@gmail.com", "hubbardpaul564@gmail.com", "IngridBuckleyuqgg@yahoo.com", "JaelynPettyvah@yahoo.com",
-               "JeffreyRojaseeko@yahoo.com", "LatoyaParkermkiu@yahoo.com", "MalcomRyantom@yahoo.com", "NanetteWrighthys@yahoo.com",
-               "PedroDawsonsifc@yahoo.com", "PhillipBuckleygmmm@yahoo.com", "RafaelManningygoo@yahoo.com", "rodggersmmaison@gmail.com",
-               "SheaMillerkcbe@yahoo.com", "tameracaqcx43@gmail.com", "TraciRivasrqy@yahoo.com", "TyrellCowanjqm@yahoo.com", 
-               "ValerieLevyiuaz@yahoo.com", "wheelerjoselyn@gmail.com")
-san <- san %>% 
-  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry"))
-
-san_re <- san %>% 
-  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
-  filter(email %in% rep_emails) %>% 
-  arrange(email)
-
-save(san, file = "~/GitHub/san/sa_survey.RData")
-save(san_re, file = "~/GitHub/san/sa_survey_rep_emails.RData")
-
-write.csv(x = unique_emails, file = "~/GitHub/san/unique_emails.csv")
-write.csv(x = rep_emails, file = "~/GitHub/san/repeated_emails.csv")
-
-write.csv(x = san, file = "~/GitHub/san/sa_energy_survey.csv", row.names = F)
-write.csv(x = san_re, file = "~/GitHub/san/sa_energy_survey_rep_emails.csv", row.names = F)
-```
-
-```{r emails, include=FALSE, eval=FALSE}
-### EMAILS
-#### IDs
-emails <- san %>% 
-  mutate(rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry"),
-         mean_duration = round(mean(duration, na.rm = T), 1),
-         median_duration = median(duration, na.rm = T),
-         nas = rowSums(is.na(.)) - 4,
-         na_pct = round(nas/161 * 100, 1)) %>% 
-  filter(rep_email == "first_entry" & zip != 3) %>% 
-  select(ResponseId, email, zip, duration, mean_duration, median_duration, nas, na_pct) %>%  
-  arrange(duration, na_pct)
-
-
-write.csv(x = emails, file = "~/GitHub/saetus/emails.csv", row.names = F)
-```
-
-```{r, include=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
-font_add_google(name = "Barlow", family = "foo")
-showtext::showtext_auto()
-
-themeu <- theme(plot.title = element_text(size = 22, face = "bold"), 
-                plot.subtitle = element_text(size = 11),
-                legend.position = "none", 
-                legend.title = element_blank(), 
-                axis.title = element_text(size = 17), 
-                axis.text = element_text(size = 17), 
-                axis.text.y = element_text(size = 17, color = "black"),
-                plot.caption = element_text(size = 12), 
-                panel.grid = element_blank(),
-                strip.background = element_rect(fill = NULL, linetype = "solid"), 
-                strip.text = element_text(color = "white", size = 18, face = "bold"))
-```
-
 ```{r, include=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 san %>% 
   group_by(race_eth, zip, gender) %>% 
@@ -489,7 +572,6 @@ san %>%
   theme_linedraw() +
   themeu
   
-
 san %>% 
   group_by(educ, zip, gender) %>% 
   dplyr::summarise(poorh = round(mean(as.numeric(days_poor_health), na.rm = T), 1)) %>% 
@@ -535,129 +617,67 @@ san %>%
   themeu
 ```
 
-## Part I.
-
-```{r dfSummary, message=FALSE, warning=FALSE}
-view(dfSummary(san[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
+```{r}
+# section Ia
+san.ia <- san2 %>% select(ResponseId, 16:80, 175:177) 
+# section Ib
+san.ib <- san2 %>% select(ResponseId, 16, 81:87, 175:177) 
+# section II
+san.ii <- san2 %>% select(ResponseId, 16, 88:101, 103, 105:119, 175:177) 
+# section III
+san.iii <- san2 %>% select(ResponseId, 16, 121:143, 175:177) 
+# section IV
+san.iv <- san2 %>% select(ResponseId, 16, 146, 148:171, 175:177) 
 ```
 
-## Part II.
-
-### Which responses to keep?
-
-1) Consider odd response those outside the "normal" range of duration (1.36, 71) AND above 91 NA values 
-2) Summary table: responses that Agree to participate, valid zip code (78202 or 78230), not an odd response
-
-```{r, message=FALSE, warning=FALSE}
-### Duration and number of NAs
-kable(table(san$nas_out, san$duration_min_out), caption = "NAs (%) vs Duration (min)") %>% 
-  kable_classic(full_width = F) %>% 
-  footnote(general = "NAs in (10%, 90%); duration in (2.5%, 97.5%)")
-
-kable(table(san$nas_out, san$duration_min_out2), caption = "NAs (%) vs Duration (min)") %>% 
-  kable_classic(full_width = F) %>% 
-  footnote(general = "NAs in (10%, 90%); duration in (5%, 95%)")  
-
-
-
-kable(table(san$odd_r2), caption = "Odd responses") %>% 
-  kable_classic(full_width = F)
-
-
-sank <- san %>% 
-  # consent Agree and double check on survey participation. Keep only zip codes 78202 or 78230. And keep only the first answer for unique emails
-  filter(consent == "1" | disagree == "1", zipcode != 3, odd_r2 == "Normal") %>% 
-  mutate(zipcode = if_else(zipcode == "1", "Elm Creek", 
-                           if_else(zipcode == "2", "Jefferson Heights", NA_character_)),
-         rep_email = if_else(email == lag(email, n = 1, order_by = email), "rep_email", "first_entry")) %>% 
-  filter(rep_email == "first_entry")
-
-#view(dfSummary(sank[, 5:173], plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
+```{r}
+san.ia <- san.ia %>% 
+  rename(sleep.t = per_care_1, eat.t = per_care_2, cook.t = per_care_3, groom.t = per_care_4,
+         sleep.w = per_care_wknd_1, eat.w = per_care_wknd_2, cook.w = per_care_wknd_3, groom.w = per_care_wknd_4,
+         sleep.t.w = pc_wknd_time_1, eat.t.w = pc_wknd_time_2, cook.t.w = pc_wknd_time_3, groom.t.w = pc_wknd_time_4,
+         sleep.covid = per_care_covid_1, eat.covid = per_care_covid_2, cook.covid = per_care_covid_3, groom.covid = per_care_covid_4,
+         
+         class.t = st_act_1, hmwrk.t = st_act_2, commute.t = st_act_3,
+         class.w = st_act_wknd_1, hmwrk.w = st_act_wknd_2, commute.w = st_act_wknd_3,
+         class.t.w = sa_wknd_time_1, hmwrk.t.w = sa_wknd_time_2, commute.t.w = sa_wknd_time_3,
+         class.covid = st_act_covid_1, hmwrk.covid = st_act_covid_2, commute.covid = st_act_covid_3,
+         
+         tv.t = dev_act_1, pc.t = dev_act_7, radio.t = dev_act_3, xbox.t = dev_act_6,
+         tv.w = dev_act_wknd_1, pc.w = dev_act_wknd_2, radio.w = dev_act_wknd_3, xbox.w = dev_act_wknd_4,
+         tv.t.w = da_wknd_time_1, pc.t.w = da_wknd_time_2, radio.t.w = da_wknd_time_3, xbox.t.w = da_wknd_time_6,
+         tv.covid = dev_act_covid_1, stream.covid = dev_act_covid_2, radio.covid = dev_act_covid_3, snet.covid = dev_act_covid_4,
+         text.covid = dev_act_covid_5, pc.covid = dev_act_covid_6, xbox.covid = dev_act_covid_7,
+         
+         read.t = other_act_1, clean.t = other_act_2, wash.t = other_act_3, repair.t = other_act_4, 
+         read.w = other_act_wknd_1, clean.w = other_act_wknd_2, wash.w = other_act_wknd_3, repair.w = other_act_wknd_4, 
+         read.t.w = oa_wknd_time_1, clean.t.w = oa_wknd_time_2, wash.t.w = oa_wknd_time_3, repair.t.w = oa_wknd_time_4,
+         read.covid = other_act_covid_1, clean.covid=other_act_covid_2, wash.covid=other_act_covid_3, repair.covid=other_act_covid_4) %>%
+ 
+   mutate(sleep.w = if_else(sleep.w == 4, "Same time as weekdays", "Different time"),
+         eat.w = if_else(eat.w == 4, "Same time as weekdays", "Different time"),
+         cook.w = if_else(cook.w == 4, "Same time as weekdays", "Different time"),
+         groom.w = if_else(groom.w == 4, "Same time as weekdays", "Different time"),
+         class.w = if_else(class.w == 3, "Same time as weekdays", "Different time"),
+         hmwrk.w = if_else(hmwrk.w == 3, "Same time as weekdays", "Different time"),
+         commute.w = if_else(commute.w == 3, "Same time as weekdays", "Different time"),
+         tv.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+         pc.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+         radio.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+         xbox.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+         read.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+         clean.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+         wash.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+         repair.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+         own_device = case_when(own_device %in% 3 ~ "Both personal computer and TV",
+                                own_device %in% 2 ~ "Only TV",
+                                own_device %in% 1 ~ "Only personal computer",
+                                own_device %in% 4 ~ "Neither PC nor TV"))
 ```
 
-### Section IV. Background Characteristics by Zip code
-
-```{r section_iv, message=FALSE, warning=FALSE}
-sank %>%
-  select(16, 146, 148:171, 175, 178:189) %>% 
-  tbl_summary(by = zipcode, 
-              statistic = list(all_continuous() ~ "{mean} ({sd})",
-                               all_categorical() ~ "{n} ({p}%)"),
-              digits = list(all_continuous() ~ c(1, 1))) %>% 
-  add_n() %>% 
-  add_p() %>% 
-  modify_header(label = "**variable**") %>% 
-  modify_caption("**Section IV. Background characteristics (N = {N})**") %>% 
-  bold_labels()
+```{r}
+san.ib <- san.ib %>% 
+  rename()
 ```
-
-### Section Ia. Time Use by Zip code
-
-```{r section_ia, message=FALSE, warning=FALSE}
-sank %>%
-  select(16:80, 175, 178:189) %>% 
-  tbl_summary(by = zipcode, 
-              statistic = list(all_continuous() ~ "{mean} ({sd})",
-                               all_categorical() ~ "{n} ({p}%)"),
-              digits = list(all_continuous() ~ c(1, 1))) %>% 
-  add_n() %>% 
-  add_p() %>% 
-  modify_header(label = "**variable**") %>% 
-  modify_caption("**Section Ia. Time Use (N = {N})**") %>% 
-  bold_labels()
-```
-
-
-### Section Ib. Energy Use by Zip code
-
-```{r section_ib, message=FALSE, warning=FALSE}
-sank %>%
-  select(16, 81:87, 175, 178:189) %>% 
-  tbl_summary(by = zipcode, 
-              statistic = list(all_continuous() ~ "{mean} ({sd})",
-                               all_categorical() ~ "{n} ({p}%)"),
-              digits = list(all_continuous() ~ c(1, 1))) %>% 
-  add_n() %>% 
-  add_p() %>% 
-  modify_header(label = "**variable**") %>% 
-  modify_caption("**Section Ib. Energy Use (N = {N})**") %>% 
-  bold_labels()
-```
-
-### Section II. Health Conditions by Zip code
-
-```{r section_ii, message=FALSE, warning=FALSE}
-sank %>%
-  select(16, 88:101, 103, 105:119, 175, 178:189) %>% 
-  tbl_summary(by = zipcode, 
-              statistic = list(all_continuous() ~ "{mean} ({sd})",
-                               all_categorical() ~ "{n} ({p}%)"),
-              digits = list(all_continuous() ~ c(1, 1))) %>% 
-  add_n() %>% 
-  add_p() %>% 
-  modify_header(label = "**variable**") %>% 
-  modify_caption("**Section II. Health Conditions (N = {N})**") %>% 
-  bold_labels()
-```
-
-### Section III. Employment by Zip code
-
-```{r section_iii, message=FALSE, warning=FALSE}
-sank %>%
-  select(16, 121:143, 175, 178:189) %>% 
-  tbl_summary(by = zipcode, 
-              statistic = list(all_continuous() ~ "{mean} ({sd})",
-                               all_categorical() ~ "{n} ({p}%)"),
-              digits = list(all_continuous() ~ c(1, 1))) %>% 
-  add_n() %>% 
-  add_p() %>% 
-  modify_header(label = "**variable**") %>% 
-  modify_caption("**Section III. Employment (N = {N})**") %>% 
-  bold_labels()
-```
-
-
-
 
 
 
