@@ -671,10 +671,11 @@ san.ia <- san.ia %>%
          own_device = case_when(own_device %in% 3 ~ "Both personal computer and TV",
                                 own_device %in% 2 ~ "Only TV",
                                 own_device %in% 1 ~ "Only personal computer",
-                                own_device %in% 4 ~ "Neither PC nor TV"),
-         eat.tt = if_else((eat.t != -99 & eat.w == "Same time as weekdays") | (eat.t != -99 & eat.w == "Different time"),
-                          round(7*eat.t, 1), 
-                          if_else(eat.t.w != -99 | eat.w == "Same time as weekdays", round(5*eat.t + 2*eat.t.w, 1), NA_real_)))
+                                own_device %in% 4 ~ "Neither PC nor TV"))
+
+san.ia <- san.ia %>% 
+  #filter(eat.t != -99, eat.t.w != -99) %>% 
+  mutate(eat.tt = if_else(eat.w == "Same time as weekdays", round(7*san.ia[san.ia$eat.t > 0, ]), round(5*eat.t + 2*eat.t.w)))
 ```
 
 ```{r}
