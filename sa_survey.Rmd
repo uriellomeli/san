@@ -617,7 +617,7 @@ san %>%
   themeu
 ```
 
-```{r}
+```{r, include=FALSE, message=FALSE, warning=FALSE}
 # section Ia
 san.ia <- san2 %>% select(ResponseId, 16:80, 175:177) 
 # section Ib
@@ -630,7 +630,7 @@ san.iii <- san2 %>% select(ResponseId, 16, 121:143, 175:177)
 san.iv <- san2 %>% select(ResponseId, 16, 146, 148:171, 175:177) 
 ```
 
-```{r}
+```{r, include=FALSE, message=FALSE, warning=FALSE}
 san.ia <- san.ia %>% 
   rename(sleep.t = per_care_1, eat.t = per_care_2, cook.t = per_care_3, groom.t = per_care_4,
          sleep.w = per_care_wknd_1, eat.w = per_care_wknd_2, cook.w = per_care_wknd_3, groom.w = per_care_wknd_4,
@@ -652,45 +652,67 @@ san.ia <- san.ia %>%
          read.w = other_act_wknd_1, clean.w = other_act_wknd_2, wash.w = other_act_wknd_3, repair.w = other_act_wknd_4, 
          read.t.w = oa_wknd_time_1, clean.t.w = oa_wknd_time_2, wash.t.w = oa_wknd_time_3, repair.t.w = oa_wknd_time_4,
          read.covid = other_act_covid_1, clean.covid=other_act_covid_2, wash.covid=other_act_covid_3, repair.covid=other_act_covid_4) %>%
- 
-   mutate(sleep.w = if_else(sleep.w == 4, "Same time as weekdays", "Different time"),
-         eat.w = if_else(eat.w == 4, "Same time as weekdays", "Different time"),
-         cook.w = if_else(cook.w == 4, "Same time as weekdays", "Different time"),
-         groom.w = if_else(groom.w == 4, "Same time as weekdays", "Different time"),
-         class.w = if_else(class.w == 3, "Same time as weekdays", "Different time"),
-         hmwrk.w = if_else(hmwrk.w == 3, "Same time as weekdays", "Different time"),
-         commute.w = if_else(commute.w == 3, "Same time as weekdays", "Different time"),
-         tv.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
-         pc.w = if_else(pc.w == 3, "Same time as weekdays", "Different time"),
-         radio.w = if_else(radio.w == 3, "Same time as weekdays", "Different time"),
-         xbox.w = if_else(xbox.w == 3, "Same time as weekdays", "Different time"),
-         read.w = if_else(read.w == 3, "Same time as weekdays", "Different time"),
-         clean.w = if_else(clean.w == 3, "Same time as weekdays", "Different time"),
-         wash.w = if_else(wash.w == 3, "Same time as weekdays", "Different time"),
-         repair.w = if_else(repair.w == 3, "Same time as weekdays", "Different time"),
-         own_device = case_when(own_device %in% 3 ~ "Both personal computer and TV",
-                                own_device %in% 2 ~ "Only TV",
-                                own_device %in% 1 ~ "Only personal computer",
-                                own_device %in% 4 ~ "Neither PC nor TV"))
 
-san.ia <- san.ia %>% 
-  #filter(eat.t != -99, eat.t.w != -99) %>% 
-  mutate(eat.tt = if_else(eat.w == "Same time as weekdays", round(7*san.ia[san.ia$eat.t > 0, ]), round(5*eat.t + 2*eat.t.w)))
+     mutate(sleep.w = if_else(sleep.w == 4, "Same time as weekdays", "Different time"),
+            eat.w = if_else(eat.w == 4, "Same time as weekdays", "Different time"),
+            cook.w = if_else(cook.w == 4, "Same time as weekdays", "Different time"),
+            groom.w = if_else(groom.w == 4, "Same time as weekdays", "Different time"),
+            class.w = if_else(class.w == 3, "Same time as weekdays", "Different time"),
+            hmwrk.w = if_else(hmwrk.w == 3, "Same time as weekdays", "Different time"),
+            commute.w = if_else(commute.w == 3, "Same time as weekdays", "Different time"),
+            tv.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+            pc.w = if_else(pc.w == 3, "Same time as weekdays", "Different time"),
+            radio.w = if_else(radio.w == 3, "Same time as weekdays", "Different time"),
+            xbox.w = if_else(xbox.w == 3, "Same time as weekdays", "Different time"),
+            read.w = if_else(read.w == 3, "Same time as weekdays", "Different time"),
+            clean.w = if_else(clean.w == 3, "Same time as weekdays", "Different time"),
+            wash.w = if_else(wash.w == 3, "Same time as weekdays", "Different time"),
+            repair.w = if_else(repair.w == 3, "Same time as weekdays", "Different time"),
+            own_device = case_when(own_device %in% 3 ~ "Both personal computer and TV",
+                                   own_device %in% 2 ~ "Only TV",
+                                   own_device %in% 1 ~ "Only personal computer",
+                                   own_device %in% 4 ~ "Neither PC nor TV")) %>% 
+  
+  mutate_at(vars(sleep.t:groom.t, class.t:commute.t, tv.t:xbox.t, read.t:repair.t, 
+                 sleep.t.w:groom.t.w, class.t.w:commute.t.w, tv.t.w:xbox.t.w, read.t.w:repair.t.w), 
+            funs(recode(., '-99' = NA_real_))) %>%  
+  
+  mutate_at(vars(sleep.covid:groom.covid, class.covid:commute.covid, tv.covid:xbox.covid, read.covid:repair.covid), 
+            funs(recode(.,'1'="Much less time",'2'="Somewhat less time",'3'="About the same",'4'="Somewhat more time",'5'="Much more time",'6'=NA_character_))) %>% 
+  
+  mutate(sleep.tt = if_else(sleep.w == "Same time as weekdays", 7*sleep.t, 5*sleep.t + 2*sleep.t.w),
+         eat.tt = if_else(eat.w == "Same time as weekdays", 7*eat.t, 5*eat.t + 2*eat.t.w),
+         cook.tt = if_else(cook.w == "Same time as weekdays", 7*cook.t, 5*cook.t + 2*cook.t.w),
+         groom.tt = if_else(groom.w == "Same time as weekdays", 7*groom.t, 5*groom.t + 2*groom.t.w),
+         class.tt = if_else(class.w == "Same time as weekdays", 7*class.t, 5*class.t + 2*class.t.w),
+         hmwrk.tt = if_else(hmwrk.w == "Same time as weekdays", 7*hmwrk.t, 5*hmwrk.t + 2*hmwrk.t.w),
+         commute.tt = if_else(commute.w == "Same time as weekdays", 7*commute.t, 5*commute.t + 2*commute.t.w),
+         tv.tt = if_else(tv.w == "Same time as weekdays", 7*tv.t, 5*tv.t + 2*tv.t.w),
+         pc.tt = if_else(pc.w == "Same time as weekdays", 7*pc.t, 5*pc.t + 2*pc.t.w),
+         radio.tt = if_else(radio.w == "Same time as weekdays", 7*radio.t, 5*radio.t + 2*radio.t.w),
+         xbox.tt = if_else(xbox.w == "Same time as weekdays", 7*xbox.t, 5*xbox.t + 2*xbox.t.w),
+         read.tt = if_else(read.w == "Same time as weekdays", 7*read.t, 5*read.t + 2*read.t.w),
+         clean.tt = if_else(clean.w == "Same time as weekdays", 7*clean.t, 5*clean.t + 2*clean.t.w),
+         wash.tt = if_else(wash.w == "Same time as weekdays", 7*wash.t, 5*wash.t + 2*wash.t.w),
+         repair.tt = if_else(repair.w == "Same time as weekdays", 7*repair.t, 5*repair.t + 2*repair.t.w))
 ```
 
 ```{r}
-summary(san.ia$eat.tt)
-
-test <- san.ia %>% 
-  select(1:18, 67:84)
-
 san.ia %>% 
-  group_by(zipcode) %>% 
-  summarise(eating_time = round(mean(eat.tt, na.rm = T), 3))
-
-summary(san.ia$eat.tt)
+  select(2, 15:18, 28:30, 44:50, 63:66, 70:84) %>% 
+  tbl_summary(by = zipcode, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})"),
+              digits = list(all_continuous() ~ c(1, 1))) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section Ia. Time Use (N = {N})**") %>% 
+  bold_labels()
 ```
 
+```{r}
+
+```
 
 
 
