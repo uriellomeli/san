@@ -291,13 +291,324 @@ san2 %>%
 
 ## Part III.
 
-```{r recode, include=FALSE}
-san <- san %>% 
-  # consent Agree and double check on survey participation. Keep only zip codes 78202 or 78230.
-  #filter(consent == "1" | disagree == "1", zipcode != "3") %>% 
+```{r sections, include=FALSE, message=FALSE, warning=FALSE}
+# section Ia
+san.ia <- san2 %>% select(ResponseId, 16:80, 175:177) 
+# section Ib
+san.ib <- san2 %>% select(ResponseId, 16, 81:87, 175:177) 
+# section II
+san.ii <- san2 %>% select(ResponseId, 16, 88:101, 103, 105:119, 175:177) 
+# section III
+san.iii <- san2 %>% select(ResponseId, 16, 121:143, 175:177) 
+# section IV
+san.iv <- san2 %>% select(ResponseId, 16, 145:146, 148:171, 175:177) 
+```
+
+```{r section_ia2, include=FALSE, message=FALSE, warning=FALSE}
+san.ia <- san.ia %>% 
+  rename(sleep.t = per_care_1, eat.t = per_care_2, cook.t = per_care_3, groom.t = per_care_4,
+         sleep.w = per_care_wknd_1, eat.w = per_care_wknd_2, cook.w = per_care_wknd_3, groom.w = per_care_wknd_4,
+         sleep.t.w = pc_wknd_time_1, eat.t.w = pc_wknd_time_2, cook.t.w = pc_wknd_time_3, groom.t.w = pc_wknd_time_4,
+         sleep.covid = per_care_covid_1, eat.covid = per_care_covid_2, cook.covid = per_care_covid_3, groom.covid = per_care_covid_4,
+         
+         class.t = st_act_1, hmwrk.t = st_act_2, commute.t = st_act_3,
+         class.w = st_act_wknd_1, hmwrk.w = st_act_wknd_2, commute.w = st_act_wknd_3,
+         class.t.w = sa_wknd_time_1, hmwrk.t.w = sa_wknd_time_2, commute.t.w = sa_wknd_time_3,
+         class.covid = st_act_covid_1, hmwrk.covid = st_act_covid_2, commute.covid = st_act_covid_3,
+         
+         tv.t = dev_act_1, pc.t = dev_act_7, radio.t = dev_act_3, xbox.t = dev_act_6,
+         tv.w = dev_act_wknd_1, pc.w = dev_act_wknd_2, radio.w = dev_act_wknd_3, xbox.w = dev_act_wknd_4,
+         tv.t.w = da_wknd_time_1, pc.t.w = da_wknd_time_2, radio.t.w = da_wknd_time_3, xbox.t.w = da_wknd_time_6,
+         tv.covid = dev_act_covid_1, stream.covid = dev_act_covid_2, radio.covid = dev_act_covid_3, snet.covid = dev_act_covid_4,
+         text.covid = dev_act_covid_5, pc.covid = dev_act_covid_6, xbox.covid = dev_act_covid_7,
+         
+         read.t = other_act_1, clean.t = other_act_2, wash.t = other_act_3, repair.t = other_act_4, 
+         read.w = other_act_wknd_1, clean.w = other_act_wknd_2, wash.w = other_act_wknd_3, repair.w = other_act_wknd_4, 
+         read.t.w = oa_wknd_time_1, clean.t.w = oa_wknd_time_2, wash.t.w = oa_wknd_time_3, repair.t.w = oa_wknd_time_4,
+         read.covid = other_act_covid_1, clean.covid=other_act_covid_2, wash.covid=other_act_covid_3, repair.covid=other_act_covid_4) %>%
+     mutate(sleep.w = if_else(sleep.w == 4, "Same time as weekdays", "Different time"),
+            eat.w = if_else(eat.w == 4, "Same time as weekdays", "Different time"),
+            cook.w = if_else(cook.w == 4, "Same time as weekdays", "Different time"),
+            groom.w = if_else(groom.w == 4, "Same time as weekdays", "Different time"),
+            class.w = if_else(class.w == 3, "Same time as weekdays", "Different time"),
+            hmwrk.w = if_else(hmwrk.w == 3, "Same time as weekdays", "Different time"),
+            commute.w = if_else(commute.w == 3, "Same time as weekdays", "Different time"),
+            tv.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
+            pc.w = if_else(pc.w == 3, "Same time as weekdays", "Different time"),
+            radio.w = if_else(radio.w == 3, "Same time as weekdays", "Different time"),
+            xbox.w = if_else(xbox.w == 3, "Same time as weekdays", "Different time"),
+            read.w = if_else(read.w == 3, "Same time as weekdays", "Different time"),
+            clean.w = if_else(clean.w == 3, "Same time as weekdays", "Different time"),
+            wash.w = if_else(wash.w == 3, "Same time as weekdays", "Different time"),
+            repair.w = if_else(repair.w == 3, "Same time as weekdays", "Different time"),
+            own_device = case_when(own_device %in% 3 ~ "Both personal computer and TV",
+                                   own_device %in% 2 ~ "Only TV",
+                                   own_device %in% 1 ~ "Only personal computer",
+                                   own_device %in% 4 ~ "Neither PC nor TV")) %>% 
+  mutate_at(vars(sleep.t:groom.t, class.t:commute.t, tv.t:xbox.t, read.t:repair.t, 
+                 sleep.t.w:groom.t.w, class.t.w:commute.t.w, tv.t.w:xbox.t.w, read.t.w:repair.t.w), 
+            funs(recode(., '-99' = NA_real_))) %>%  
+   mutate_at(vars(sleep.covid:groom.covid, class.covid:commute.covid, tv.covid:xbox.covid, read.covid:repair.covid), 
+            funs(recode(.,'1'="Much less time",'2'="Somewhat less time",'3'="About the same",'4'="Somewhat more time",'5'="Much more time",'6'=NA_character_))) %>% 
+  mutate(sleep.tt = if_else(sleep.w == "Same time as weekdays", 7*sleep.t, 5*sleep.t + 2*sleep.t.w),
+         eat.tt = if_else(eat.w == "Same time as weekdays", 7*eat.t, 5*eat.t + 2*eat.t.w),
+         cook.tt = if_else(cook.w == "Same time as weekdays", 7*cook.t, 5*cook.t + 2*cook.t.w),
+         groom.tt = if_else(groom.w == "Same time as weekdays", 7*groom.t, 5*groom.t + 2*groom.t.w),
+         class.tt = if_else(class.w == "Same time as weekdays", 7*class.t, 5*class.t + 2*class.t.w),
+         hmwrk.tt = if_else(hmwrk.w == "Same time as weekdays", 7*hmwrk.t, 5*hmwrk.t + 2*hmwrk.t.w),
+         commute.tt = if_else(commute.w == "Same time as weekdays", 7*commute.t, 5*commute.t + 2*commute.t.w),
+         tv.tt = if_else(tv.w == "Same time as weekdays", 7*tv.t, 5*tv.t + 2*tv.t.w),
+         pc.tt = if_else(pc.w == "Same time as weekdays", 7*pc.t, 5*pc.t + 2*pc.t.w),
+         radio.tt = if_else(radio.w == "Same time as weekdays", 7*radio.t, 5*radio.t + 2*radio.t.w),
+         xbox.tt = if_else(xbox.w == "Same time as weekdays", 7*xbox.t, 5*xbox.t + 2*xbox.t.w),
+         read.tt = if_else(read.w == "Same time as weekdays", 7*read.t, 5*read.t + 2*read.t.w),
+         clean.tt = if_else(clean.w == "Same time as weekdays", 7*clean.t, 5*clean.t + 2*clean.t.w),
+         wash.tt = if_else(wash.w == "Same time as weekdays", 7*wash.t, 5*wash.t + 2*wash.t.w),
+         repair.tt = if_else(repair.w == "Same time as weekdays", 7*repair.t, 5*repair.t + 2*repair.t.w))
+
+san.ia$sleep.covid <- ordered(san.ia$sleep.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$eat.covid <- ordered(san.ia$eat.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$cook.covid <- ordered(san.ia$cook.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$groom.covid <- ordered(san.ia$groom.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$class.covid <- ordered(san.ia$class.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$hmwrk.covid <- ordered(san.ia$hmwrk.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$commute.covid <- ordered(san.ia$commute.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$tv.covid <- ordered(san.ia$tv.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$stream.covid <- ordered(san.ia$stream.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$pc.covid <- ordered(san.ia$pc.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$radio.covid <- ordered(san.ia$radio.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$snet.covid <- ordered(san.ia$snet.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$text.covid <- ordered(san.ia$text.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$xbox.covid <- ordered(san.ia$xbox.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$read.covid <- ordered(san.ia$read.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$clean.covid <- ordered(san.ia$clean.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$wash.covid <- ordered(san.ia$wash.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+san.ia$repair.covid <- ordered(san.ia$repair.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
+```
+
+```{r}
+theme_gtsummary_compact()
+
+tbl1a <- san.ia %>% 
+  select(2, 15:18, 28:30, 44:50, 63:66, 70:84) %>% 
+  tbl_summary(by = zipcode, 
+              statistic = list(all_continuous() ~ "{mean} ({sd})"),
+              digits = list(all_continuous() ~ c(1, 1)),
+              missing_text = "Not Applicable", 
+              label = list(sleep.covid ~ "Sleeping time change after COVID-19 outbreak", 
+                           eat.covid ~ "Eating time change after COVID-19 outbreak",
+                           cook.covid ~ "Cooking time change after COVID-19 outbreak",
+                           groom.covid ~ "Grooming time change after COVID-19 outbreak",
+                           class.covid ~ "Attending classes time change after COVID-19 outbreak",
+                           hmwrk.covid ~ "Study activities time change after COVID-19 outbreak",
+                           commute.covid ~ "Commuting time change after COVID-19 outbreak",
+                           tv.covid ~ "Watching TV time change after COVID-19 outbreak",
+                           stream.covid ~ "Streaming time change after COVID-19 outbreak",
+                           radio.covid ~ "Listening to the radio time change after COVID-19 outbreak",
+                           snet.covid ~ "Social networks time change after COVID-19 outbreak",
+                           text.covid ~ "Chatting on social media time change after COVID-19 outbreak",
+                           pc.covid ~ "Browsing the internet time change after COVID-19 outbreak",
+                           xbox.covid ~ "Playing videogames time change after COVID-19 outbreak",
+                           read.covid ~ "Reading time change after COVID-19 outbreak",
+                           clean.covid ~ "Cleaning time change after COVID-19 outbreak",
+                           wash.covid ~ "Laundry time change after COVID-19 outbreak",
+                           repair.covid ~ "Repairing time change after COVID-19 outbreak",
+                           sleep.tt ~ "Hours sleeping hours",
+                           eat.tt ~ "Hours eating", 
+                           cook.tt ~ "Hours cooking",
+                           groom.tt ~ "HoursGrooming",
+                           class.tt ~ "Hours attending classes",
+                           hmwrk.tt ~ "Hours studying",
+                           commute.tt ~ "Hours commuting to school",
+                           tv.tt ~ "Hours watching TV",
+                           pc.tt ~ "Hours using a PC",
+                           radio.tt ~ "Hours listening to the radio",
+                           xbox.tt ~ "Hours playing videogames",
+                           read.tt ~ "Hours reading",
+                           clean.tt ~ "Hours cleaning",
+                           wash.tt ~ "Hours doing laundry",
+                           repair.tt ~ "Hours repairing")) %>% 
+  add_n() %>% 
+  modify_header(update = list(label ~ "**Variable**")) %>% 
+  modify_spanning_header(all_stat_cols() ~ "**Section Ia. Time Use** (N = {N})") %>% 
+  bold_labels() %>% 
+  italicize_levels()
+```
+
+```{r section_ib2}
+tbl1b <- san.ib %>% 
+  select(2, pre_electric:post_trans) %>% 
+  tbl_summary(by = zipcode,
+              statistic = list(all_continuous() ~ "{mean} ({sd})"),
+              digits = list(all_continuous() ~ c(1, 1)),
+              missing_text = "Not Applicable",
+              label = list(pre_electric ~ "Electric bill before COVID-19 outbreak",
+                           post_electric ~ "Electric bill after COVID-19 outbreak",
+                           pre_gas ~ "Gas bill before COVID-19 outbreak",
+                           post_gas ~ "Gas bill after COVID-19 outbreak",
+                           num_vehicles ~ "Number of vehicles",
+                           pre_trans ~ "Gas for transportation before COVID-19 outbreak",
+                           post_trans ~ "Gas for transportation after COVID-19 outbreak")) %>%
+  add_n() %>% 
+  modify_header(update = list(label ~ "**Variable**")) %>% 
+  modify_spanning_header(all_stat_cols() ~ "**Section Ib. Energy Use** (N = {N})") %>% 
+  bold_labels() %>% 
+  italicize_levels()
+```
+
+```{r section_ii2, include=FALSE, message=FALSE, warning=FALSE}
+san.ii <- san.ii %>% 
+  rename(wheelchair = med_device_1, e_bed = med_device_2, person_lifting = med_device_3, dialysis_machine = med_device_4, ventilator = med_device_5, 
+         cpap_bipap = med_device_6, nebulizer = med_device_7, e_recliner = med_device_8, iv_pump = med_device_9, phototherapy = med_device_10,
+         other = med_device_11, impairment_hsh = impairment_hsh...103, major_impairment_hsh = impairment_hsh...107) %>% 
+  mutate(health = case_when(health %in% "1"~"Excellent", 
+                            health %in% "2"~"Very good", 
+                            health %in% "3"~"Good", 
+                            health %in% "4"~"Fair", 
+                            health %in% "5"~"Poor")) %>% 
+  mutate_at(vars(mental_health_anxious:mental_health_down), 
+            funs(recode(., '1' = "Not at all", '2' = "Several days", '3' = "More than half the days", '4' = "Nearly every day", '-99' = NA_character_))) %>% 
+  mutate_at(vars(pre_phy_health:pre_mental_health), 
+            funs(recode(., '1' = "Worse", '2' = "About the same", '3' = "Better", '-99' = "Don't know"))) %>% 
+  mutate_at(vars(impairment:impairment_hsh), funs(recode(., '1' = "Yes", '2' = "No", '-99' = NA_character_))) %>% 
+  mutate_at(vars(major_impairment:major_impairment_hsh), funs(recode(., '1' = "Arthritis/rheumatism", 
+                                                                     '2' = "Back or neck problem",  
+                                                                     '3' = "Fractures, bone/joint injury", 
+                                                                     '4' = "Walking problem",
+                                                                     '5' = "Lung/breathing problem", 
+                                                                     '6' = "Hearing problem", 
+                                                                     '7' = "Eye/vision problem", 
+                                                                     '8' = "Heart problem",
+                                                                     '9' = "Stroke problem", 
+                                                                     '10' = "Hypertension/high blood pressure",
+                                                                     '11' = "Diabetes", 
+                                                                     '12' = "Cancer",
+                                                                     '13' = "Depression/anxiety/emotional problem", 
+                                                                     '14' = "Other impairment/problem",
+                                                                     '-99' = NA_character_))) %>% 
+  mutate_at(vars(days_impairment_1:years_impairment_1), funs(recode(., '-99' = NA_real_))) %>% 
+  mutate_at(vars(wheelchair:other), funs(recode(., '1' = "Yes", '0' = "No", '-99' = NA_character_)))
+
+san.ii$health <- ordered(san.ii$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
+san.ii$pre_phy_health <- ordered(san.ii$pre_phy_health, levels = c("Worse", "About the same", "Better"))
+san.ii$pre_mental_health <- ordered(san.ii$pre_mental_health, levels = c("Worse", "About the same", "Better"))
+```
+
+```{r}
+tbl2 <- san.ii %>% 
+  select(2:32) %>% 
+  tbl_summary(by = zipcode,
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1)),
+              missing_text = "Not Applicable", 
+              label = list(health ~ "Health status", 
+                           mental_health_anxious ~ "Feeling anxious",
+                           mental_health_worry ~ "Feeling worried",
+                           mental_health_interest ~ "Having little interest",
+                           mental_health_down ~ "Feeling depressed",
+                           physical_health ~ "Days of not good physical health",
+                           mental_health ~ "Days of not good mental health",
+                           pre_phy_health ~ "Physical health prior to COVID-19",
+                           pre_mental_health ~ "Mental health prior to COVID-19",
+                           days_poor_health ~ "Days of poor physical or mental health",
+                           impairment ~ "Limited by any impairment",
+                           impairment_hsh ~ "Household member limited by any impairment",
+                           num_hsh_impair ~ "Household members with any impairment",
+                           major_impairment ~ "Major impairment",
+                           major_impairment_hsh ~ "Household member major impairment",
+                           days_impairment_1 ~ "Days limited because of major impairment",
+                           weeks_impairment_4 ~ "Weeks limited because of major impairment",
+                           months_impairment_1 ~ "Months limited because of major impairment",
+                           years_impairment_1 ~ "Years limited because of major impairment",
+                           wheelchair ~ "Electric mobility scooter or wheelchair",
+                           e_bed ~ "Electric bed",
+                           person_lifting ~ "Person-lifting or moving equipment",
+                           dialysis_machine ~ "Home dialysis machine",
+                           ventilator ~ "Home ventilator (not CPAP)",
+                           cpap_bipap ~ "CPAP/BIPAP machine",
+                           nebulizer ~ "Ultrasonic nebulizer",
+                           e_recliner ~ "Electric recliner type chair",
+                           iv_pump ~ "Infusion (IV) pump ",
+                           phototherapy ~ "Phototherapy machine",
+                           other ~ "Other medical device")) %>%
+  add_n() %>% 
+  modify_header(update = list(label ~ "**Variable**")) %>% 
+  modify_spanning_header(all_stat_cols() ~ "**Section II. Health Conditions** (N = {N})") %>% 
+  bold_labels() %>% 
+  italicize_levels()
+```
+
+```{r section_iii2, include=FALSE, message=FALSE, warning=FALSE}
+san.iii <- san.iii %>% 
+  rename(eip_food = eip_1, eip_hsh = eip_2, eip_rent = eip_3, eip_utilities = eip_4, eip_credit = eip_5, eip_other = eip_6, eip_dn = eip_7) %>% 
+  mutate(work_home = if_else(work_home == 3, "Yes", if_else(work_home == 4, "No", NA_character_))) %>% 
+  mutate_at(vars(emp_status:emp_status_partner), funs(recode(., 
+                                                             '1' = "Work for pay at a job",
+                                                             '2' = "Layoff from a job",
+                                                             '3' = "Temporarily absent from job",
+                                                             '4' = "Actively looking for a job",
+                                                             '5' = "Retired",
+                                                             '6' = "Unable to work", 
+                                                             '7' = NA_character_))) %>% 
+  mutate_at(vars(work_home_partner:frontline_partner), funs(recode(., '1' = "Yes", '2' = "No", '-99' = NA_character_ ))) %>% 
+  mutate_at(vars(hrs_work_3:hrs_commute_partnet_3), funs(recode(., '-99' = NA_real_))) %>% 
+  mutate(working_t = hrs_work_3 + (hrs_work_4/60), 
+         working_t_p = hrs_work_partner_3 + (hrs_work_partner_4/60),
+         commuting_t = (min_commute_3/60) + hrs_commute_3,
+         commuting_t_p = (min_commute_partner_3/60) + hrs_commute_partnet_3) %>% 
+  mutate_at(vars(rsn_nowork:rsn_nowork_partner), funs(recode(., 
+                                                             '1' = "Sick with coronavirus symptoms", 
+                                                             '2' = "Caring for someone else",
+                                                             '3' = "Employer closed", 
+                                                             '4' = "Other reason", 
+                                                             '-99' = NA_character_))) %>% 
+  mutate_at(vars(eip_food:eip_dn), funs(recode(., '1' = "Yes", '0' = "No", '-99' = NA_character_))) 
+```
+
+```{r}
+tbl3 <- san.iii %>% 
+  select(2:8, 29:32, 17:25) %>% 
+  tbl_summary(by = zipcode,
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1)),
+              missing_text = "Not Applicable", 
+              label = list(emp_status ~ "Employment status last week",
+                           emp_status_partner ~ "Partner employment status last week",
+                           work_home ~ "Changed to working from home",
+                           work_home_partner ~ "Partner changed to working from home",
+                           frontline ~ "Frontline worker",
+                           frontline_partner ~ "Partner frontline worker",
+                           working_t ~ "Worked hours (weekly)",
+                           working_t_p ~ "Partner worked hours (weekly)",
+                           commuting_t ~ "Commuting time to work",
+                           commuting_t_p ~ "Partner commuting time to work",
+                           rsn_nowork ~ "Main reason for not working",
+                           rsn_nowork_partner ~ "Partner main reason for not working",
+                           eip_food ~ "Stimulus payment on food",
+                           eip_hsh ~ "Stimulus payment on household items",
+                           eip_rent ~ "Stimulus payment on rent or mortage",
+                           eip_utilities ~ "Stimulus payment on utilities",
+                           eip_credit ~ "Stimulus payment on paying debts",
+                           eip_other ~ "Stimulus payment on other things",
+                           eip_dn ~ "Don't know")) %>%
+  add_n() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_spanning_header(all_stat_cols() ~ "**Section III. Employment** (N = {N})") %>% 
+  bold_labels() %>% 
+  italicize_levels()
+```
+
+```{r section_iv2, include=FALSE, message=FALSE, warning=FALSE}
+san.iv <- san.iv %>% 
   mutate(yrbr = ifelse(as.numeric(year) >= 1, 2000 - as.numeric(year), NA), # year of birth
          age = 2021 - yrbr, # age
-         zip = if_else(zipcode == "1", "Elm Creek", "Jefferson Heights"), # recode zip codes
+         ageg = case_when(age %in% min(age):29 ~ "20-29",
+                          age %in% 30:39 ~ "30-39",
+                          age %in% 40:49 ~ "40-49",
+                          age %in% 50:59 ~ "50-59",
+                          age %in% 60:max(age) ~ "60+"),
          hisp = if_else(hispanic == "1", "Not Hispanic", if_else(hispanic == "2", "Hispanic", "Don't know")), # Hispanic origin
          race2 = case_when(race %in% "1" ~ "White", # recode race
                            race %in% "2" ~ "Black", 
@@ -311,7 +622,7 @@ san <- san %>%
                                             if_else(hisp != "Hispanic" & race2 == "AIAN", "NH-AIAN",
                                                     if_else(hisp != "Hispanic" & race2 == "NHPI", "NH-NHPI",
                                                             if_else(hisp != "Hispanic" & race2 == "Other", "NH-Other", "Hispanic")))))),
-         gender = case_when(gender %in% "1" ~ "Female", 
+         gender2 = case_when(gender %in% "1" ~ "Female", 
                             gender %in% "2" ~ "Male", 
                             gender %in% c("3", "4", "5", "6", "7") ~ "Other"),
          marital_st = case_when(marital %in% "1" ~ "Single",
@@ -322,12 +633,42 @@ san <- san %>%
                           education %in% c("4", "5", "6") ~ "College", # some college, AA, BA, BS
                           education %in% "7" ~ "Graduate",
                           education %in% "8" ~ "Don't know"),
-         health = case_when(health %in% "1" ~ "Excellent", health %in% "2" ~ "Very good", health %in% "3" ~ "Good", 
-                            health %in% "4" ~ "Fair", health %in% "5" ~ "Poor"))
+         depen = if_else(depen == 1, "Yes", "No"),
+         sq_ft = case_when(sq_ft %in% 1 ~ "0-499 sq ft", 
+                           sq_ft %in% 2 ~ "500-699 sq ft",
+                           sq_ft %in% 3 ~ "700-099 sq ft",
+                           sq_ft %in% 4 ~ "1000-1099 sq ft",
+                           sq_ft %in% 5 ~ "1100-1299 sq ft",
+                           sq_ft %in% 6 ~ "1300-1599 sq ft",
+                           sq_ft %in% 7 ~ "1600-1899 sq ft",
+                           sq_ft %in% 8 ~ "1900-2099 sq ft",
+                           sq_ft %in% 9 ~ "2100-2399 sq ft",
+                           sq_ft %in% 10 ~ "2400-2699 sq ft",
+                           sq_ft %in% 11 ~ "2700-2999 sq ft",
+                           sq_ft %in% 12 ~ "+3000 sq ft",
+                           sq_ft %in% 13 ~ NA_character_)) %>% 
+  mutate_at(vars(hardships_1:welfare_7), funs(recode(., '1' = "Yes", '0' = "No", '-99' = NA_character_)))
 
-san$race_eth <- ordered(san$race_eth, levels = c("NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other", "Hispanic"))
-san$health <- ordered(san$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
+san.iv$race_eth <- ordered(san.iv$race_eth, levels = c("NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other", "Hispanic"))
 ```
+
+```{r}
+san.iv %>% 
+  select(2, age:ageg, race_eth:educ, depen:welfare_7) %>% 
+  tbl_summary(by = zipcode,
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>%
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section IV. Background Characteristics (N = {N})**") %>% 
+  bold_labels()
+```
+
+
+
+## Part IV. Some plots
 
 ```{r rep_emails, include=FALSE, eval=FALSE}
 ### Replicated email addresses 
@@ -374,59 +715,6 @@ emails <- san %>%
 
 
 write.csv(x = emails, file = "~/GitHub/saetus/emails.csv", row.names = F)
-```
-
-```{r recode_health, include=FALSE, eval=FALSE}
-san <- san %>% 
-  #filter(Finished == "1") %>% # what to do with the responses not finished
-  mutate(ageg = case_when(age %in% min(age):29 ~ "20-29",
-                          age %in% 30:39 ~ "30-39",
-                          age %in% 40:49 ~ "40-49",
-                          age %in% 50:59 ~ "50-59",
-                          age %in% 60:max(age) ~ "60+", FALSE ~ NA_character_),
-         anxious = if_else(mental_health_anxious == "1", "Not at all",
-                           if_else(mental_health_anxious == "2", "Several days", 
-                                   if_else(mental_health_anxious == "3", "More than half",
-                                           if_else(mental_health_anxious == "4", "Nearly every day", 
-                                                   if_else(mental_health_anxious != c("1", "2", "3", "4"), "NA", mental_health_anxious))))),
-         worry = if_else(mental_health_worry == "1", "Not at all",
-                           if_else(mental_health_worry == "2", "Several days", 
-                                   if_else(mental_health_worry == "3", "More than half",
-                                           if_else(mental_health_worry == "4", "Nearly every day", 
-                                                   if_else(mental_health_worry != c("1", "2", "3", "4"), "NA", mental_health_worry))))),
-         interest = if_else(mental_health_interest == "1", "Not at all",
-                           if_else(mental_health_interest == "2", "Several days", 
-                                   if_else(mental_health_interest == "3", "More than half",
-                                           if_else(mental_health_interest == "4", "Nearly every day", 
-                                                   if_else(mental_health_interest != c("1", "2", "3", "4"), "NA", mental_health_interest))))),
-         down = if_else(mental_health_down == "1", "Not at all",
-                           if_else(mental_health_down == "2", "Several days", 
-                                   if_else(mental_health_down == "3", "More than half",
-                                           if_else(mental_health_down == "4", "Nearly every day", 
-                                                   if_else(mental_health_down != c("1", "2", "3", "4"), "NA", mental_health_down))))),
-         pre_c19_ph = if_else(pre_phy_health == "1", "Worse", 
-                              if_else(pre_phy_health == "2", "Same", 
-                                      if_else(pre_phy_health == "3", "Better", pre_phy_health))),
-         pre_c19_mh = if_else(pre_mental_health == "1", "Worse", 
-                              if_else(pre_mental_health == "2", "Same", 
-                                      if_else(pre_mental_health == "3", "Better", pre_mental_health))))
-
-san$anxious <- ordered(san$anxious, levels = c("Not at all", "Several days", "More than half", "Nearly every day"))
-san$worry <- ordered(san$worry, levels = c("Not at all", "Several days", "More than half", "Nearly every day"))
-san$interest <- ordered(san$interest, levels = c("Not at all", "Several days", "More than half", "Nearly every day"))
-san$down <- ordered(san$down, levels = c("Not at all", "Several days", "More than half", "Nearly every day"))
-san$pre_c19_ph <- ordered(san$pre_c19_ph, levels = c("Worse", "Same", "Better"))
-san$pre_c19_mh <- ordered(san$pre_c19_mh, levels = c("Worse", "Same", "Better"))
-```
-
-```{r recode_employment, include=FALSE, eval=FALSE}
-san <- san %>% 
-  mutate(front = if_else(frontline == "1", "Yes", 
-                         if_else(frontline == "2", "No", "NA")),
-         work_hrs = as.numeric(hrs_work_3),
-         hsh_size = as.numeric(num_hsh),
-         hsh_child = as.numeric(num_children),
-         hsh_retire = as.numeric(num_retired))
 ```
 
 ```{r health_status_plot, message=FALSE, warning=FALSE, eval=FALSE}
@@ -616,211 +904,6 @@ san %>%
   theme_linedraw() +
   themeu
 ```
-
-```{r sections, include=FALSE, message=FALSE, warning=FALSE}
-# section Ia
-san.ia <- san2 %>% select(ResponseId, 16:80, 175:177) 
-# section Ib
-san.ib <- san2 %>% select(ResponseId, 16, 81:87, 175:177) 
-# section II
-san.ii <- san2 %>% select(ResponseId, 16, 88:101, 103, 105:119, 175:177) 
-# section III
-san.iii <- san2 %>% select(ResponseId, 16, 121:143, 175:177) 
-# section IV
-san.iv <- san2 %>% select(ResponseId, 16, 146, 148:171, 175:177) 
-```
-
-```{r section_ia, include=FALSE, message=FALSE, warning=FALSE}
-san.ia <- san.ia %>% 
-  rename(sleep.t = per_care_1, eat.t = per_care_2, cook.t = per_care_3, groom.t = per_care_4,
-         sleep.w = per_care_wknd_1, eat.w = per_care_wknd_2, cook.w = per_care_wknd_3, groom.w = per_care_wknd_4,
-         sleep.t.w = pc_wknd_time_1, eat.t.w = pc_wknd_time_2, cook.t.w = pc_wknd_time_3, groom.t.w = pc_wknd_time_4,
-         sleep.covid = per_care_covid_1, eat.covid = per_care_covid_2, cook.covid = per_care_covid_3, groom.covid = per_care_covid_4,
-         
-         class.t = st_act_1, hmwrk.t = st_act_2, commute.t = st_act_3,
-         class.w = st_act_wknd_1, hmwrk.w = st_act_wknd_2, commute.w = st_act_wknd_3,
-         class.t.w = sa_wknd_time_1, hmwrk.t.w = sa_wknd_time_2, commute.t.w = sa_wknd_time_3,
-         class.covid = st_act_covid_1, hmwrk.covid = st_act_covid_2, commute.covid = st_act_covid_3,
-         
-         tv.t = dev_act_1, pc.t = dev_act_7, radio.t = dev_act_3, xbox.t = dev_act_6,
-         tv.w = dev_act_wknd_1, pc.w = dev_act_wknd_2, radio.w = dev_act_wknd_3, xbox.w = dev_act_wknd_4,
-         tv.t.w = da_wknd_time_1, pc.t.w = da_wknd_time_2, radio.t.w = da_wknd_time_3, xbox.t.w = da_wknd_time_6,
-         tv.covid = dev_act_covid_1, stream.covid = dev_act_covid_2, radio.covid = dev_act_covid_3, snet.covid = dev_act_covid_4,
-         text.covid = dev_act_covid_5, pc.covid = dev_act_covid_6, xbox.covid = dev_act_covid_7,
-         
-         read.t = other_act_1, clean.t = other_act_2, wash.t = other_act_3, repair.t = other_act_4, 
-         read.w = other_act_wknd_1, clean.w = other_act_wknd_2, wash.w = other_act_wknd_3, repair.w = other_act_wknd_4, 
-         read.t.w = oa_wknd_time_1, clean.t.w = oa_wknd_time_2, wash.t.w = oa_wknd_time_3, repair.t.w = oa_wknd_time_4,
-         read.covid = other_act_covid_1, clean.covid=other_act_covid_2, wash.covid=other_act_covid_3, repair.covid=other_act_covid_4) %>%
-
-     mutate(sleep.w = if_else(sleep.w == 4, "Same time as weekdays", "Different time"),
-            eat.w = if_else(eat.w == 4, "Same time as weekdays", "Different time"),
-            cook.w = if_else(cook.w == 4, "Same time as weekdays", "Different time"),
-            groom.w = if_else(groom.w == 4, "Same time as weekdays", "Different time"),
-            class.w = if_else(class.w == 3, "Same time as weekdays", "Different time"),
-            hmwrk.w = if_else(hmwrk.w == 3, "Same time as weekdays", "Different time"),
-            commute.w = if_else(commute.w == 3, "Same time as weekdays", "Different time"),
-            tv.w = if_else(tv.w == 3, "Same time as weekdays", "Different time"),
-            pc.w = if_else(pc.w == 3, "Same time as weekdays", "Different time"),
-            radio.w = if_else(radio.w == 3, "Same time as weekdays", "Different time"),
-            xbox.w = if_else(xbox.w == 3, "Same time as weekdays", "Different time"),
-            read.w = if_else(read.w == 3, "Same time as weekdays", "Different time"),
-            clean.w = if_else(clean.w == 3, "Same time as weekdays", "Different time"),
-            wash.w = if_else(wash.w == 3, "Same time as weekdays", "Different time"),
-            repair.w = if_else(repair.w == 3, "Same time as weekdays", "Different time"),
-            own_device = case_when(own_device %in% 3 ~ "Both personal computer and TV",
-                                   own_device %in% 2 ~ "Only TV",
-                                   own_device %in% 1 ~ "Only personal computer",
-                                   own_device %in% 4 ~ "Neither PC nor TV")) %>% 
-  
-  mutate_at(vars(sleep.t:groom.t, class.t:commute.t, tv.t:xbox.t, read.t:repair.t, 
-                 sleep.t.w:groom.t.w, class.t.w:commute.t.w, tv.t.w:xbox.t.w, read.t.w:repair.t.w), 
-            funs(recode(., '-99' = NA_real_))) %>%  
-  
-  mutate_at(vars(sleep.covid:groom.covid, class.covid:commute.covid, tv.covid:xbox.covid, read.covid:repair.covid), 
-            funs(recode(.,'1'="Much less time",'2'="Somewhat less time",'3'="About the same",'4'="Somewhat more time",'5'="Much more time",'6'=NA_character_))) %>% 
-  
-  mutate(sleep.tt = if_else(sleep.w == "Same time as weekdays", 7*sleep.t, 5*sleep.t + 2*sleep.t.w),
-         eat.tt = if_else(eat.w == "Same time as weekdays", 7*eat.t, 5*eat.t + 2*eat.t.w),
-         cook.tt = if_else(cook.w == "Same time as weekdays", 7*cook.t, 5*cook.t + 2*cook.t.w),
-         groom.tt = if_else(groom.w == "Same time as weekdays", 7*groom.t, 5*groom.t + 2*groom.t.w),
-         class.tt = if_else(class.w == "Same time as weekdays", 7*class.t, 5*class.t + 2*class.t.w),
-         hmwrk.tt = if_else(hmwrk.w == "Same time as weekdays", 7*hmwrk.t, 5*hmwrk.t + 2*hmwrk.t.w),
-         commute.tt = if_else(commute.w == "Same time as weekdays", 7*commute.t, 5*commute.t + 2*commute.t.w),
-         tv.tt = if_else(tv.w == "Same time as weekdays", 7*tv.t, 5*tv.t + 2*tv.t.w),
-         pc.tt = if_else(pc.w == "Same time as weekdays", 7*pc.t, 5*pc.t + 2*pc.t.w),
-         radio.tt = if_else(radio.w == "Same time as weekdays", 7*radio.t, 5*radio.t + 2*radio.t.w),
-         xbox.tt = if_else(xbox.w == "Same time as weekdays", 7*xbox.t, 5*xbox.t + 2*xbox.t.w),
-         read.tt = if_else(read.w == "Same time as weekdays", 7*read.t, 5*read.t + 2*read.t.w),
-         clean.tt = if_else(clean.w == "Same time as weekdays", 7*clean.t, 5*clean.t + 2*clean.t.w),
-         wash.tt = if_else(wash.w == "Same time as weekdays", 7*wash.t, 5*wash.t + 2*wash.t.w),
-         repair.tt = if_else(repair.w == "Same time as weekdays", 7*repair.t, 5*repair.t + 2*repair.t.w))
-```
-
-```{r}
-san.ia %>% 
-  select(2, 15:18, 28:30, 44:50, 63:66, 70:84) %>% 
-  tbl_summary(by = zipcode, 
-              statistic = list(all_continuous() ~ "{mean} ({sd})"),
-              digits = list(all_continuous() ~ c(1, 1))) %>% 
-  add_n() %>% 
-  add_p() %>% 
-  modify_header(label = "**variable**") %>% 
-  modify_caption("**Section Ia. Time Use (N = {N})**") %>% 
-  bold_labels()
-```
-
-```{r section_ib}
-san.ib %>% 
-  select(2, pre_electric:post_trans) %>% 
-  tbl_summary(by = zipcode,
-              statistic = list(all_continuous() ~ "{mean} ({sd})"),
-              digits = list(all_continuous() ~ c(1, 1))) %>%
-  add_n() %>% 
-  add_p() %>% 
-  modify_header(label = "**variable**") %>% 
-  modify_caption("**Section Ib. Energy Use (N = {N})**") %>% 
-  bold_labels()
-```
-
-```{r section_ii}
-san.ii <- san.ii %>% 
-  rename(wheelchair = med_device_1, e_bed = med_device_2, person_lifting = med_device_3, dialysis_machine = med_device_4, ventilator = med_device_5, 
-         cpap_bipap = med_device_6, nebulizer = med_device_7, e_recliner = med_device_8, iv_pump = med_device_9, phototherapy = med_device_10,
-         other = med_device_11, impairment_hsh = impairment_hsh...103, major_impairment_hsh = impairment_hsh...107) %>% 
-  mutate(health = case_when(health %in% "1"~"Excellent", 
-                            health %in% "2"~"Very good", 
-                            health %in% "3"~"Good", 
-                            health %in% "4"~"Fair", 
-                            health %in% "5"~"Poor")) %>% 
-  mutate_at(vars(mental_health_anxious:mental_health_down), 
-            funs(recode(., '1' = "Not at all", '2' = "Several days", '3' = "More than half the days", '4' = "Nearly every day", '-99' = NA_character_))) %>% 
-  mutate_at(vars(pre_phy_health:pre_mental_health), 
-            funs(recode(., '1' = "Worse", '2' = "About the same", '3' = "Better", '-99' = "Don't know"))) %>% 
-  mutate_at(vars(impairment:impairment_hsh), funs(recode(., '1' = "Yes", '2' = "No", '-99' = NA_character_))) %>% 
-  mutate_at(vars(major_impairment:major_impairment_hsh), funs(recode(., '1' = "Arthritis/rheumatism", 
-                                                                     '2' = "Back or neck problem",  
-                                                                     '3' = "Fractures, bone/joint injury", 
-                                                                     '4' = "Walking problem",
-                                                                     '5' = "Lung/breathing problem", 
-                                                                     '6' = "Hearing problem", 
-                                                                     '7' = "Eye/vision problem", 
-                                                                     '8' = "Heart problem",
-                                                                     '9' = "Stroke problem", 
-                                                                     '10' = "Hypertension/high blood pressure",
-                                                                     '11' = "Diabetes", 
-                                                                     '12' = "Cancer",
-                                                                     '13' = "Depression/anxiety/emotional problem", 
-                                                                     '14' = "Other impairment/problem",
-                                                                     '-99' = NA_character_))) %>% 
-  mutate_at(vars(days_impairment_1:years_impairment_1), funs(recode(., '-99' = NA_real_))) %>% 
-  mutate_at(vars(wheelchair:other), funs(recode(., '1' = "Yes", '0' = "No", '-99' = NA_character_)))
-
-san.ii$health <- ordered(san.ii$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
-```
-
-```{r}
-san.ii %>% 
-  select(2:32) %>% 
-  tbl_summary(by = zipcode,
-              statistic = list(all_continuous() ~ "{mean} ({sd})",
-                               all_categorical() ~ "{n} ({p}%)"),
-              digits = list(all_continuous() ~ c(1, 1))) %>%
-  add_n() %>% 
-  add_p() %>% 
-  modify_header(label = "**variable**") %>% 
-  modify_caption("**Section II. Health Conditions (N = {N})**") %>% 
-  bold_labels()
-```
-
-```{r section_iii}
-san.iii <- san.iii %>% 
-  rename(eip_food = eip_1, eip_hsh = eip_2, eip_rent = eip_3, eip_utilities = eip_4, eip_credit = eip_5, eip_other = eip_6, eip_dn = eip_7) %>% 
-  mutate(work_home = if_else(work_home == 3, "Yes", if_else(work_home == 4, "No", NA_character_))) %>% 
-  mutate_at(vars(emp_status:emp_status_partner), funs(recode(., 
-                                                             '1' = "Work for pay at a job",
-                                                             '2' = "Layoff from a job",
-                                                             '3' = "Temporarily absent from job",
-                                                             '4' = "Actively looking for a job",
-                                                             '5' = "Retired",
-                                                             '6' = "Unable to work", 
-                                                             '7' = NA_character_))) %>% 
-  mutate_at(vars(work_home_partner:frontline_partner), funs(recode(., '1' = "Yes", '2' = "No", '-99' = NA_character_ ))) %>% 
-  mutate_at(vars(hrs_work_3:hrs_commute_partnet_3), funs(recode(., '-99' = NA_real_))) %>% 
-  mutate(working_t = hrs_work_3 + (hrs_work_4/60), 
-         working_t_p = hrs_work_partner_3 + (hrs_work_partner_4/60),
-         commuting_t = (min_commute_3/60) + hrs_commute_3,
-         commuting_t_p = (min_commute_partner_3/60) + hrs_commute_partnet_3) %>% 
-  mutate_at(vars(rsn_nowork:rsn_nowork_partner), funs(recode(., 
-                                                             '1' = "Sick with coronavirus symptoms", 
-                                                             '2' = "Caring for someone else",
-                                                             '3' = "Employer closed", 
-                                                             '4' = "Other reason", 
-                                                             '-99' = NA_character_))) %>% 
-  mutate_at(vars(eip_food:eip_dn), funs(recode(., '1' = "Yes", '0' = "No", '-99' = NA_character_))) 
-```
-
-```{r}
-san.iii %>% 
-  select(2:25, 29:32) %>% 
-  tbl_summary(by = zipcode,
-              statistic = list(all_continuous() ~ "{mean} ({sd})",
-                               all_categorical() ~ "{n} ({p}%)"),
-              digits = list(all_continuous() ~ c(1, 1))) %>%
-  add_n() %>% 
-  add_p() %>% 
-  modify_header(label = "**variable**") %>% 
-  modify_caption("**Section III. Employment (N = {N})**") %>% 
-  bold_labels()
-```
-
-```{r section_iv}
-san.iv <- san.iv %>% 
-  
-```
-
-
-
 
 
 
