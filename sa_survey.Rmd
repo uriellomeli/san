@@ -653,20 +653,57 @@ san.iv$race_eth <- ordered(san.iv$race_eth, levels = c("NH-White", "NH-Black", "
 ```
 
 ```{r}
-san.iv %>% 
+tbl4 <- san.iv %>% 
   select(2, age:ageg, race_eth:educ, depen:welfare_7) %>% 
   tbl_summary(by = zipcode,
               statistic = list(all_continuous() ~ "{mean} ({sd})",
                                all_categorical() ~ "{n} ({p}%)"),
-              digits = list(all_continuous() ~ c(1, 1))) %>%
+              digits = list(all_continuous() ~ c(1, 1)),
+              missing_text = "Not Applicable", 
+              label = list(age ~ "Age",
+                           ageg ~ "Age group",
+                           race_eth ~ "Race and Ethnicity",
+                           gender2 ~ "Gender",
+                           marital_st ~ "Marital status",
+                           educ ~ "Education level",
+                           depen ~ "Number of dependents",
+                           num_hsh ~ "Number of household members",
+                           num_children ~ "Number of children",
+                           num_retired ~ "Number of retired",
+                           num_rooms ~ "Number of rooms",
+                           num_bedrooms ~ "Number of bedrooms",
+                           sq_ft ~ "Square feet",
+                           hardships_1 ~ "Loss of employment income",
+                           hardships_2 ~ "Difficulty in paying utility bills",
+                           hardships_3 ~ "Difficulty in affording the kinds of food you need",
+                           hardships_4 ~ "Difficulty in paying next rent or mortgage payment",
+                           hardships_5 ~ "Difficulty in paying medical bill/health insurance",
+                           hardships_6 ~ "Delay getting/Do not get medical care or prescription medication",
+                           welfare_1 ~ "Unemployment Insurance (UI)",
+                           welfare_2 ~ "Social Security benefits",
+                           welfare_3 ~ "Supplemental Security Income (SSI)",
+                           welfare_4 ~ "Medicare benefits",
+                           welfare_5 ~ "Stimulus (economic impact) Payment",
+                           welfare_6 ~ "Supplemental Nutrition Assistance Program",
+                           welfare_7 ~ "Other types of assistance from the city or federal government")) %>%
   add_n() %>% 
-  add_p() %>% 
   modify_header(label = "**variable**") %>% 
-  modify_caption("**Section IV. Background Characteristics (N = {N})**") %>% 
-  bold_labels()
+  modify_spanning_header(all_stat_cols() ~ "**Section IV. Background Characteristics** (N = {N})") %>% 
+  bold_labels() %>% 
+  italicize_levels()
 ```
 
+```{r}
+tbl1a
 
+tbl1b
+
+tbl2
+
+tbl3
+
+tbl4
+```
 
 ## Part IV. Some plots
 
