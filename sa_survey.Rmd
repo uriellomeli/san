@@ -617,7 +617,7 @@ san %>%
   themeu
 ```
 
-```{r, include=FALSE, message=FALSE, warning=FALSE}
+```{r sections, include=FALSE, message=FALSE, warning=FALSE}
 # section Ia
 san.ia <- san2 %>% select(ResponseId, 16:80, 175:177) 
 # section Ib
@@ -630,7 +630,7 @@ san.iii <- san2 %>% select(ResponseId, 16, 121:143, 175:177)
 san.iv <- san2 %>% select(ResponseId, 16, 146, 148:171, 175:177) 
 ```
 
-```{r, include=FALSE, message=FALSE, warning=FALSE}
+```{r section_ia, include=FALSE, message=FALSE, warning=FALSE}
 san.ia <- san.ia %>% 
   rename(sleep.t = per_care_1, eat.t = per_care_2, cook.t = per_care_3, groom.t = per_care_4,
          sleep.w = per_care_wknd_1, eat.w = per_care_wknd_2, cook.w = per_care_wknd_3, groom.w = per_care_wknd_4,
@@ -710,11 +710,68 @@ san.ia %>%
   bold_labels()
 ```
 
-```{r}
-
+```{r section_ib}
+san.ib %>% 
+  select(2, pre_electric:post_trans) %>% 
+  tbl_summary(by = zipcode,
+              statistic = list(all_continuous() ~ "{mean} ({sd})"),
+              digits = list(all_continuous() ~ c(1, 1))) %>%
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section Ib. Energy Use (N = {N})**") %>% 
+  bold_labels()
 ```
 
+```{r section_ii}
+san.ii <- san.ii %>% 
+  rename(wheelchair = med_device_1, e_bed = med_device_2, person_lifting = med_device_3, dialysis_machine = med_device_4, ventilator = med_device_5, 
+         cpap_bipap = med_device_6, nebulizer = med_device_7, e_recliner = med_device_8, iv_pump = med_device_9, phototherapy = med_device_10,
+         other = med_device_11, impairment_hsh = impairment_hsh...103, major_impairment_hsh = impairment_hsh...107) %>% 
+  mutate(health = case_when(health %in% "1"~"Excellent", 
+                            health %in% "2"~"Very good", 
+                            health %in% "3"~"Good", 
+                            health %in% "4"~"Fair", 
+                            health %in% "5"~"Poor")) %>% 
+  mutate_at(vars(mental_health_anxious:mental_health_down), 
+            funs(recode(., '1' = "Not at all", '2' = "Several days", '3' = "More than half the days", '4' = "Nearly every day", '-99' = NA_character_))) %>% 
+  mutate_at(vars(pre_phy_health:pre_mental_health), 
+            funs(recode(., '1' = "Worse", '2' = "About the same", '3' = "Better", '-99' = "Don't know"))) %>% 
+  mutate_at(vars(impairment:impairment_hsh), funs(recode(., '1' = "Yes", '2' = "No", '-99' = NA_character_))) %>% 
+  mutate_at(vars(major_impairment:major_impairment_hsh), funs(recode(., '1' = "Arthritis/rheumatism", 
+                                                                     '2' = "Back or neck problem",  
+                                                                     '3' = "Fractures, bone/joint injury", 
+                                                                     '4' = "Walking problem",
+                                                                     '5' = "Lung/breathing problem", 
+                                                                     '6' = "Hearing problem", 
+                                                                     '7' = "Eye/vision problem", 
+                                                                     '8' = "Heart problem",
+                                                                     '9' = "Stroke problem", 
+                                                                     '10' = "Hypertension/high blood pressure",
+                                                                     '11' = "Diabetes", 
+                                                                     '12' = "Cancer",
+                                                                     '13' = "Depression/anxiety/emotional problem", 
+                                                                     '14' = "Other impairment/problem",
+                                                                     '-99' = NA_character_))) %>% 
+  mutate_at(vars(days_impairment_1:years_impairment_1), funs(recode(., '-99' = NA_real_))) %>% 
+  mutate_at(vars(wheelchair:other), funs(recode(., '1' = "Yes", '0' = "No", '-99' = NA_character_)))
 
+san.ii$health <- ordered(san.ii$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
+```
+
+```{r}
+san.ii %>% 
+  select(2:32) %>% 
+  tbl_summary(by = zipcode,
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>%
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section II. Health Conditions (N = {N})**") %>% 
+  bold_labels()
+```
 
 
 
