@@ -773,6 +773,51 @@ san.ii %>%
   bold_labels()
 ```
 
+```{r section_iii}
+san.iii <- san.iii %>% 
+  rename(eip_food = eip_1, eip_hsh = eip_2, eip_rent = eip_3, eip_utilities = eip_4, eip_credit = eip_5, eip_other = eip_6, eip_dn = eip_7) %>% 
+  mutate(work_home = if_else(work_home == 3, "Yes", if_else(work_home == 4, "No", NA_character_))) %>% 
+  mutate_at(vars(emp_status:emp_status_partner), funs(recode(., 
+                                                             '1' = "Work for pay at a job",
+                                                             '2' = "Layoff from a job",
+                                                             '3' = "Temporarily absent from job",
+                                                             '4' = "Actively looking for a job",
+                                                             '5' = "Retired",
+                                                             '6' = "Unable to work", 
+                                                             '7' = NA_character_))) %>% 
+  mutate_at(vars(work_home_partner:frontline_partner), funs(recode(., '1' = "Yes", '2' = "No", '-99' = NA_character_ ))) %>% 
+  mutate_at(vars(hrs_work_3:hrs_commute_partnet_3), funs(recode(., '-99' = NA_real_))) %>% 
+  mutate(working_t = hrs_work_3 + (hrs_work_4/60), 
+         working_t_p = hrs_work_partner_3 + (hrs_work_partner_4/60),
+         commuting_t = (min_commute_3/60) + hrs_commute_3,
+         commuting_t_p = (min_commute_partner_3/60) + hrs_commute_partnet_3) %>% 
+  mutate_at(vars(rsn_nowork:rsn_nowork_partner), funs(recode(., 
+                                                             '1' = "Sick with coronavirus symptoms", 
+                                                             '2' = "Caring for someone else",
+                                                             '3' = "Employer closed", 
+                                                             '4' = "Other reason", 
+                                                             '-99' = NA_character_))) %>% 
+  mutate_at(vars(eip_food:eip_dn), funs(recode(., '1' = "Yes", '0' = "No", '-99' = NA_character_))) 
+```
+
+```{r}
+san.iii %>% 
+  select(2:25, 29:32) %>% 
+  tbl_summary(by = zipcode,
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n} ({p}%)"),
+              digits = list(all_continuous() ~ c(1, 1))) %>%
+  add_n() %>% 
+  add_p() %>% 
+  modify_header(label = "**variable**") %>% 
+  modify_caption("**Section III. Employment (N = {N})**") %>% 
+  bold_labels()
+```
+
+```{r section_iv}
+san.iv <- san.iv %>% 
+  
+```
 
 
 
