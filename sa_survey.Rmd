@@ -386,7 +386,7 @@ san.ia$wash.covid <- ordered(san.ia$wash.covid, levels = c("Much less time", "So
 san.ia$repair.covid <- ordered(san.ia$repair.covid, levels = c("Much less time", "Somewhat less time", "About the same", "Somewhat more time", "Much more time"))
 ```
 
-```{r}
+```{r include=FALSE, message=FALSE, warning=FALSE}
 theme_gtsummary_compact()
 
 tbl1a <- san.ia %>% 
@@ -704,8 +704,6 @@ tbl3
 
 tbl4
 ```
-
-## Part IV. Some plots
 
 ```{r rep_emails, include=FALSE, eval=FALSE}
 ### Replicated email addresses 
