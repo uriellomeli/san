@@ -940,6 +940,19 @@ san %>%
   themeu
 ```
 
+### merge
+```{r}
+d1 <- merge(x = san.ia, y = san.ib, by = c("ResponseId", "zipcode"))
+d2 <- merge(x = san.ii, y = san.iii, by = c("ResponseId", "zipcode"))
+d3 <- merge(x = d2, y = san.iv, by = c("ResponseId", "zipcode"))
+data <- merge(x = d1, y = d3, by = c("ResponseId", "zipcode"))
+
+save(data, file = "~/GitHub/saetus/data_recode.RData")
+```
+
+```{r}
+glimpse(data)
+```
 
 
 
