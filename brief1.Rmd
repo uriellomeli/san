@@ -1,0 +1,223 @@
+---
+title: "brief1"
+author: "Uriel Lomelí"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libs}
+library(nationalparkcolors)
+```
+
+```{r}
+load(file = "~/GitHub/saetus/data_recode.RData")
+```
+
+```{r themeu, include=FALSE, message=FALSE, warning=FALSE}
+font_add_google(name = "Barlow", family = "foo")
+showtext::showtext_auto()
+
+themeu <- theme(plot.title = element_text(size = 20, face = "bold"), 
+                plot.subtitle = element_text(size = 11),
+                legend.position = "none", 
+                legend.title = element_blank(), 
+                axis.title = element_text(size = 12), 
+                axis.text = element_text(size = 12), 
+                axis.text.y = element_text(size = 12, color = "black"),
+                plot.caption = element_text(size = 9), 
+                panel.grid = element_blank(),
+                strip.background = element_rect(fill = NULL, linetype = "solid"), 
+                strip.text = element_text(color = "black", size = 12, face = "bold"))
+
+
+names(park_palettes)
+park <- park_palette("Acadia", n = 3)
+park2 <- park_palette("Redwoods", n = 5)
+park3 <- park_palette("GeneralGrant", n = 7)
+
+```
+
+## Hardships
+
+Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships: 
+
+```{r}
+data%>%
+  filter(!is.na(hardships_1), !is.na(zipcode))%>%
+  ggplot(aes(x = hardships_1, group = zipcode))+
+  geom_bar(aes(y = ..prop.., fill = factor(..x..)), colour = "black", stat = "count")+
+  geom_text(aes(label = scales::percent(..prop.., accuracy = 0.1), y = ..prop..), 
+            stat = "count", 
+            vjust = -.5, size = 3, color = "black")+
+  ggtitle("Loss of employment income")+ 
+  facet_grid(~zipcode)+
+  scale_fill_viridis_d(option = "D", begin = .2, end = .8) +
+  scale_y_continuous(labels = scales::percent)+
+  guides(fill=guide_legend(title = NULL))+ 
+  labs(x=NULL, y=NULL, caption = "Source: 2021 San Antonio Energy and Time Use Survey")+
+  theme_classic()+ 
+  themeu
+
+data%>%
+  filter(!is.na(hardships_2), !is.na(zipcode))%>%
+  ggplot(aes(x = hardships_2, group = zipcode))+
+  geom_bar(aes(y = ..prop.., fill = factor(..x..)), colour = "black", stat = "count")+
+  geom_text(aes(label = scales::percent(..prop.., accuracy = 0.1), y = ..prop..), 
+            stat = "count", 
+            vjust = -.5, size = 3, color = "black")+
+  ggtitle("Difficulty in paying utility bills (electricity, gas, cellphone, internet)")+ 
+  facet_grid(~zipcode)+
+  scale_fill_viridis_d(option = "D", begin = .2, end = .8) +
+  scale_y_continuous(labels = scales::percent)+
+  guides(fill=guide_legend(title = NULL))+ 
+  labs(x=NULL, y=NULL, caption = "Source: 2021 San Antonio Energy and Time Use Survey")+
+  theme_classic()+ 
+  themeu
+
+data%>%
+  filter(!is.na(hardships_3), !is.na(zipcode))%>%
+  ggplot(aes(x = hardships_3, group = zipcode))+
+  geom_bar(aes(y = ..prop.., fill = factor(..x..)), colour = "black", stat = "count")+
+  geom_text(aes(label = scales::percent(..prop.., accuracy = 0.1), y = ..prop..), 
+            stat = "count", 
+            vjust = -.5, size = 3, color = "black")+
+  ggtitle("Difficulty in affording the kinds of food you need")+ 
+  facet_grid(~zipcode)+
+  scale_fill_viridis_d(option = "D", begin = .2, end = .8) +
+  scale_y_continuous(labels = scales::percent)+
+  guides(fill=guide_legend(title = NULL))+ 
+  labs(x=NULL, y=NULL, caption = "Source: 2021 San Antonio Energy and Time Use Survey")+
+  theme_classic()+ 
+  themeu
+
+data%>%
+  filter(!is.na(hardships_4), !is.na(zipcode))%>%
+  ggplot(aes(x = hardships_4, group = zipcode))+
+  geom_bar(aes(y = ..prop.., fill = factor(..x..)), colour = "black", stat = "count")+
+  geom_text(aes(label = scales::percent(..prop.., accuracy = 0.1), y = ..prop..), 
+            stat = "count", 
+            vjust = -.5, size = 3, color = "black")+
+  ggtitle("Difficulty in paying next rent or mortgage payment")+ 
+  facet_grid(~zipcode)+
+  scale_fill_viridis_d(option = "D", begin = .2, end = .8) +
+  scale_y_continuous(labels = scales::percent)+
+  guides(fill=guide_legend(title = NULL))+ 
+  labs(x=NULL, y=NULL, caption = "Source: 2021 San Antonio Energy and Time Use Survey")+
+  theme_classic()+ 
+  themeu
+
+data%>%
+  filter(!is.na(hardships_5), !is.na(zipcode))%>%
+  ggplot(aes(x = hardships_5, group = zipcode))+
+  geom_bar(aes(y = ..prop.., fill = factor(..x..)), colour = "black", stat = "count")+
+  geom_text(aes(label = scales::percent(..prop.., accuracy = 0.1), y = ..prop..), 
+            stat = "count", 
+            vjust = -.5, size = 3, color = "black")+
+  ggtitle("Difficulty in paying medical bill/health insurance")+ 
+  facet_grid(~zipcode)+
+  scale_fill_viridis_d(option = "D", begin = .2, end = .8) +
+  scale_y_continuous(labels = scales::percent)+
+  guides(fill=guide_legend(title = NULL))+ 
+  labs(x=NULL, y=NULL, caption = "Source: 2021 San Antonio Energy and Time Use Survey")+
+  theme_classic()+ 
+  themeu
+
+data%>%
+  filter(!is.na(hardships_6), !is.na(zipcode))%>%
+  ggplot(aes(x = hardships_6, group = zipcode))+
+  geom_bar(aes(y = ..prop.., fill = factor(..x..)), colour = "black", stat = "count")+
+  geom_text(aes(label = scales::percent(..prop.., accuracy = 0.1), y = ..prop..), 
+            stat = "count", 
+            vjust = -.5, size = 3, color = "black")+
+  ggtitle("Delay getting/Do not get medical care or prescription medication")+ 
+  facet_grid(~zipcode)+
+  scale_fill_viridis_d(option = "D", begin = .2, end = .8) +
+  scale_y_continuous(labels = scales::percent)+
+  guides(fill=guide_legend(title = NULL))+ 
+  labs(x=NULL, y=NULL, caption = "Source: 2021 San Antonio Energy and Time Use Survey")+
+  theme_classic()+ 
+  themeu
+```
+
+```{r}
+data <- data %>% 
+  mutate_at(vars(hardships_1:hardships_6), funs(recode(., "Yes" = as.numeric(1), "No" = as.numeric(0)))) %>% 
+  mutate(hards = hardships_1+hardships_2+hardships_3+hardships_4+hardships_5+hardships_6)
+
+data %>% 
+  filter(!is.na(hards)) %>% 
+  ggplot() + 
+  geom_bar(aes(y = hards, fill = gender2)) + 
+  facet_grid(~zipcode) +
+  scale_fill_manual(values = park) +
+  theme_classic() 
+
+data %>% 
+  filter(!is.na(hards), !is.na(educ)) %>% 
+  ggplot() + 
+  geom_bar(aes(y = hards, fill = educ)) + 
+  facet_grid(~zipcode) +
+  scale_fill_manual(values = park2) +
+  theme_classic() 
+
+
+str(data$race_eth)
+
+data %>% 
+  filter(!is.na(hards), !is.na(race_eth)) %>% 
+  ggplot(aes(hards)) + 
+  geom_bar(aes(y = ..prop.., fill = race_eth)) + 
+  facet_grid(~zipcode) +
+  scale_fill_manual(values = park3) +
+  theme_clean() 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
