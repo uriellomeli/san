@@ -650,6 +650,7 @@ san.iv <- san.iv %>%
   mutate_at(vars(hardships_1:welfare_7), funs(recode(., '1' = "Yes", '0' = "No", '-99' = NA_character_)))
 
 san.iv$race_eth <- ordered(san.iv$race_eth, levels = c("NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other", "Hispanic"))
+san.iv$educ <- ordered(san.iv$educ, levels = c("Less than HS", "High School", "College", "Graduate"))
 ```
 
 ```{r}
