@@ -1,6 +1,6 @@
 ---
 title: "brief1"
-author: "Uriel Lomelí"
+author: "..."
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   html_document:
@@ -19,6 +19,8 @@ library(nationalparkcolors)
 library(treemapify)
 library(ggplot2)
 library(dplyr)
+library(kableExtra)
+library(summarytools)
 ```
 
 ```{r, include=FALSE}
@@ -38,6 +40,41 @@ park3 <- park_palette("GeneralGrant", n = 7)
 ## Hardships
 
 Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships: 
+  
+  Loss of employment income   
+  Difficulty in paying utility bills (electricity, gas, cellphone, internet)   
+  Difficulty in affording the kinds of food you need   
+  Difficulty in paying next rent or mortgage payment   
+  Difficulty in paying medical bill/health insurance 
+  Delay getting/Do not get medical care or prescription medication
+
+```{r, include=FALSE, eval=FALSE}
+round(prop.table(table(data$bad, data$depen), 1)*100, 1)
+
+round(prop.table(table(data$zipcode, data$bad), 1)*100, 1)
+
+xtabs(formula = ~zipcode + bad + gender2, data = data, subset = data$gender2!="Other")
+```
+```{r}
+kable(xtabs(formula = ~zipcode + gender2 + hardships_1, data = data, subset = data$gender2!="Other")) %>% 
+  add_header_above(header = c("", "Loss of employment" = 3))
+
+kable(xtabs(formula = ~zipcode + gender2 + hardships_2, data = data, subset = data$gender2!="Other")) %>% 
+  add_header_above(header = c("", "Difficulty in paying utility bills" = 3))
+
+kable(xtabs(formula = ~zipcode + gender2 + hardships_3, data = data, subset = data$gender2!="Other")) %>% 
+  add_header_above(header = c("", "Difficulty in affording the food you need" = 3))
+
+kable(xtabs(formula = ~zipcode + gender2 + hardships_4, data = data, subset = data$gender2!="Other")) %>% 
+  add_header_above(header = c("", "Difficulty in paying next rent or mortgage" = 3))
+
+kable(xtabs(formula = ~zipcode + gender2 + hardships_5, data = data, subset = data$gender2!="Other")) %>% 
+  add_header_above(header = c("", "Difficulty in paying medical bill/health insurance" = 3))
+
+kable(xtabs(formula = ~zipcode + gender2 + hardships_6, data = data, subset = data$gender2!="Other")) %>% 
+  add_header_above(header = c("", "Delay getting medical care or prescription medication" = 3))
+```
+
 
 ```{r, include=FALSE, message=FALSE}
 data <- data %>% 
@@ -159,38 +196,53 @@ data %>%
 
 ```{r, include=FALSE}
 h1 <- data %>% 
-  select(zipcode, hardships_1:hardships_6, hards, bad) %>% 
+  select(zipcode, hardships_1:hardships_6, age:bad) %>% 
   filter(bad == "One hardship") 
 
 h2 <- data %>% 
-  select(zipcode, hardships_1:hardships_6, hards, bad) %>% 
+  select(zipcode, hardships_1:hardships_6, age:bad) %>% 
   filter(bad == "Two hardships") 
 
 h3 <- data %>% 
-  select(zipcode, hardships_1:hardships_6, hards, bad) %>% 
+  select(zipcode, hardships_1:hardships_6, age:bad) %>% 
   filter(bad == "More than two") 
-
+####################
 h11 <- h1 %>% 
   group_by(zipcode) %>% 
   summarise_at(vars(hardships_1:hardships_6), funs(round(mean(., na.rm = T), 3)))
+h12 <- h1 %>% 
+  group_by(zipcode, gender2) %>% 
+  summarise_at(vars(hardships_1:hardships_6), funs(round(mean(., na.rm = T), 3)))
 
+h21 <- h2 %>% 
+  group_by(zipcode) %>% 
+  summarise_at(vars(hardships_1:hardships_6), funs(round(mean(., na.rm = T), 3)))
 h22 <- h2 %>% 
-  group_by(zipcode) %>% 
+  group_by(zipcode, gender2) %>% 
   summarise_at(vars(hardships_1:hardships_6), funs(round(mean(., na.rm = T), 3)))
 
-h33 <- h3 %>% 
+h31 <- h3 %>% 
   group_by(zipcode) %>% 
   summarise_at(vars(hardships_1:hardships_6), funs(round(mean(., na.rm = T), 3)))
-
+h32 <- h3 %>% 
+  group_by(zipcode, gender2) %>% 
+  summarise_at(vars(hardships_1:hardships_6), funs(round(mean(., na.rm = T), 3)))
+################
 h11 <- h11 %>%  
   tidyr::pivot_longer(cols = 2:7, names_to = "hard", values_to = "mean")
+h12 <- h12 %>%  
+  tidyr::pivot_longer(cols = 3:8, names_to = "hard", values_to = "mean")
 
+h21 <- h21 %>%  
+  tidyr::pivot_longer(cols = 2:7, names_to = "hard", values_to = "mean")
 h22 <- h22 %>%  
-  tidyr::pivot_longer(cols = 2:7, names_to = "hard", values_to = "mean")
+  tidyr::pivot_longer(cols = 3:8, names_to = "hard", values_to = "mean")
 
-h33 <- h33 %>%  
+h31 <- h31 %>%  
   tidyr::pivot_longer(cols = 2:7, names_to = "hard", values_to = "mean")
-
+h32 <- h32 %>%  
+  tidyr::pivot_longer(cols = 3:8, names_to = "hard", values_to = "mean")
+###############
 h11 <- h11 %>% 
   mutate(hard = case_when(hard %in% "hardships_1" ~ "Loss of employment",
                           hard %in% "hardships_2" ~ "Paying utility bills",
@@ -198,7 +250,21 @@ h11 <- h11 %>%
                           hard %in% "hardships_4" ~ "Paying next rent",
                           hard %in% "hardships_5" ~ "Paying medical bill",
                           hard %in% "hardships_6" ~ "Delay getting medical"))
+h12 <- h12 %>% 
+  mutate(hard = case_when(hard %in% "hardships_1" ~ "Loss of employment",
+                          hard %in% "hardships_2" ~ "Paying utility bills",
+                          hard %in% "hardships_3" ~ "Affording food",
+                          hard %in% "hardships_4" ~ "Paying next rent",
+                          hard %in% "hardships_5" ~ "Paying medical bill",
+                          hard %in% "hardships_6" ~ "Delay getting medical"))
 
+h21 <- h21 %>% 
+  mutate(hard = case_when(hard %in% "hardships_1" ~ "Loss of employment",
+                          hard %in% "hardships_2" ~ "Paying utility bills",
+                          hard %in% "hardships_3" ~ "Affording food",
+                          hard %in% "hardships_4" ~ "Paying next rent",
+                          hard %in% "hardships_5" ~ "Paying medical bill",
+                          hard %in% "hardships_6" ~ "Delay getting medical"))
 h22 <- h22 %>% 
   mutate(hard = case_when(hard %in% "hardships_1" ~ "Loss of employment",
                           hard %in% "hardships_2" ~ "Paying utility bills",
@@ -207,25 +273,38 @@ h22 <- h22 %>%
                           hard %in% "hardships_5" ~ "Paying medical bill",
                           hard %in% "hardships_6" ~ "Delay getting medical"))
 
-h33 <- h33 %>% 
+h31 <- h31 %>% 
   mutate(hard = case_when(hard %in% "hardships_1" ~ "Loss of employment",
                           hard %in% "hardships_2" ~ "Paying utility bills",
                           hard %in% "hardships_3" ~ "Affording food",
                           hard %in% "hardships_4" ~ "Paying next rent",
                           hard %in% "hardships_5" ~ "Paying medical bill",
                           hard %in% "hardships_6" ~ "Delay getting medical"))
-
+h32 <- h32 %>% 
+  mutate(hard = case_when(hard %in% "hardships_1" ~ "Loss of employment",
+                          hard %in% "hardships_2" ~ "Paying utility bills",
+                          hard %in% "hardships_3" ~ "Affording food",
+                          hard %in% "hardships_4" ~ "Paying next rent",
+                          hard %in% "hardships_5" ~ "Paying medical bill",
+                          hard %in% "hardships_6" ~ "Delay getting medical"))
+######################
 h11$hard <- ordered(h11$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
                                          "Paying next rent", "Paying medical bill", "Delay getting medical"))
-
-h22$hard <- ordered(h11$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
+h12$hard <- ordered(h12$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
                                          "Paying next rent", "Paying medical bill", "Delay getting medical"))
 
-h33$hard <- ordered(h11$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
+h21$hard <- ordered(h21$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
+                                         "Paying next rent", "Paying medical bill", "Delay getting medical"))
+h22$hard <- ordered(h22$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
+                                         "Paying next rent", "Paying medical bill", "Delay getting medical"))
+
+h31$hard <- ordered(h31$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
+                                         "Paying next rent", "Paying medical bill", "Delay getting medical"))
+h32$hard <- ordered(h32$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
                                          "Paying next rent", "Paying medical bill", "Delay getting medical"))
 ```
 
-```{r}
+```{r plots_1}
 h11 %>% 
   mutate(label = scales::percent(mean, accuracy = 0.1)) %>% 
   ggplot(aes(x = hard, y = mean, fill = zipcode)) +
@@ -245,7 +324,7 @@ h11 %>%
   theme(legend.position = c(.8, .8), legend.box.just = "right", legend.background = element_rect("gray95"), 
         plot.caption = element_text(size = 8), axis.text.x = element_text(size = 8), panel.background = element_rect("gray95"))
 
-h22 %>% 
+h21 %>% 
   mutate(label = scales::percent(mean, accuracy = 0.1)) %>% 
   ggplot(aes(x = hard, y = mean, fill = zipcode)) +
   geom_bar(stat = "identity", 
@@ -264,7 +343,7 @@ h22 %>%
   theme(legend.position = c(.8, .8), legend.box.just = "right", legend.background = element_rect("gray95"), 
         plot.caption = element_text(size = 8), axis.text.x = element_text(size = 8), panel.background = element_rect("gray95"))
 
-h33 %>% 
+h31 %>% 
   mutate(label = scales::percent(mean, accuracy = 0.1)) %>% 
   ggplot(aes(x = hard, y = mean, fill = zipcode)) +
   geom_bar(stat = "identity", 
@@ -284,12 +363,84 @@ h33 %>%
         plot.caption = element_text(size = 8), axis.text.x = element_text(size = 8), panel.background = element_rect("gray95"))
 ```
 
+```{r plots_2}
+h12 %>% 
+  filter(gender2 != "Other") %>% 
+  mutate(label = scales::percent(mean, accuracy = 0.1)) %>% 
+  ggplot(aes(x = hard, y = mean, fill = gender2)) +
+  geom_bar(stat = "identity", 
+           position = "dodge", 
+           color = "black") +
+  geom_text(aes(y = mean, label = label), size = 3, color = "black", position = position_dodge(width = .9), vjust = -.5) +
+  facet_grid(~zipcode) +
+  scale_fill_manual(values = park) +
+  scale_y_continuous(breaks = seq(0, 1, .15), label = scales::percent) +
+  labs(x = NULL, 
+       y = NULL, 
+       fill = NULL, 
+       caption = "2021 San Antonio Energy and Time Use Survey", 
+       title = "Hardship by zip code",
+       subtitle = "Respondents with one hardship") +
+  theme_classic() +
+  theme(legend.position = c(.8, .8), legend.box.just = "right", legend.background = element_rect("gray95"), 
+        plot.caption = element_text(size = 8), axis.text.x = element_text(size = 8), panel.background = element_rect("gray95"))
+
+h22 %>% 
+  filter(gender2 != "Other") %>% 
+  mutate(label = scales::percent(mean, accuracy = 0.1)) %>% 
+  ggplot(aes(x = hard, y = mean, fill = gender2)) +
+  geom_bar(stat = "identity", 
+           position = "dodge", 
+           color = "black") +
+  geom_text(aes(y = mean, label = label), size = 3, color = "black", position = position_dodge(width = .9), vjust = -.5) +
+  facet_grid(~zipcode) +
+  scale_fill_manual(values = park) +
+  scale_y_continuous(breaks = seq(0, 1, .15), label = scales::percent) +
+  labs(x = NULL, 
+       y = NULL, 
+       fill = NULL, 
+       caption = "2021 San Antonio Energy and Time Use Survey", 
+       title = "Hardship by zip code",
+       subtitle = "Respondents with one hardship") +
+  theme_classic() +
+  theme(legend.position = c(.8, .8), legend.box.just = "right", legend.background = element_rect("gray95"), 
+        plot.caption = element_text(size = 8), axis.text.x = element_text(size = 8), panel.background = element_rect("gray95"))
+
+h32 %>% 
+  filter(gender2 != "Other") %>% 
+  mutate(label = scales::percent(mean, accuracy = 0.1)) %>% 
+  ggplot(aes(x = hard, y = mean, fill = gender2)) +
+  geom_bar(stat = "identity", 
+           position = "dodge", 
+           color = "black") +
+  geom_text(aes(y = mean, label = label), size = 3, color = "black", position = position_dodge(width = .9), vjust = -.5) +
+  facet_grid(~zipcode) +
+  scale_fill_manual(values = park) +
+  scale_y_continuous(breaks = seq(0, 1, .15), label = scales::percent) +
+  labs(x = NULL, 
+       y = NULL, 
+       fill = NULL, 
+       caption = "2021 San Antonio Energy and Time Use Survey", 
+       title = "Hardship by zip code",
+       subtitle = "Respondents with one hardship") +
+  theme_classic() +
+  theme(legend.position = c(.9, .85), legend.box.just = "right", legend.background = element_rect("gray95"), 
+        plot.caption = element_text(size = 8), axis.text.x = element_text(size = 8), panel.background = element_rect("gray95"))
+
+```
 
 
 
+```{r}
+view(dfSummary(h1, plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
+```
+```{r}
+view(dfSummary(h2, plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
+```
 
-
-
+```{r}
+view(dfSummary(h3, plain.ascii = F, graph.magnif = .75, labels.col = T, max.string.width = 15), method = "render")
+```
 
 
 
