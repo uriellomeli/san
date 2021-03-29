@@ -14,14 +14,14 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r libs}
+```{r libs, message=FALSE, include=FALSE}
 library(nationalparkcolors)
 library(treemapify)
 library(ggplot2)
 library(dplyr)
 ```
 
-```{r}
+```{r, include=FALSE}
 load(file = "~/GitHub/saetus/data_recode.RData")
 ```
 
@@ -39,7 +39,7 @@ park3 <- park_palette("GeneralGrant", n = 7)
 
 Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships: 
 
-```{r}
+```{r, include=FALSE, message=FALSE}
 data <- data %>% 
   mutate_at(vars(hardships_1:hardships_6), funs(recode(., "Yes" = as.numeric(1), "No" = as.numeric(0)))) %>% 
   mutate(hards = hardships_1+hardships_2+hardships_3+hardships_4+hardships_5+hardships_6)
@@ -60,8 +60,6 @@ data %>%
   scale_fill_manual(values = park2) +
   theme_classic() 
 
-str(data$race_eth)
-
 data %>% 
   filter(!is.na(hards), !is.na(race_eth)) %>% 
   ggplot(aes(x = hards)) + 
@@ -74,7 +72,7 @@ data %>%
   scale_y_continuous(labels = scales::percent)
 ```
 
-```{r}
+```{r, include=FALSE, message=FALSE}
 x <- data %>%
   filter(race_eth != "NH-Other") %>% 
   group_by(zipcode, race_eth) %>% 
@@ -88,7 +86,7 @@ x2 <- data %>%
          lbl = scales::percent(pct, accuracy = 0.1))
 ```
 
-```{r}
+```{r, include=FALSE, message=FALSE}
 x %>%
   ggplot(aes(fill = race_eth, area = mean.hard,  label = race_eth)) +
   geom_treemap() + 
@@ -102,7 +100,7 @@ x %>%
 x2 %>% 
   ggplot(aes(x = race_eth, y = pct, fill = zipcode)) + 
   geom_bar(stat = "identity", position = "fill") +
-  geom_text(aes(label = lbl), size = 3, color = "black", position = position_fill(vjust = .5)) +
+  geom_text(aes(label = lbl), size = 3, color = "gray60", position = position_fill(vjust = .5)) +
   scale_y_continuous(breaks = seq(0, 1, .2), label = scales::percent) +
   scale_fill_manual(values = park) +
   labs(y = "Percent", 
@@ -113,7 +111,7 @@ x2 %>%
   theme(legend.position = "top")
 ```
 
-```{r}
+```{r, include=FALSE}
 data %>% 
   filter(!is.na(gender2), !is.na(hards), gender2 != "Other") %>% 
   ggplot(aes(x = hards, 
@@ -125,10 +123,7 @@ data %>%
   theme_classic()
 ```
 
-```{r}
-
-summary(data$hards)
-
+```{r, include=FALSE}
 data <- data %>% 
   mutate(bad = if_else(hards == 1, "One hardship", 
                        if_else(hards == 2, "Two hardships",
@@ -139,7 +134,7 @@ data$bad <- ordered(data$bad, levels = c("One hardship", "Two hardships", "More 
 addmargins(table(data$educ, data$bad), margin = 2)
 ```
 
-```{r}
+```{r, message=FALSE}
 data %>% 
   filter(!is.na(bad), !is.na(educ)) %>% 
   group_by(zipcode, bad, educ) %>% 
@@ -160,52 +155,59 @@ data %>%
   theme_minimal() +
   theme(legend.position = "bottom", 
         plot.caption = element_text(size = 8), panel.grid = element_blank())
-        
-data %>% 
-  filter(!is.na(bad), !is.na(educ)) %>% 
-  group_by(zipcode, bad) %>% 
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n), 
-         label = scales::percent(pct, accuracy = 0.1)) %>% 
-  ggplot(aes(x = bad, y = pct)) +
-  geom_bar(stat = "identity", position = "fill") +
-  geom_text(aes(label = label), size = 3, color = "black", position = position_fill(vjust = 0.5)) +
-  scale_y_continuous(breaks = seq(0, 1, .15), label = scales::percent) +
-  scale_fill_manual(values = park2) +
-  facet_grid(~zipcode) +
-  labs(y = NULL, 
-       x = NULL,
-       fill = NULL,
-       caption = "2021 San Antonio Energy and Time Use Survey",
-       title = "Distribution of hardships by educational level") +
-  theme_minimal() +
-  theme(legend.position = "bottom", 
-        plot.caption = element_text(size = 8), panel.grid = element_blank())
 ```
 
-```{r}
+```{r, include=FALSE}
 h1 <- data %>% 
   select(zipcode, hardships_1:hardships_6, hards, bad) %>% 
   filter(bad == "One hardship") 
 
+h2 <- data %>% 
+  select(zipcode, hardships_1:hardships_6, hards, bad) %>% 
+  filter(bad == "Two hardships") 
+
+h3 <- data %>% 
+  select(zipcode, hardships_1:hardships_6, hards, bad) %>% 
+  filter(bad == "More than two") 
+
 h11 <- h1 %>% 
+  group_by(zipcode) %>% 
+  summarise_at(vars(hardships_1:hardships_6), funs(round(mean(., na.rm = T), 3)))
+
+h22 <- h2 %>% 
+  group_by(zipcode) %>% 
+  summarise_at(vars(hardships_1:hardships_6), funs(round(mean(., na.rm = T), 3)))
+
+h33 <- h3 %>% 
   group_by(zipcode) %>% 
   summarise_at(vars(hardships_1:hardships_6), funs(round(mean(., na.rm = T), 3)))
 
 h11 <- h11 %>%  
   tidyr::pivot_longer(cols = 2:7, names_to = "hard", values_to = "mean")
 
-h11 %>% 
-  ggplot(aes(hard)) +
-  geom_bar(aes(y = mean), stat = "identity") +
-  facet_grid(~zipcode) +
-  theme_classic()
-  
-```
+h22 <- h22 %>%  
+  tidyr::pivot_longer(cols = 2:7, names_to = "hard", values_to = "mean")
 
+h33 <- h33 %>%  
+  tidyr::pivot_longer(cols = 2:7, names_to = "hard", values_to = "mean")
 
-```{r}
 h11 <- h11 %>% 
+  mutate(hard = case_when(hard %in% "hardships_1" ~ "Loss of employment",
+                          hard %in% "hardships_2" ~ "Paying utility bills",
+                          hard %in% "hardships_3" ~ "Affording food",
+                          hard %in% "hardships_4" ~ "Paying next rent",
+                          hard %in% "hardships_5" ~ "Paying medical bill",
+                          hard %in% "hardships_6" ~ "Delay getting medical"))
+
+h22 <- h22 %>% 
+  mutate(hard = case_when(hard %in% "hardships_1" ~ "Loss of employment",
+                          hard %in% "hardships_2" ~ "Paying utility bills",
+                          hard %in% "hardships_3" ~ "Affording food",
+                          hard %in% "hardships_4" ~ "Paying next rent",
+                          hard %in% "hardships_5" ~ "Paying medical bill",
+                          hard %in% "hardships_6" ~ "Delay getting medical"))
+
+h33 <- h33 %>% 
   mutate(hard = case_when(hard %in% "hardships_1" ~ "Loss of employment",
                           hard %in% "hardships_2" ~ "Paying utility bills",
                           hard %in% "hardships_3" ~ "Affording food",
@@ -216,7 +218,14 @@ h11 <- h11 %>%
 h11$hard <- ordered(h11$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
                                          "Paying next rent", "Paying medical bill", "Delay getting medical"))
 
+h22$hard <- ordered(h11$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
+                                         "Paying next rent", "Paying medical bill", "Delay getting medical"))
 
+h33$hard <- ordered(h11$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
+                                         "Paying next rent", "Paying medical bill", "Delay getting medical"))
+```
+
+```{r}
 h11 %>% 
   mutate(label = scales::percent(mean, accuracy = 0.1)) %>% 
   ggplot(aes(x = hard, y = mean, fill = zipcode)) +
@@ -236,6 +245,43 @@ h11 %>%
   theme(legend.position = c(.8, .8), legend.box.just = "right", legend.background = element_rect("gray95"), 
         plot.caption = element_text(size = 8), axis.text.x = element_text(size = 8), panel.background = element_rect("gray95"))
 
+h22 %>% 
+  mutate(label = scales::percent(mean, accuracy = 0.1)) %>% 
+  ggplot(aes(x = hard, y = mean, fill = zipcode)) +
+  geom_bar(stat = "identity", 
+           position = "dodge", 
+           color = "black") +
+  geom_text(aes(y = mean, label = label), size = 3, color = "black", position = position_dodge(width = .9), vjust = -.5) +
+  scale_fill_manual(values = park) +
+  scale_y_continuous(breaks = seq(0, 1, .15), label = scales::percent) +
+  labs(x = NULL, 
+       y = NULL, 
+       fill = NULL, 
+       caption = "2021 San Antonio Energy and Time Use Survey", 
+       title = "Hardship by zip code",
+       subtitle = "Respondents with two hardships") +
+  theme_classic() +
+  theme(legend.position = c(.8, .8), legend.box.just = "right", legend.background = element_rect("gray95"), 
+        plot.caption = element_text(size = 8), axis.text.x = element_text(size = 8), panel.background = element_rect("gray95"))
+
+h33 %>% 
+  mutate(label = scales::percent(mean, accuracy = 0.1)) %>% 
+  ggplot(aes(x = hard, y = mean, fill = zipcode)) +
+  geom_bar(stat = "identity", 
+           position = "dodge", 
+           color = "black") +
+  geom_text(aes(y = mean, label = label), size = 3, color = "black", position = position_dodge(width = .9), vjust = -.5) +
+  scale_fill_manual(values = park) +
+  scale_y_continuous(breaks = seq(0, 1, .15), label = scales::percent) +
+  labs(x = NULL, 
+       y = NULL, 
+       fill = NULL, 
+       caption = "2021 San Antonio Energy and Time Use Survey", 
+       title = "Hardship by zip code",
+       subtitle = "Respondents with more than two hardship") +
+  theme_classic() +
+  theme(legend.position = c(.8, .8), legend.box.just = "right", legend.background = element_rect("gray95"), 
+        plot.caption = element_text(size = 8), axis.text.x = element_text(size = 8), panel.background = element_rect("gray95"))
 ```
 
 
