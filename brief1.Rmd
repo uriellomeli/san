@@ -51,15 +51,15 @@ themeu <- theme(legend.position = "bottom",
                 legend.text = element_text(size = 15, color = "gray40"), 
                 legend.key.size = unit(.5, "cm"),
                 panel.background = element_rect(colour = "black"),
-                plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5), 
+                plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5, lineheight = .5), 
                 plot.caption = element_text(size = 15),
                 plot.subtitle = element_text(colour = "gray50", face = "bold", size = 22, lineheight = .5, hjust = .5, vjust = .5),
                 axis.text = element_text(size = 20))
 
 themeuf <- theme(legend.position = "top", 
-                legend.text = element_text(size = 15, color = "gray40"), 
+                legend.text = element_text(size = 17, color = "gray40"), 
                 legend.key.size = unit(.5, "cm"),
-                legend.title = element_text(color = "gray40", face = "bold", size = 15), 
+                legend.title = element_text(color = "gray40", face = "bold", size = 17), 
                 panel.background = element_rect(colour = "black"),
                 plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5, lineheight = .5), 
                 plot.caption = element_text(size = 15),
@@ -69,16 +69,16 @@ themeuf <- theme(legend.position = "top",
                 axis.title.x = element_text(color = "gray40", size = 20))
 ```
 
-## Hardships
+# Hardships
 
-Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships: 
-  
-  Loss of employment income   
-  Difficulty in paying utility bills (electricity, gas, cellphone, internet)   
-  Difficulty in affording the kinds of food you need   
-  Difficulty in paying next rent or mortgage payment   
-  Difficulty in paying medical bill/health insurance 
-  Delay getting/Do not get medical care or prescription medication
+Loss of employment became a major economic shock to many families and individuals who experienced it or are still experiencing it. Since the onset of the COVID-19 pandemic, unemployment in the United States has reached record highs.
+
+In the summer of 2020, the Household Pulse Survey showed that in the United States, 126, 554, 411 people (51.1% of the adult population) had experienced loss of employment income. In Texas they were 11, 384, 721 (53.5%), and in the two metropolitan areas of this state that were considered, Dallas-Forth Worth-Arlington and Houston-The Woodlands-Sugar Land, they were 3, 002, 219 (56.3%) and 3, 687, 668 (59.2%), respectively.
+
+The **San Antonio Energy and Time Use Survey** is an online survey that was answered between March 22-24 by residents of zip codes 78230 (referred to as **Elm Creek**) and 78202 (referred to as **Jefferson Heights**). With the information obtained from this source, we present a snapshot of the employment loss hardships experienced by these San Antonio residents. 
+
+Since the onset of COVID-19 (March 2020), **57.4%** experienced the loss of employment income. This figure was **60% in Elm Creek** and **40% in Jefferson Heights**. Figure 1 also shows the percentage of residents by race and ethnicity who experienced job loss. 
+
 
 ```{r, include=FALSE, eval=FALSE}
 round(prop.table(table(data$bad, data$depen), 1)*100, 1)
@@ -104,6 +104,14 @@ lossxrace2 <- data %>%
   summarize(n = n()) %>% 
   mutate(pct = n/sum(n),
          lbl = scales::percent(pct, accuracy = 0.1)) 
+
+data %>%
+  filter(hardships_1 == 1) %>% 
+  group_by(zipcode) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) 
+
 ```
 
 ```{r plot_loss_income}
@@ -114,28 +122,36 @@ loss %>%
   scale_y_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_fill_jama() +
   labs(y = NULL, x = NULL, fill = NULL,
-       title = "Loss of employment distribution by race and ethnicity", 
+       title = "Figure 1. Loss of employment distribution by race and ethnicity", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
   themeu
 
-lossxrace2 %>% 
-  ggplot(aes(x = zipcode, y = pct, fill = race_eth2)) + 
-  geom_bar(stat = "identity", position = "dodge", color = "gray30", width = .7) +
-  geom_text(aes(label = lbl), size = 7, color = "gray30", position = position_dodge(width = .7), vjust = -.7) +
-  scale_y_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
-  scale_fill_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(fill = guide_legend(label.position = "right", label.vjust = 0.5, label.hjust = 1)) +
-  labs(y = NULL, x = NULL, fill = NULL,
-       title = "Loss of employment distribution by race and ethnicity", 
+loss %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth, pct), color = zipcode)) +
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 5, color = "gray30", nudge_x = .01, nudge_y = .01, segment.alpha = 0) +
+  scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 1. Loss of employment distribution by race and ethnicity", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
-  themeu
+  themeuf
 ```
 
-```{r days_health, message=FALSE}
+## Loss of employment and health
+
+The impacts of the pandemic are particularly prevalent among African American, Latinx, indigenous, and immigrant households. One representation of long-standing inequalities and an orderly system that reinforces the inequality gap between the different groups.
+
+In many cases, job loss also represents loss of main income for the household, specially in households with dependents. In such cases, paying for the necessary food, the utility bills or rent/mortgage, can turn dramatically into more hardships to deal with during this pandemic.
+
+An adequate state of health would be difficult to achieve under these conditions. In Figure 2 we show the self-reported health status among those respondents who lost their jobs.
+
+```{r days_health, include=FALSE, message=FALSE}
 lossxhealth <- data %>%
   filter(hardships_1 == 1) %>% 
   group_by(zipcode, health) %>%
@@ -145,7 +161,7 @@ lossxhealth <- data %>%
 
 lossxhealth2 <- data %>%
   filter(hardships_1 == 1) %>% 
-  group_by(zipcode, race_eth2, depen) %>%
+  group_by(zipcode, race_eth, depen) %>%
   summarize(ph.mean = round(mean(physical_health), 1),
             mh.mean = round(mean(mental_health), 1)) 
 ```
@@ -160,21 +176,40 @@ lossxhealth %>%
   labs(y = NULL, 
        fill = NULL,
        x = NULL, 
-       title = "Loss of employment distribution by self-rated health status", 
+       title = str_wrap("Figure 2. Self-rated health status distribution among those who lost their job", width = 60), 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
   themeu
 
+lossxhealth %>% 
+  ggplot(aes(color = zipcode, x = pct, y = reorder(health, pct))) + 
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 5, color = "gray30", nudge_x = .01, segment.alpha = 0) +
+  scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette(name = "Zissou1", n = 5)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = str_wrap("Figure 2. Self-rated health status distribution among those who lost their job", width = 60), 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+```
+
+## Loss of employment and health II
+
+We present the average number of days with not good physical health and mental health among those who lost their job. 
+
+```{r plot_days_health_ii}
 lossxhealth2 %>% 
   mutate(label = ph.mean) %>% 
-  ggplot(aes(x = ph.mean, y = race_eth2)) + 
-  geom_line(color = "gray70", size = 2) +
-  geom_point(aes(color = depen), size = 6, shape = 19) +
+  ggplot(aes(x = ph.mean, y = reorder(race_eth, ph.mean))) + 
+  geom_line(color = "gray70", size = 1) +
+  geom_point(aes(color = depen), size = 5, shape = 19) +
   facet_grid(~zipcode) +
-  geom_text_repel(aes(label = label, x = ph.mean), size = 6, color = "gray30", nudge_y = .2, segment.alpha = 0) +
+  geom_text_repel(aes(label = label, x = ph.mean), size = 5, color = "gray30", nudge_x = .2, segment.alpha = 0) +
   scale_color_igv(palette = "alternating") +
-  scale_x_continuous(limits = c(1, 4), breaks = seq(1, 4, 1)) +
+  scale_x_continuous(limits = c(0, 5), breaks = seq(0, 5, 1)) +
   guides(color = guide_legend(label.position = "left", title.position = "left")) +
   labs(y = NULL, 
        color = "Do you have any dependents?",
@@ -187,13 +222,13 @@ lossxhealth2 %>%
 
 lossxhealth2 %>% 
   mutate(label = mh.mean) %>% 
-  ggplot(aes(x = mh.mean, y = race_eth2)) + 
-  geom_line(color = "gray70", size = 2) +
-  geom_point(aes(color = depen), size = 6, shape = 19) +
+  ggplot(aes(x = mh.mean, y = reorder(race_eth, mh.mean))) + 
+  geom_line(color = "gray70", size = 1) +
+  geom_point(aes(color = depen), size = 5, shape = 19) +
   facet_grid(~zipcode) +
-  geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .2, segment.alpha = 0) +
+  geom_text_repel(aes(label = label, x = mh.mean), size = 5, color = "gray30", nudge_x = .2, nudge_y = .2, segment.alpha = 0) +
   scale_color_igv(palette = "alternating") +
-  scale_x_continuous(limits = c(2, 6), breaks = seq(2, 6, 1)) +
+  scale_x_continuous(limits = c(0, 12), breaks = seq(0, 12, 2)) +
   guides(color = guide_legend(label.position = "left", title.position = "left")) +
   labs(y = NULL,  
        x = "Number of days", 
@@ -205,45 +240,25 @@ lossxhealth2 %>%
   themeuf
 ```
 
-```{r, message=FALSE}
-lossxbad <- data %>% 
-  filter(bad != "Two hardships") %>% 
-  group_by(zipcode, bad, health) %>%
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1)) 
+## Loss of employment and health III
 
-lossxbad %>% 
-  ggplot(aes(x = bad, y = pct, fill = health)) + 
-  geom_bar(stat = "identity", position = "dodge", color = "gray30", width = 1) +
-  geom_text(aes(label = lbl), size = 6, color = "gray30", position = position_dodge(width = .9), vjust = -.5, hjust=.5) +
-  facet_grid(~zipcode) +
-  scale_y_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
-  scale_fill_manual(values = wes_palette(name = "Zissou1", n = 5)) +
-  guides(fill = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
-  labs(y = NULL,  x = NULL, fill = NULL,
-       title = "Loss of employment distribution by health status", 
-       subtitle = 
-         str_wrap("We show the distribution of health status among those who have experienced one and three or more hardhips since the onset of COVID-19 (March 2020)"),
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
-  theme_classic() +
-  themeu + theme(strip.text = element_text(size = 20))
-```
+We present the average number of days with not good physical health and mental health among those who lost their job and experienced two more hardships like difficulty in paying utility bills, in affording the kinds of food you need, in paying next rent or mortgage payment, in paying medical bill/health insurance, add delay getting/Do not get medical care or prescription medication. 
+
 
 ```{r, message=FALSE}
 lossxbad2 <- data %>% 
   filter(bad == "More than two", hardships_1 == 1) %>% 
-  group_by(zipcode, race_eth2, depen) %>%
+  group_by(zipcode, race_eth, depen) %>%
   summarize(ph.mean = round(mean(physical_health), 1),
             mh.mean = round(mean(mental_health), 1)) 
 
 lossxbad2 %>% 
   mutate(label = ph.mean) %>% 
-  ggplot(aes(x = ph.mean, y = race_eth2)) + 
-  geom_line(color = "gray70", size = 2) +
-  geom_point(aes(color = depen), size = 6, shape = 19) +
+  ggplot(aes(x = ph.mean, y = reorder(race_eth, ph.mean))) + 
+  geom_line(color = "gray70", size = 1) +
+  geom_point(aes(color = depen), size = 5, shape = 19) +
   facet_grid(~zipcode) +
-  geom_text(aes(label = label, x = ph.mean), size = 6, color = "gray30", nudge_y = .2) +
+  geom_text(aes(label = label, x = ph.mean), size = 5, color = "gray30", nudge_y = .2) +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 7), breaks = seq(0, 7, 1)) +
   guides(color = guide_legend(label.position = "left", title.position = "left")) +
@@ -258,11 +273,11 @@ lossxbad2 %>%
 
 lossxbad2 %>% 
   mutate(label = mh.mean) %>% 
-  ggplot(aes(x = mh.mean, y = race_eth2)) + 
-  geom_line(color = "gray70", size = 2) +
-  geom_point(aes(color = depen), size = 6, shape = 19) +
+  ggplot(aes(x = mh.mean, y = reorder(race_eth, mh.mean))) + 
+  geom_line(color = "gray70", size = 1) +
+  geom_point(aes(color = depen), size = 5, shape = 19) +
   facet_grid(~zipcode) +
-  geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .2, segment.alpha = 0) +
+  geom_text_repel(aes(label = label, x = mh.mean), size = 5, color = "gray30", nudge_y = .2, segment.alpha = 0) +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 15), breaks = seq(0, 15, 3)) +
   guides(color = guide_legend(label.position = "left", title.position = "left")) +
@@ -385,29 +400,3 @@ h31$hard <- ordered(h31$hard, levels = c("Loss of employment", "Paying utility b
 h32$hard <- ordered(h32$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
                                          "Paying next rent", "Paying medical bill", "Delay getting medical"))
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
