@@ -91,9 +91,7 @@ round(prop.table(table(data$bad, data$depen), 1)*100, 1)
 
 round(prop.table(table(data$zipcode, data$bad), 1)*100, 1)
 
-xtabs(formula = ~zipcode + bad + gender2, data = data, subset = data$gender2!="Other")
-
-table(data$hardships_1)
+round(prop.table(table(data$hardships_1, data$zipcode), 1)*100, 1)
 ```
 
 ```{r loss_income, include=FALSE, message=FALSE}
