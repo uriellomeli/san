@@ -41,10 +41,11 @@ data <- data %>%
 data$bad <- ordered(data$bad, levels = c("One hardship", "Two hardships", "More than two"))
 data$race_eth <- ordered(data$race_eth, levels = c("Hispanic", "NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other"))
 data$race_eth2 <- ordered(data$race_eth2, levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Other"))
+data$health <- ordered(data$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
 ```
 
 ```{r themeu, include=FALSE, message=FALSE, warning=FALSE}
-sysfonts::font_add_google(name = "Lato", family = "foo")
+sysfonts::font_add_google(name = 'Lato', family = "foo")
 showtext::showtext_auto()
 
 themeu <- theme(legend.position = "bottom", 
@@ -54,7 +55,8 @@ themeu <- theme(legend.position = "bottom",
                 plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5, lineheight = .5), 
                 plot.caption = element_text(size = 15),
                 plot.subtitle = element_text(colour = "gray50", face = "bold", size = 22, lineheight = .5, hjust = .5, vjust = .5),
-                axis.text = element_text(size = 20))
+                axis.text = element_text(size = 20), 
+                text = element_text(family = "foo"))
 
 themeuf <- theme(legend.position = "top", 
                 legend.text = element_text(size = 17, color = "gray40"), 
@@ -66,7 +68,11 @@ themeuf <- theme(legend.position = "top",
                 plot.subtitle = element_text(colour = "gray50", face = "bold", size = 22, lineheight = .5, hjust = .5, vjust = .5),
                 axis.text = element_text(size = 20),
                 strip.text = element_text(size = 20), 
-                axis.title.x = element_text(color = "gray40", size = 20))
+                axis.title.x = element_text(color = "gray40", size = 20), 
+                panel.grid.major.x = element_blank(),
+                panel.grid.minor.x = element_blank(),
+                panel.grid.major.y = element_line(colour = "grey70", linetype = "dotted"),
+                text = element_text(family = "foo"))
 ```
 
 # Hardships
@@ -118,7 +124,7 @@ data %>%
 loss %>% 
   ggplot(aes(x = zipcode, y = pct, fill = race_eth)) + 
   geom_bar(stat = "identity", position = "dodge", color = "gray30") +
-  geom_text(aes(label = lbl), size = 6.5, color = "gray30", position = position_dodge(width = .9), vjust = -.7) +
+  geom_text(aes(label = lbl), size = 6.5, color = "gray30", position = position_dodge(width = .9), vjust = -.7, family = "foo") +
   scale_y_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_fill_jama() +
   labs(y = NULL, x = NULL, fill = NULL,
@@ -131,7 +137,7 @@ loss %>%
 loss %>% 
   ggplot(aes(x = pct, y = reorder(race_eth, pct), color = zipcode)) +
   geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 5, color = "gray30", nudge_x = .01, nudge_y = .01, segment.alpha = 0) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
@@ -170,7 +176,7 @@ lossxhealth2 <- data %>%
 lossxhealth %>% 
   ggplot(aes(x = zipcode, y = pct, fill = health)) + 
   geom_bar(stat = "identity", position = "dodge", color = "gray30") +
-  geom_text(aes(label = lbl), size = 7, color = "gray30", position = position_dodge(width = .9), vjust = -.7) +
+  geom_text(aes(label = lbl), size = 7, color = "gray30", position = position_dodge(width = .9), vjust = -.7, family = "foo") +
   scale_y_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_fill_manual(values = wes_palette(name = "Zissou1", n = 5)) +
   labs(y = NULL, 
@@ -183,11 +189,12 @@ lossxhealth %>%
   themeu
 
 lossxhealth %>% 
-  ggplot(aes(color = zipcode, x = pct, y = reorder(health, pct))) + 
+  ggplot(aes(color = zipcode, x = pct, y = health)) + 
   geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 5, color = "gray30", nudge_x = .01, segment.alpha = 0) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
-  scale_color_manual(values = wes_palette(name = "Zissou1", n = 5)) +
+  scale_y_discrete(limits = rev(levels(data$health))) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   labs(y = NULL, x = NULL, color = NULL,
        title = str_wrap("Figure 2. Self-rated health status distribution among those who lost their job", width = 60), 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
@@ -207,7 +214,7 @@ lossxhealth2 %>%
   geom_line(color = "gray70", size = 1) +
   geom_point(aes(color = depen), size = 5, shape = 19) +
   facet_grid(~zipcode) +
-  geom_text_repel(aes(label = label, x = ph.mean), size = 5, color = "gray30", nudge_x = .2, segment.alpha = 0) +
+  geom_text_repel(aes(label = label, x = ph.mean), size = 6, color = "gray30", nudge_y = .31, segment.alpha = 0, family = "foo") +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 5), breaks = seq(0, 5, 1)) +
   guides(color = guide_legend(label.position = "left", title.position = "left")) +
@@ -226,7 +233,7 @@ lossxhealth2 %>%
   geom_line(color = "gray70", size = 1) +
   geom_point(aes(color = depen), size = 5, shape = 19) +
   facet_grid(~zipcode) +
-  geom_text_repel(aes(label = label, x = mh.mean), size = 5, color = "gray30", nudge_x = .2, nudge_y = .2, segment.alpha = 0) +
+  geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .31, segment.alpha = 0, family = "foo") +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 12), breaks = seq(0, 12, 2)) +
   guides(color = guide_legend(label.position = "left", title.position = "left")) +
@@ -258,7 +265,7 @@ lossxbad2 %>%
   geom_line(color = "gray70", size = 1) +
   geom_point(aes(color = depen), size = 5, shape = 19) +
   facet_grid(~zipcode) +
-  geom_text(aes(label = label, x = ph.mean), size = 5, color = "gray30", nudge_y = .2) +
+  geom_text(aes(label = label, x = ph.mean), size = 6, color = "gray30", nudge_y = .3) +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 7), breaks = seq(0, 7, 1)) +
   guides(color = guide_legend(label.position = "left", title.position = "left")) +
@@ -277,7 +284,7 @@ lossxbad2 %>%
   geom_line(color = "gray70", size = 1) +
   geom_point(aes(color = depen), size = 5, shape = 19) +
   facet_grid(~zipcode) +
-  geom_text_repel(aes(label = label, x = mh.mean), size = 5, color = "gray30", nudge_y = .2, segment.alpha = 0) +
+  geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .3, segment.alpha = 0) +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 15), breaks = seq(0, 15, 3)) +
   guides(color = guide_legend(label.position = "left", title.position = "left")) +
