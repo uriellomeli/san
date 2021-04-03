@@ -147,8 +147,9 @@ loss %>%
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
-  labs(y = NULL, x = NULL, color = NULL,
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1),
+         size = FALSE) +
+  labs(y = NULL, x = NULL, color = NULL, size = NULL,
        title = "Figure 1. Loss of employment distribution by race and ethnicity", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
@@ -217,6 +218,7 @@ lossxhealth %>%
   scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_y_discrete(limits = rev(levels(data$health))) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(size = FALSE) +
   labs(y = NULL, x = NULL, color = NULL,
        title = str_wrap("Figure 2. Self-rated health status distribution among those who lost their job", width = 60), 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
@@ -310,7 +312,8 @@ lossxbad2 %>%
   geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .3, segment.alpha = 0) +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 15), breaks = seq(0, 15, 3)) +
-  guides(color = guide_legend(label.position = "left", title.position = "left")) +
+  guides(color = guide_legend(label.position = "left", title.position = "left"), 
+         size = FALSE) +
   labs(y = NULL, x = "Number of days", 
        color = "Do you have any dependents?",
        title = str_wrap("For how many days during the past 30 days was your mental health not good?", width = 50), 
