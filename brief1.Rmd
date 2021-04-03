@@ -30,17 +30,20 @@ load(file = "~/GitHub/saetus/data_recode.RData")
 
 data <- data %>% 
   mutate_at(vars(hardships_1:hardships_6), funs(recode(., "Yes" = as.numeric(1), "No" = as.numeric(0)))) %>% 
-  mutate(hards = hardships_1+hardships_2+hardships_3+hardships_4+hardships_5+hardships_6, 
+  mutate(hards = hardships_1 + hardships_2 + hardships_3 + hardships_4 + hardships_5 + hardships_6, 
          race_eth2 = case_when(race_eth %in% "NH-White" ~ "Non-Hispanic White",
                                race_eth %in% "Hispanic" ~ "Hispanic",
-                               race_eth %in% c("NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
+                               race_eth %in% "NH-Black" ~ "Non-Hispanic Black",
+                               race_eth %in% "NH-Asian" ~ "Non-Hispanic Asian",
+                               race_eth %in% c("NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
          bad = if_else(hards == 1, "One hardship", 
                        if_else(hards == 2, "Two hardships",
                                if_else(hards > 2, "More than two", NA_character_))))
 
 data$bad <- ordered(data$bad, levels = c("One hardship", "Two hardships", "More than two"))
 data$race_eth <- ordered(data$race_eth, levels = c("Hispanic", "NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other"))
-data$race_eth2 <- ordered(data$race_eth2, levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Other"))
+data$race_eth2 <- ordered(data$race_eth2, 
+                          levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Black", "Non-Hispanic Asian","Non-Hispanic Other"))
 data$health <- ordered(data$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
 ```
 
@@ -97,13 +100,6 @@ round(prop.table(table(data$hardships_1, data$zipcode), 1)*100, 1)
 ```{r loss_income, include=FALSE, message=FALSE}
 loss <- data %>%
   filter(hardships_1 == 1) %>% 
-  group_by(zipcode, race_eth) %>%
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1)) 
-
-lossxrace2 <- data %>%
-  filter(hardships_1 == 1) %>% 
   group_by(zipcode, race_eth2) %>%
   summarize(n = n()) %>% 
   mutate(pct = n/sum(n),
@@ -115,12 +111,11 @@ data %>%
   summarize(n = n()) %>% 
   mutate(pct = n/sum(n),
          lbl = scales::percent(pct, accuracy = 0.1)) 
-
 ```
 
 ```{r plot_loss_income}
 loss %>% 
-  ggplot(aes(x = zipcode, y = pct, fill = race_eth)) + 
+  ggplot(aes(x = zipcode, y = pct, fill = race_eth2)) + 
   geom_bar(stat = "identity", position = "dodge", color = "gray30") +
   geom_text(aes(label = lbl), size = 6.5, color = "gray30", position = position_dodge(width = .9), vjust = -.7, family = "foo") +
   scale_y_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
@@ -133,8 +128,22 @@ loss %>%
   themeu
 
 loss %>% 
-  ggplot(aes(x = pct, y = reorder(race_eth, pct), color = zipcode)) +
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = zipcode)) +
   geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 1. Loss of employment distribution by race and ethnicity", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = zipcode)) +
+  geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
@@ -165,9 +174,10 @@ lossxhealth <- data %>%
 
 lossxhealth2 <- data %>%
   filter(hardships_1 == 1) %>% 
-  group_by(zipcode, race_eth, depen) %>%
+  group_by(zipcode, race_eth2, depen) %>%
   summarize(ph.mean = round(mean(physical_health), 1),
-            mh.mean = round(mean(mental_health), 1)) 
+            mh.mean = round(mean(mental_health), 1),
+            n = n()) 
 ```
 
 ```{r plot_days_health}
@@ -199,6 +209,20 @@ lossxhealth %>%
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
   themeuf
+
+lossxhealth %>% 
+  ggplot(aes(color = zipcode, x = pct, y = health)) + 
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_y_discrete(limits = rev(levels(data$health))) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = str_wrap("Figure 2. Self-rated health status distribution among those who lost their job", width = 60), 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
 ```
 
 ## Loss of employment and health II
@@ -208,9 +232,9 @@ We present the average number of days with not good physical health and mental h
 ```{r plot_days_health_ii}
 lossxhealth2 %>% 
   mutate(label = ph.mean) %>% 
-  ggplot(aes(x = ph.mean, y = reorder(race_eth, ph.mean))) + 
+  ggplot(aes(x = ph.mean, y = reorder(race_eth2, ph.mean))) + 
   geom_line(color = "gray70", size = 1) +
-  geom_point(aes(color = depen), size = 5, shape = 19) +
+  geom_point(aes(color = depen, size = n), shape = 19) +
   facet_grid(~zipcode) +
   geom_text_repel(aes(label = label, x = ph.mean), size = 6, color = "gray30", nudge_y = .31, segment.alpha = 0, family = "foo") +
   scale_color_igv(palette = "alternating") +
@@ -227,9 +251,9 @@ lossxhealth2 %>%
 
 lossxhealth2 %>% 
   mutate(label = mh.mean) %>% 
-  ggplot(aes(x = mh.mean, y = reorder(race_eth, mh.mean))) + 
+  ggplot(aes(x = mh.mean, y = reorder(race_eth2, mh.mean))) + 
   geom_line(color = "gray70", size = 1) +
-  geom_point(aes(color = depen), size = 5, shape = 19) +
+  geom_point(aes(color = depen, size = n), shape = 19) +
   facet_grid(~zipcode) +
   geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .31, segment.alpha = 0, family = "foo") +
   scale_color_igv(palette = "alternating") +
@@ -253,15 +277,16 @@ We present the average number of days with not good physical health and mental h
 ```{r, message=FALSE}
 lossxbad2 <- data %>% 
   filter(bad == "More than two", hardships_1 == 1) %>% 
-  group_by(zipcode, race_eth, depen) %>%
+  group_by(zipcode, race_eth2, depen) %>%
   summarize(ph.mean = round(mean(physical_health), 1),
-            mh.mean = round(mean(mental_health), 1)) 
+            mh.mean = round(mean(mental_health), 1),
+            n = n()) 
 
 lossxbad2 %>% 
   mutate(label = ph.mean) %>% 
-  ggplot(aes(x = ph.mean, y = reorder(race_eth, ph.mean))) + 
+  ggplot(aes(x = ph.mean, y = reorder(race_eth2, ph.mean))) + 
   geom_line(color = "gray70", size = 1) +
-  geom_point(aes(color = depen), size = 5, shape = 19) +
+  geom_point(aes(color = depen, size = n), shape = 19) +
   facet_grid(~zipcode) +
   geom_text(aes(label = label, x = ph.mean), size = 6, color = "gray30", nudge_y = .3) +
   scale_color_igv(palette = "alternating") +
@@ -278,9 +303,9 @@ lossxbad2 %>%
 
 lossxbad2 %>% 
   mutate(label = mh.mean) %>% 
-  ggplot(aes(x = mh.mean, y = reorder(race_eth, mh.mean))) + 
+  ggplot(aes(x = mh.mean, y = reorder(race_eth2, mh.mean))) + 
   geom_line(color = "gray70", size = 1) +
-  geom_point(aes(color = depen), size = 5, shape = 19) +
+  geom_point(aes(color = depen, size = n), shape = 19) +
   facet_grid(~zipcode) +
   geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .3, segment.alpha = 0) +
   scale_color_igv(palette = "alternating") +
