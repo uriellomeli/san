@@ -62,20 +62,20 @@ themeu <- theme(legend.position = "bottom",
                 text = element_text(family = "foo"))
 
 themeuf <- theme(legend.position = "top", 
-                legend.text = element_text(size = 17, color = "gray40"), 
-                legend.key.size = grid::unit(.5, "cm"), 
-                legend.title = element_text(color = "gray40", face = "bold", size = 17), 
-                panel.background = element_rect(colour = "black"),
-                plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5, lineheight = .5), 
-                plot.caption = element_text(size = 15),
-                plot.subtitle = element_text(colour = "gray50", face = "bold", size = 22, lineheight = .5, hjust = .5, vjust = .5),
-                axis.text = element_text(size = 20),
-                strip.text = element_text(size = 20), 
-                axis.title.x = element_text(color = "gray40", size = 20), 
-                panel.grid.major.x = element_blank(),
-                panel.grid.minor.x = element_blank(),
-                panel.grid.major.y = element_line(colour = "grey70", linetype = "dotted"),
-                text = element_text(family = "foo"))
+                 legend.text = element_text(size = 17, color = "gray40"), 
+                 legend.key.size = grid::unit(.5, "cm"), 
+                 legend.title = element_text(color = "gray40", face = "bold", size = 17), 
+                 panel.background = element_rect(colour = "black"),
+                 plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5, lineheight = .5), 
+                 plot.caption = element_text(size = 15),
+                 plot.subtitle = element_text(colour = "gray50", face = "bold", size = 22, lineheight = .5, hjust = .5, vjust = .5),
+                 axis.text = element_text(size = 20),
+                 strip.text = element_text(size = 20), 
+                 axis.title.x = element_text(color = "gray40", size = 20), 
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank(),
+                 panel.grid.major.y = element_line(colour = "grey70", linetype = "dotted"),
+                 text = element_text(family = "foo"))
 ```
 
 # Hardships
@@ -147,7 +147,7 @@ loss %>%
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1),
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
          size = FALSE) +
   labs(y = NULL, x = NULL, color = NULL, size = NULL,
        title = "Figure 1. Loss of employment distribution by race and ethnicity", 
@@ -218,7 +218,8 @@ lossxhealth %>%
   scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_y_discrete(limits = rev(levels(data$health))) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(size = FALSE) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
+         size = FALSE) +
   labs(y = NULL, x = NULL, color = NULL,
        title = str_wrap("Figure 2. Self-rated health status distribution among those who lost their job", width = 60), 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
@@ -241,7 +242,8 @@ lossxhealth2 %>%
   geom_text_repel(aes(label = label, x = ph.mean), size = 6, color = "gray30", nudge_y = .31, segment.alpha = 0, family = "foo") +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 5), breaks = seq(0, 5, 1)) +
-  guides(color = guide_legend(label.position = "left", title.position = "left")) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
+         size = FALSE) +
   labs(y = NULL, 
        color = "Do you have any dependents?",
        x = "Number of days",
@@ -260,7 +262,8 @@ lossxhealth2 %>%
   geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .31, segment.alpha = 0, family = "foo") +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 12), breaks = seq(0, 12, 2)) +
-  guides(color = guide_legend(label.position = "left", title.position = "left")) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
+         size = FALSE) +
   labs(y = NULL,  
        x = "Number of days", 
        color = "Do you have any dependents?",
@@ -292,7 +295,8 @@ lossxbad2 %>%
   geom_text(aes(label = label, x = ph.mean), size = 6, color = "gray30", nudge_y = .3) +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 7), breaks = seq(0, 7, 1)) +
-  guides(color = guide_legend(label.position = "left", title.position = "left")) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
+         size = FALSE) +
   labs(y = NULL, x = "Number of days", 
        color = "Do you have any dependents?",
        title = str_wrap("For how many days during the past 30 days was your physical health not good?", width = 50), 
@@ -311,7 +315,7 @@ lossxbad2 %>%
   geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .3, segment.alpha = 0) +
   scale_color_igv(palette = "alternating") +
   scale_x_continuous(limits = c(0, 15), breaks = seq(0, 15, 3)) +
-  guides(color = guide_legend(label.position = "left", title.position = "left"), 
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
          size = FALSE) +
   labs(y = NULL, x = "Number of days", 
        color = "Do you have any dependents?",
@@ -433,8 +437,6 @@ h32$hard <- ordered(h32$hard, levels = c("Loss of employment", "Paying utility b
                                          "Paying next rent", "Paying medical bill", "Delay getting medical"))
 ```
 
-
-
 ## 1
 ```{r, include=FALSE, message=FALSE}
 loss.1 <- data %>% 
@@ -501,14 +503,14 @@ loss.6 <- data %>%
 hardships <- rbind(loss.1, loss.2, loss.3, loss.4, loss.5, loss.6)
 ```
 
-```{r plots_1}
+```{r plots_1, message=FALSE}
 loss.1 %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .02) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Loss of employment distribution by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
@@ -518,11 +520,11 @@ loss.1 %>%
 
 loss.2 %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .02) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Difficulty in paying utility bills by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties their paying utility bills"),
@@ -532,11 +534,11 @@ loss.2 %>%
 
 loss.3 %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .02) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Difficulty in affording the kinds of food you need by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties affording the food you need"),
@@ -546,11 +548,11 @@ loss.3 %>%
 
 loss.4 %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .02) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Difficulty in paying next rent or mortgage payment by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties paying rent or mortgage"),
@@ -560,11 +562,11 @@ loss.4 %>%
 
 loss.5 %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .02) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Difficulty in paying medical bill/health insurance by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties paying medical bills"),
@@ -574,11 +576,11 @@ loss.5 %>%
 
 loss.6 %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .02) +
   scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Delay getting medical care or prescription medication by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced delay getting medical care or prescription medication"),
@@ -589,13 +591,13 @@ loss.6 %>%
 hardships %>% 
   filter(hardships != "No difficulty") %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
-  scale_x_continuous(limits = c(0, .8), breaks = seq(0, 1, .15), label = scales::percent) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Loss of employment distribution by zip code", 
+       title = "Type of hardship experienced by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
@@ -608,11 +610,11 @@ data %>%
   mutate(pct = n/sum(n),
          lbl = scales::percent(pct, accuracy = 0.1)) %>% 
   ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
-  scale_x_continuous(limits = c(0, .8), breaks = seq(0, 1, .15), label = scales::percent) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, .7), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Number of hardships by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any type of hardships"),
@@ -650,7 +652,7 @@ loss.3r <- data %>%
   summarize(n = n()) %>% 
   mutate(pct = n/sum(n),
          lbl = scales::percent(pct, accuracy = 0.1),
-         hardships = if_else(hardships == 1, "Affording foods", 
+         hardships = if_else(hardships == 1, "Affording food", 
                                if_else(hardships == 0, "No difficulty", "NA")))  
 
 loss.4r <- data %>% 
@@ -685,16 +687,24 @@ loss.6r <- data %>%
 
 
 hardships.r <- rbind(loss.1r, loss.2r, loss.3r, loss.4r, loss.5r, loss.6r)
+
+loss.1r$hardships <- ordered(loss.1r$hardships, levels = c("No difficulty", "Job loss"))
+loss.2r$hardships <- ordered(loss.2r$hardships, levels = c("No difficulty", "Paying utility bills"))
+loss.3r$hardships <- ordered(loss.3r$hardships, levels = c("No difficulty", "Affording food"))
+loss.4r$hardships <- ordered(loss.4r$hardships, levels = c("No difficulty", "Paying rent/mortgage"))
+loss.5r$hardships <- ordered(loss.5r$hardships, levels = c("No difficulty", "Paying medical bills"))
+loss.6r$hardships <- ordered(loss.6r$hardships, levels = c("No difficulty", "Delay getting medical care"))
 ```
 
-```{r plots_1}
+```{r plots_2, message=FALSE, warning=FALSE}
 loss.1r %>% 
   ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = hardships)) +
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
   scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5), reverse = T),
+         size = F) +
   facet_grid(~zipcode) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Loss of employment distribution by zip code", 
@@ -709,7 +719,8 @@ loss.2r %>%
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
   scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5), reverse = T),
+         size = F) +
   facet_grid(~zipcode) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Difficulty in paying utility bills by zip code", 
@@ -724,7 +735,8 @@ loss.3r %>%
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
   scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5), reverse = T),
+         size = F) +
   facet_grid(~zipcode) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Difficulty in affording the kinds of food you need by zip code", 
@@ -739,7 +751,8 @@ loss.4r %>%
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
   scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5), reverse = T),
+         size = F) +
   facet_grid(~zipcode) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Difficulty in paying next rent or mortgage payment by zip code", 
@@ -754,7 +767,8 @@ loss.5r %>%
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
   scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5), reverse = T),
+         size = F) +
   facet_grid(~zipcode) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Difficulty in paying medical bill/health insurance by zip code", 
@@ -769,7 +783,8 @@ loss.6r %>%
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
   scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5), reverse = T),
+         size = F) +
   facet_grid(~zipcode) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Delay getting medical care or prescription medication by zip code", 
@@ -782,13 +797,14 @@ hardships.r %>%
   filter(hardships != "No difficulty") %>% 
   ggplot(aes(x = pct, y = reorder(hardships, -pct), color = race_eth2)) +
   geom_point(stat = "identity", aes(size = n)) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
-  scale_x_continuous(limits = c(0, .7), breaks = seq(0, 1, .15), label = scales::percent) +
+  geom_text_repel(aes(label = lbl), size = 4.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .65), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Zissou1", n = 5)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 4), reverse = F, byrow = T, ncol = 3), 
+         size = F) +
   facet_grid(~zipcode) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Loss of employment distribution by zip code", 
+       title = "Type of hardship experienced by race and ethnicity", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
@@ -802,8 +818,8 @@ data %>%
          lbl = scales::percent(pct, accuracy = 0.1)) %>% 
   ggplot(aes(x = pct, y = reorder(race_eth2, -pct), color = zipcode)) +
   geom_point(stat = "identity", aes(size = n)) +
-  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
-  scale_x_continuous(limits = c(0, .9), breaks = seq(0, 1, .15), label = scales::percent) +
+  geom_text_repel(aes(label = lbl), size = 5, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
   facet_grid(~bad) +
@@ -812,9 +828,128 @@ data %>%
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any type of hardships"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
-  themeuf
+  themeuf + theme(axis.text.x = element_text(color = "gray40", size = 18))
 ```
 
+## 3
+```{r plots_3, message=FALSE, warning=FALSE}
+data %>%
+  group_by(zipcode, health) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ggplot(aes(x = pct, y = health, color = zipcode)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 5, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .5), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_y_discrete(limits = rev(levels(data$health))) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Self-rated health status by race and ethnicity", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+data %>%
+  group_by(zipcode, race_eth2, health) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ggplot(aes(x = pct, y = race_eth2, color = health)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 4.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .9), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_y_discrete(limits = rev(levels(data$race_eth2))) +
+  scale_color_manual(values = wes_palette("Zissou1", n = 5)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  facet_grid(~zipcode) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Self-rated health status by race and ethnicity", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+data %>% 
+  group_by(zipcode) %>%
+  summarize(ph.mean = round(mean(physical_health), 1),
+            mh.mean = round(mean(mental_health), 1),
+            n = n()) %>% 
+  mutate(label = ph.mean,
+         label2 = mh.mean) %>% 
+  ggplot(aes(y = zipcode, color = zipcode, group = zipcode)) + 
+  geom_point(aes(x = ph.mean), shape = 19, size = 5, show.legend = T) +
+  geom_point(aes(x = mh.mean), shape = 18, size = 5, show.legend = T) +
+  geom_text_repel(aes(label = label, x = ph.mean), size = 7, color = "gray30", nudge_y = .15, segment.alpha = 0, family = "foo") +
+  geom_text_repel(aes(label = label2, x = mh.mean), size = 7, color = "gray30", nudge_y = .15, segment.alpha = 0, family = "foo") +
+  annotate("text", x = 2, y = 1, label = "Physical health", color = "gray40", size = 8, hjust = "right") +
+  annotate("text", x = 5, y = 2, label = "Mental health", color = "gray40", size = 8, hjust = "left") +
+  annotate("curve", x = 2, xend = 3.05, y = .95, yend = 1, colour = "gray60", 
+           arrow=arrow(type = "open", length = unit(3, "mm")), curvature = .25, hjust = "upper") +
+  annotate("curve", x = 5, xend = 3.8, y = 2.05, yend = 2, colour = "gray60", 
+           arrow=arrow(type = "open", length = unit(3, "mm")), curvature = .25, hjust = "upper") +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  scale_x_continuous(limits = c(1, 6), breaks = seq(0, 6, 1)) +
+  scale_y_discrete(limits = rev(levels(data$zipcode))) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5), reverse = T),
+         size = FALSE) +
+  labs(y = NULL, 
+       color = NULL,
+       x = "Number of days",
+       title = str_wrap("For how many days during the past 30 days was your physical health not good?", width = 50), 
+       subtitle = str_wrap("We show the average number of days without good physical health by race and ethnicity", width = 65),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() + 
+  themeuf
+
+data %>% 
+  group_by(zipcode, race_eth2) %>%
+  summarize(ph.mean = round(mean(physical_health), 1),
+            mh.mean = round(mean(mental_health), 1),
+            n = n()) %>% 
+  mutate(label = ph.mean) %>% 
+  ggplot(aes(x = ph.mean, y = race_eth2)) + 
+  geom_point(aes(color = zipcode, size = n), shape = 19) +
+  geom_text_repel(aes(label = label, x = ph.mean), size = 6, color = "gray30", nudge_y = .31, segment.alpha = 0, family = "foo") +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  scale_x_continuous(limits = c(0, 5), breaks = seq(0, 5, 1)) +
+  scale_y_discrete(limits = rev(levels(data$race_eth2))) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
+         size = FALSE) +
+  labs(y = NULL, 
+       color = NULL,
+       x = "Number of days",
+       title = str_wrap("For how many days during the past 30 days was your physical health not good?", width = 50), 
+       subtitle = str_wrap("We show the average number of days without good physical health by race and ethnicity", width = 65),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() + 
+  themeuf
+
+data %>% 
+  group_by(zipcode, race_eth2) %>%
+  summarize(ph.mean = round(mean(physical_health), 1),
+            mh.mean = round(mean(mental_health), 1),
+            n = n()) %>% 
+  mutate(label = mh.mean) %>% 
+  ggplot(aes(x =mh.mean, y = race_eth2)) + 
+  geom_point(aes(color = zipcode, size = n), shape = 19) +
+  geom_text_repel(aes(label = label, x = mh.mean), size = 6, color = "gray30", nudge_y = .31, segment.alpha = 0, family = "foo") +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  scale_x_continuous(limits = c(0, 7), breaks = seq(0, 5, 1)) +
+  scale_y_discrete(limits = rev(levels(data$race_eth2))) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
+         size = FALSE) +
+  labs(y = NULL, 
+       color = NULL,
+       x = "Number of days",
+       title = str_wrap("For how many days during the past 30 days was your mental health not good?", width = 50), 
+       subtitle = str_wrap("We show the average number of days without good mental health by race and ethnicity", width = 65),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() + 
+  themeuf
+```
 
 
 
