@@ -63,7 +63,7 @@ themeu <- theme(legend.position = "bottom",
 
 themeuf <- theme(legend.position = "top", 
                 legend.text = element_text(size = 17, color = "gray40"), 
-                legend.key.size = unit(.5, "cm"),
+                legend.key.size = grid::unit(.5, "cm"), 
                 legend.title = element_text(color = "gray40", face = "bold", size = 17), 
                 panel.background = element_rect(colour = "black"),
                 plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5, lineheight = .5), 
@@ -275,7 +275,6 @@ lossxhealth2 %>%
 
 We present the average number of days with not good physical health and mental health among those who lost their job and experienced two more hardships like difficulty in paying utility bills, in affording the kinds of food you need, in paying next rent or mortgage payment, in paying medical bill/health insurance, add delay getting/Do not get medical care or prescription medication. 
 
-
 ```{r, message=FALSE}
 lossxbad2 <- data %>% 
   filter(bad == "More than two", hardships_1 == 1) %>% 
@@ -433,3 +432,424 @@ h31$hard <- ordered(h31$hard, levels = c("Loss of employment", "Paying utility b
 h32$hard <- ordered(h32$hard, levels = c("Loss of employment", "Paying utility bills", "Affording food", 
                                          "Paying next rent", "Paying medical bill", "Delay getting medical"))
 ```
+
+
+
+## 1
+```{r, include=FALSE, message=FALSE}
+loss.1 <- data %>% 
+  filter(!is.na(hardships_1)) %>% 
+  rename(hardships = hardships_1) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Job loss", 
+                               if_else(hardships == 0, "No difficulty", "NA"))) 
+
+loss.2 <- data %>% 
+  filter(!is.na(hardships_2)) %>% 
+  rename(hardships = hardships_2) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying utility bills", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.3 <- data %>% 
+  filter(!is.na(hardships_3)) %>% 
+  rename(hardships = hardships_3) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Affording foods", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.4 <- data %>% 
+  filter(!is.na(hardships_4)) %>% 
+  rename(hardships = hardships_4) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying rent/mortgage", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.5 <- data %>% 
+  filter(!is.na(hardships_5)) %>% 
+  rename(hardships = hardships_5) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying medical bills", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.6 <- data %>% 
+  filter(!is.na(hardships_6)) %>% 
+  rename(hardships = hardships_6) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Delay getting medical care", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+
+hardships <- rbind(loss.1, loss.2, loss.3, loss.4, loss.5, loss.6)
+```
+
+```{r plots_1}
+loss.1 %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment distribution by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.2 %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Difficulty in paying utility bills by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties their paying utility bills"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.3 %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Difficulty in affording the kinds of food you need by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties affording the food you need"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.4 %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Difficulty in paying next rent or mortgage payment by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties paying rent or mortgage"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.5 %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Difficulty in paying medical bill/health insurance by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties paying medical bills"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.6 %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Delay getting medical care or prescription medication by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced delay getting medical care or prescription medication"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+hardships %>% 
+  filter(hardships != "No difficulty") %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .8), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment distribution by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+data %>%
+  filter(!is.na(bad)) %>% 
+  group_by(zipcode, bad) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .8), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Number of hardships by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any type of hardships"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+```
+
+## 2
+```{r, include=FALSE, message=FALSE}
+loss.1r <- data %>% 
+  filter(!is.na(hardships_1)) %>% 
+  rename(hardships = hardships_1) %>% 
+  group_by(zipcode, hardships, race_eth2) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Job loss", 
+                               if_else(hardships == 0, "No difficulty", "NA"))) 
+
+loss.2r <- data %>% 
+  filter(!is.na(hardships_2)) %>% 
+  rename(hardships = hardships_2) %>% 
+  group_by(zipcode, hardships, race_eth2) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying utility bills", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.3r <- data %>% 
+  filter(!is.na(hardships_3)) %>% 
+  rename(hardships = hardships_3) %>% 
+  group_by(zipcode, hardships, race_eth2) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Affording foods", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.4r <- data %>% 
+  filter(!is.na(hardships_4)) %>% 
+  rename(hardships = hardships_4) %>% 
+  group_by(zipcode, hardships, race_eth2) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying rent/mortgage", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.5r <- data %>% 
+  filter(!is.na(hardships_5)) %>% 
+  rename(hardships = hardships_5) %>% 
+  group_by(zipcode, hardships, race_eth2) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying medical bills", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.6r <- data %>% 
+  filter(!is.na(hardships_6)) %>% 
+  rename(hardships = hardships_6) %>% 
+  group_by(zipcode, hardships, race_eth2) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Delay getting medical care", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+
+hardships.r <- rbind(loss.1r, loss.2r, loss.3r, loss.4r, loss.5r, loss.6r)
+```
+
+```{r plots_1}
+loss.1r %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = hardships)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  facet_grid(~zipcode) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment distribution by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.2r %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = hardships)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  facet_grid(~zipcode) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Difficulty in paying utility bills by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties their paying utility bills"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.3r %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = hardships)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  facet_grid(~zipcode) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Difficulty in affording the kinds of food you need by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties affording the food you need"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.4r %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = hardships)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  facet_grid(~zipcode) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Difficulty in paying next rent or mortgage payment by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties paying rent or mortgage"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.5r %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = hardships)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  facet_grid(~zipcode) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Difficulty in paying medical bill/health insurance by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced difficulties paying medical bills"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+loss.6r %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = hardships)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 5)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  facet_grid(~zipcode) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Delay getting medical care or prescription medication by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced delay getting medical care or prescription medication"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+hardships.r %>% 
+  filter(hardships != "No difficulty") %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, -pct), color = race_eth2)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .7), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Zissou1", n = 5)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  facet_grid(~zipcode) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment distribution by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf + theme(legend.position = "bottom")
+
+data %>%
+  filter(!is.na(bad)) %>% 
+  group_by(zipcode, race_eth2, bad) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth2, -pct), color = zipcode)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .9), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  facet_grid(~bad) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Number of hardships by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any type of hardships"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
