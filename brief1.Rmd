@@ -171,7 +171,7 @@ lossxhealth <- data %>%
   group_by(zipcode, health) %>%
   summarize(n = n()) %>% 
   mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1)) 
+         lbl = scales::percent(pct, accuracy = 0.1))  
 
 lossxhealth2 <- data %>%
   filter(hardships_1 == 1) %>% 
@@ -1227,9 +1227,6 @@ data %>%
   theme_classic() + 
   themeuf
 ```
-
-
-
 
 
 
