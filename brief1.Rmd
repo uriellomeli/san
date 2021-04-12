@@ -1096,11 +1096,201 @@ data %>%
 ```
 
 
+#######  
+```{r}
+#install.packages("mosaic")
+hp1 <- mosaic::prop.test(hardships_1 ~ zipcode, data = data, na.rm = T, conf.level = .9)
+hp2 <- mosaic::prop.test(hardships_2 ~ zipcode, data = data, na.rm = T, conf.level = .9)
+hp3 <- mosaic::prop.test(hardships_3 ~ zipcode, data = data, na.rm = T, conf.level = .9)
+hp4 <- mosaic::prop.test(hardships_4 ~ zipcode, data = data, na.rm = T, conf.level = .9)
+hp5 <- mosaic::prop.test(hardships_5 ~ zipcode, data = data, na.rm = T, conf.level = .9)
+hp6 <- mosaic::prop.test(hardships_6 ~ zipcode, data = data, na.rm = T, conf.level = .9)
+
+hp1.dt <- data.frame(prop = 1 - hp1$estimate, ci.l = hp1$conf.int[1], ci.r = hp1$conf.int[2]) 
+hp2.dt <- data.frame(prop = 1 - hp2$estimate, ci.l = hp2$conf.int[1], ci.r = hp2$conf.int[2]) 
+hp3.dt <- data.frame(prop = 1 - hp3$estimate, ci.l = hp3$conf.int[1], ci.r = hp3$conf.int[2]) 
+hp4.dt <- data.frame(prop = 1 - hp4$estimate, ci.l = hp4$conf.int[1], ci.r = hp4$conf.int[2]) 
+hp5.dt <- data.frame(prop = 1 - hp5$estimate, ci.l = hp5$conf.int[1], ci.r = hp5$conf.int[2]) 
+hp6.dt <- data.frame(prop = 1 - hp6$estimate, ci.l = hp6$conf.int[1], ci.r = hp6$conf.int[2]) 
+
+hp1.dt <- hp1.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
+hp2.dt <- hp2.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
+hp3.dt <- hp3.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
+hp4.dt <- hp4.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
+hp5.dt <- hp5.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
+hp6.dt <- hp6.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
+
+hshp.1$lower[c(2,4)] <- hp1.dt$lower
+hshp.1$upper[c(2,4)] <- hp1.dt$upper
+hshp.2$lower[c(2,4)] <- hp2.dt$lower
+hshp.2$upper[c(2,4)] <- hp2.dt$upper
+hshp.3$lower[c(2,4)] <- hp3.dt$lower
+hshp.3$upper[c(2,4)] <- hp3.dt$upper
+hshp.4$lower[c(2,4)] <- hp4.dt$lower
+hshp.4$upper[c(2,4)] <- hp4.dt$upper
+hshp.5$lower[c(2,4)] <- hp5.dt$lower
+hshp.5$upper[c(2,4)] <- hp5.dt$upper
+hshp.6$lower[c(2,4)] <- hp6.dt$lower
+hshp.6$upper[c(2,4)] <- hp6.dt$upper
+
+```
+
+```{r, include=FALSE, message=FALSE}
+hshp.1 <- data %>% 
+  filter(!is.na(hardships_1)) %>% 
+  rename(hardships = hardships_1) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Job loss", 
+                               if_else(hardships == 0, "No difficulty", "NA"))) 
+
+hshp.2 <- data %>% 
+  filter(!is.na(hardships_2)) %>% 
+  rename(hardships = hardships_2) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying utility bills", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+hshp.3 <- data %>% 
+  filter(!is.na(hardships_3)) %>% 
+  rename(hardships = hardships_3) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Affording foods", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+hshp.4 <- data %>% 
+  filter(!is.na(hardships_4)) %>% 
+  rename(hardships = hardships_4) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying rent/mortgage", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+hshp.5 <- data %>% 
+  filter(!is.na(hardships_5)) %>% 
+  rename(hardships = hardships_5) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying medical bills", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+hshp.6 <- data %>% 
+  filter(!is.na(hardships_6)) %>% 
+  rename(hardships = hardships_6) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Delay getting medical care", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
 
 
+hshp.dt <- rbind(hshp.1, hshp.2, hshp.3, hshp.4, hshp.5, hshp.6)
+```
 
+```{r, message=FALSE}
+hshp.1 %>%
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_linerange(aes(xmin = lower, xmax = upper), size = 1, position = position_dodge(width=0.5)) +
+  geom_point(aes(size = n), position = position_dodge(width = 0.5)) +
+  geom_text_repel(aes(label = lbl), size = 6.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .03, nudge_y = .2) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
 
+hshp.2 %>%
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_linerange(aes(xmin = lower, xmax = upper), size = 1, position = position_dodge(width=0.5)) +
+  geom_point(aes(size = n), position = position_dodge(width = 0.5)) +
+  geom_text_repel(aes(label = lbl), size = 6.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .03, nudge_y = .2) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
 
+hshp.3 %>%
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_linerange(aes(xmin = lower, xmax = upper), size = 1, position = position_dodge(width=0.5)) +
+  geom_point(aes(size = n), position = position_dodge(width = 0.5)) +
+  geom_text_repel(aes(label = lbl), size = 6.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .03, nudge_y = .2) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+hshp.4 %>%
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_linerange(aes(xmin = lower, xmax = upper), size = 1, position = position_dodge(width=0.5)) +
+  geom_point(aes(size = n), position = position_dodge(width = 0.5)) +
+  geom_text_repel(aes(label = lbl), size = 6.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .03, nudge_y = .2) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+hshp.5 %>%
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_linerange(aes(xmin = lower, xmax = upper), size = 1, position = position_dodge(width=0.5)) +
+  geom_point(aes(size = n), position = position_dodge(width = 0.5)) +
+  geom_text_repel(aes(label = lbl), size = 6.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .03, nudge_y = .2) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+hshp.6 %>%
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_linerange(aes(xmin = lower, xmax = upper), size = 1, position = position_dodge(width=0.5)) +
+  geom_point(aes(size = n), position = position_dodge(width = 0.5)) +
+  geom_text_repel(aes(label = lbl), size = 6.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_x = .03, nudge_y = .2) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Loss of employment by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced the loss of employment income"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+```
 
 
 
