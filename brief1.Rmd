@@ -1,5 +1,5 @@
 ---
-title: "Socioeconomic and Health Outcomes of Residence in San Antonio During the Covid19-Pandemic | Evidence from a Local Community Survey"
+title: "Socioeconomic and Health Outcomes of Residents in San Antonio During the COVID-19 Pandemic: Evidence from a Local Community Survey"
 author: "..."
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -31,7 +31,7 @@ library(stringr)
 ```
 
 ```{r load, include=FALSE}
-load(file = "~/GitHub/san/data_recode.RData")
+load(file = "~/GitHub/saetus/data_recode.RData")
 
 data <- data %>% 
   mutate_at(vars(hardships_1:hardships_6), funs(recode(., "Yes" = as.numeric(1), "No" = as.numeric(0)))) %>% 
@@ -100,14 +100,6 @@ Whereas **Jefferson Heights** — a disadvantaged neighborhood located in the ea
 We launched our online survey on March 22, 2021 on [platform]. From March 22 to March 24, we collected 1022 survey respondents, of which 805 were valid responses with complete information on key demographic and socioeconomic information. We excluded 63 respondents from other zip codes and 154 respondents for  due to lack of information, and inconsistencies with their response time and the number of valid responses. The final analytical sample consists of 805 respondents in total, of which 479 are from Elm Creek and 326 are from Jefferson Heights. 
 
 *Include 1 table & 1 figure to demonstrate the differences between two neighborhoods*
-
-```{r, include=FALSE, eval=FALSE}
-round(prop.table(table(data$bad, data$depen), 1)*100, 1)
-
-round(prop.table(table(data$zipcode, data$bad), 1)*100, 1)
-
-round(prop.table(table(data$hardships_1, data$zipcode), 1)*100, 1)
-```
 
 ```{r loss_income, include=FALSE, message=FALSE}
 loss <- data %>%
