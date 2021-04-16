@@ -26,7 +26,7 @@ library(stringr)
 ```
 
 ```{r load, include=FALSE}
-load(file = "~/GitHub/saetus/data_recode.RData")
+load(file = "~/GitHub/san/data_recode.RData")
 
 data <- data %>% 
   mutate_at(vars(hardships_1:hardships_6), funs(recode(., "Yes" = as.numeric(1), "No" = as.numeric(0)))) %>% 
@@ -438,9 +438,8 @@ h32$hard <- ordered(h32$hard, levels = c("Loss of employment", "Paying utility b
 ```
 
 ## 0
-```{r, include=FALSE, message=FALSE, warning=FALSE}
+```{r emp_status, include=FALSE, message=FALSE, warning=FALSE}
 ### Task Two: Employment Status
-
 data <- data %>%
   mutate_at(vars(emp_status), ~if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
                                     if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
@@ -451,6 +450,7 @@ total <- NULL
 employed_pct <- NULL
 
 total <- data %>%
+  filter(emp_status != "NA") %>%
   group_by(zipcode, race_eth2) %>%
   summarize(n = n())
 
@@ -473,30 +473,19 @@ asian <- NULL
 zipcode <- "Jefferson Heights"
 race_eth2 <- "Non-Hispanic Asian"
 unemployed_n <- 0
-
 asian <- data.frame(zipcode,race_eth2,unemployed_n)
-
 colnames(asian) <- c("zipcode","race_eth2","unemployed_n")
-
 unemployed <- data %>%
   filter(emp_status == "unemployed") %>%
   group_by(zipcode, race_eth2) %>%
   summarize(unemployed_n = n())
-
 unemployed <- data.frame(unemployed)
-
 colnames(unemployed) <- c("zipcode","race_eth2","unemployed_n")
-
 unemployed <- rbind(unemployed,asian)
-
 unemployed <- unemployed[with(unemployed,order(zipcode,race_eth2)),] 
-
 unemployed_pct <- data.frame(total[,"zipcode"],total[,"race_eth2"],total[,"n"],unemployed[,"unemployed_n"])
-
 colnames(unemployed_pct) <- c("zipcode","race_eth2","n","unemployed_n")
-
 unemployed_pct$unemployed_n <- as.numeric(unemployed_pct$unemployed_n)
-
 unemployed_pct <- unemployed_pct %>%
         mutate(pct = unemployed_n/n,
                lbl = scales::percent(pct, accuracy = 0.1))
@@ -507,37 +496,24 @@ retired <- data %>%
   filter(emp_status == "retired") %>%
   group_by(zipcode, race_eth2) %>%
   summarize(retired_n = n())
-
 retired <- data.frame(retired)
-
 colnames(retired) <- c("zipcode","race_eth2","retired_n")
-
 zipcode <- c("Elm Creek","Elm Creek","Jefferson Heights","Jefferson Heights")
-
 race_eth2 <- c("Non-Hispanic Asian","Non-Hispanic Black","Non-Hispanic Asian","Non-Hispanic Other")
-
 retired_n <- c(0,0,0,0)
-
 retired_zero <- data.frame(zipcode,race_eth2,retired_n)
-
 colnames(retired_zero) <- c("zipcode","race_eth2","retired_n")
-
 retired <- rbind(retired,retired_zero)
-
 retired <- retired[with(retired,order(zipcode,race_eth2)),]
-
 retired_pct <- data.frame(total[,"zipcode"],total[,"race_eth2"],total[,"n"],retired[,"retired_n"])
-
 colnames(retired_pct) <- c("zipcode","race_eth2","n","retired_n")
-
 retired_pct$retired_n <- as.numeric(retired$retired_n)
-
 retired_pct <- retired_pct %>%
         mutate(pct = retired_n/n,
                lbl = scales::percent(pct, accuracy = 0.1))
 ```
 
-```{r, message=FALSE}
+```{r emp_status_plot, message=FALSE}
 employed_pct %>%
   ggplot(aes(x = pct, y = reorder(race_eth2, pct),color = zipcode)) + 
   geom_point(stat = "identity", size = 5) +
@@ -546,8 +522,8 @@ employed_pct %>%
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Employment Status: Employed by race and ethnicity", 
-       subtitle = str_wrap("In the last seven days, what is your employment status"),
+       title = "Figure 1. Employment Status: Employed by race and ethnicity", 
+       subtitle = str_wrap("In the last seven days, what is your employment status?"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
   themeuf
@@ -560,8 +536,8 @@ unemployed_pct %>%
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Employment Status: Unemployed by race and ethnicity", 
-       subtitle = str_wrap("In the last seven days, what is your employment status"),
+       title = "Figure 2. Employment Status: Unemployed by race and ethnicity", 
+       subtitle = str_wrap("In the last seven days, what is your employment status?"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
   themeuf
@@ -574,14 +550,14 @@ retired_pct %>%
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Employment Status: Retired by race and ethnicity", 
-       subtitle = str_wrap("In the last seven days, what is your employment status"),
+       title = "Figure 3. Employment Status: Retired by race and ethnicity", 
+       subtitle = str_wrap("In the last seven days, what is your employment status?"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
   themeuf
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r other_ses, message=FALSE, warning=FALSE}
 ### Task Three: Other SES
 ### recode all target variables
 frontline <- NULL
