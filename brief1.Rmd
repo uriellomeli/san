@@ -559,7 +559,7 @@ retired_pct %>%
 
 ```{r other_ses, message=FALSE, warning=FALSE}
 ### Task Three: Other SES
-### recode all target variables
+### frontline worker
 frontline <- NULL
 total <- NULL
 frontline_pct <- NULL
@@ -588,6 +588,7 @@ frontline_pct %>%
   theme_classic() +
   themeuf
 
+### average hrs_work
 hrs_work <- data %>%
   filter(hrs_work_3 != "NA") %>%
   group_by(zipcode, race_eth2) %>%
@@ -606,34 +607,13 @@ hrs_work %>%
   theme_classic() +
   themeuf
 
-welfare <- data %>%
-  mutate_at(vars(welfare_1:welfare_7), ~if_else(.=="Yes",1,0))
 
-welfare$total_welfare <- rowSums(welfare[,c("welfare_1","welfare_2","welfare_3","welfare_4","welfare_5","welfare_6","welfare_7")],
-                                 na.rm = TRUE)
-welfare <- welfare %>%
-  group_by(zipcode, race_eth2) %>%
-  summarize(average_welfare = mean(total_welfare))
-
-welfare %>%
-  ggplot(aes(x = average_welfare, y = reorder(race_eth2,average_welfare),color = zipcode)) + 
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = round(average_welfare,2)), 
-                  size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
-  scale_x_continuous(limits = c(1,2)) +
-  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
-  labs(y = NULL, x = NULL, color = NULL,
-       title = "Figure 3. Average Number of Types of Welfare by race and ethnicity", 
-       subtitle = str_wrap("Have you, or has anyone in your household received any of the following:"),
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
-  theme_classic() +
-  themeuf
-
+### welfare_1
 asian <- NULL
-total_1 <- data %>%
+total_1 <- data[!is.na(data$welfare_1),]
+total_1 <- total_1 %>%
   group_by(zipcode, race_eth2) %>%
-  summarize(n = n(),na.rm = TRUE)
+  summarize(n = n())
 zipcode <- "Jefferson Heights"
 race_eth2 <- "Non-Hispanic Asian"
 welfare_1 <- 0
@@ -664,9 +644,12 @@ welfare_1_pct %>%
   theme_classic() +
   themeuf
 
-total_2 <- data %>%
+### welfare_2
+total_2 <- NULL
+total_2 <- data[!is.na(data$welfare_2),]
+total_2 <- total_2 %>%
   group_by(zipcode, race_eth2) %>%
-  summarize(n = n(),na.rm = TRUE)
+  summarize(n = n())
 welfare_2 <- data %>%
   filter(welfare_2 == "Yes") %>%
   group_by(zipcode, race_eth2) %>%
@@ -684,6 +667,180 @@ welfare_2_pct %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Figure 5. % of Welfare_2 (Social Security benefits) by race and ethnicity", 
+       subtitle = str_wrap("Have you, or has anyone in your household received any of the following:"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+
+### welfare_3
+total_3 <- NULL
+total_3 <- data[!is.na(data$welfare_3),]
+total_3 <- total_3 %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(n = n())
+zipcode <- c("Elm Creek","Jefferson Heights")
+race_eth2 <- c("Non-Hispanic Asian","Non-Hispanic Other")
+welfare_3 <- c(0,0)
+zero <- data.frame(zipcode, race_eth2, welfare_3)
+welfare_3 <- data %>%
+  filter(welfare_3 == "Yes") %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(welfare_3 = n())
+welfare_3 <- data.frame(welfare_3)
+welfare_3 <- rbind(welfare_3,zero)
+welfare_3 <- welfare_3[with(welfare_3,order(zipcode,race_eth2)),]
+welfare_3_pct <- data.frame(total_3[,"zipcode"],total_3[,"race_eth2"],total_3[,"n"],welfare_3[,"welfare_3"])
+colnames(welfare_3_pct) <- c("zipcode","race_eth2","n","welfare_3")
+welfare_3_pct <- welfare_3_pct %>%
+  mutate(pct = welfare_3/n,
+         lbl = scales::percent(pct, accuracy = 0.1))
+welfare_3_pct %>%
+  ggplot(aes(x = pct, y = reorder(race_eth2,pct),color = zipcode)) + 
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 6. % of Welfare_3 (Supplemental Security Income (SSI)) by race and ethnicity", 
+       subtitle = str_wrap("Have you, or has anyone in your household received any of the following:"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+### welfare_4
+total_4 <- NULL
+total_4 <- data[!is.na(data$welfare_4),]
+total_4 <- total_4 %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(n = n())
+zipcode <- "Jefferson Heights"
+race_eth2 <- "Non-Hispanic Asian"
+welfare_4 <- 0
+zero <- data.frame(zipcode, race_eth2, welfare_4)
+welfare_4 <- data %>%
+  filter(welfare_4 == "Yes") %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(welfare_4 = n())
+welfare_4 <- data.frame(welfare_4)
+welfare_4 <- rbind(welfare_4,zero)
+welfare_4 <- welfare_4[with(welfare_4,order(zipcode,race_eth2)),]
+welfare_4_pct <- data.frame(total_4[,"zipcode"],total_4[,"race_eth2"],total_4[,"n"],welfare_4[,"welfare_4"])
+colnames(welfare_4_pct) <- c("zipcode","race_eth2","n","welfare_4")
+welfare_4_pct <- welfare_4_pct %>%
+  mutate(pct = welfare_4/n,
+         lbl = scales::percent(pct, accuracy = 0.1))
+welfare_4_pct %>%
+  ggplot(aes(x = pct, y = reorder(race_eth2,pct),color = zipcode)) + 
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 7. % of Welfare_4 Medicare benefits by race and ethnicity", 
+       subtitle = str_wrap("Have you, or has anyone in your household received any of the following:"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+### welfare_5
+total_5 <- NULL
+total_5 <- data[!is.na(data$welfare_5),]
+total_5 <- total_5 %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(n = n())
+zipcode <- "Jefferson Heights"
+race_eth2 <- "Non-Hispanic Asian"
+welfare_5 <- 0
+zero <- data.frame(zipcode, race_eth2, welfare_5)
+welfare_5 <- data %>%
+  filter(welfare_5 == "Yes") %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(welfare_5 = n())
+welfare_5 <- data.frame(welfare_5)
+welfare_5 <- rbind(welfare_5,zero)
+welfare_5 <- welfare_5[with(welfare_5,order(zipcode,race_eth2)),]
+welfare_5_pct <- data.frame(total_5[,"zipcode"],total_5[,"race_eth2"],total_5[,"n"],welfare_5[,"welfare_5"])
+colnames(welfare_5_pct) <- c("zipcode","race_eth2","n","welfare_5")
+welfare_5_pct <- welfare_5_pct %>%
+  mutate(pct = welfare_5/n,
+         lbl = scales::percent(pct, accuracy = 0.1))
+welfare_5_pct %>%
+  ggplot(aes(x = pct, y = reorder(race_eth2,pct),color = zipcode)) + 
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 8. % of Welfare_5 Stimulus (economic impact) Payment by race and ethnicity", 
+       subtitle = str_wrap("Have you, or has anyone in your household received any of the following:"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+### welfare_6
+total_6 <- NULL
+total_6 <- data[!is.na(data$welfare_6),]
+total_6 <- total_6 %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(n = n())
+zipcode <- c("Jefferson Heights","Elm Creek")
+race_eth2 <- c("Non-Hispanic Asian","Non-Hispanic Asian")
+welfare_6 <- c(0,0)
+zero <- data.frame(zipcode, race_eth2, welfare_6)
+welfare_6 <- data %>%
+  filter(welfare_6 == "Yes") %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(welfare_6 = n())
+welfare_6 <- data.frame(welfare_6)
+welfare_6 <- rbind(welfare_6,zero)
+welfare_6 <- welfare_6[with(welfare_6,order(zipcode,race_eth2)),]
+welfare_6_pct <- data.frame(total_6[,"zipcode"],total_6[,"race_eth2"],total_6[,"n"],welfare_6[,"welfare_6"])
+colnames(welfare_6_pct) <- c("zipcode","race_eth2","n","welfare_6")
+welfare_6_pct <- welfare_6_pct %>%
+  mutate(pct = welfare_6/n,
+         lbl = scales::percent(pct, accuracy = 0.1))
+welfare_6_pct %>%
+  ggplot(aes(x = pct, y = reorder(race_eth2,pct),color = zipcode)) + 
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 9. % of Welfare_6 Supplemental Nutrition Assistance Program (SNAP) by race and ethnicity", 
+       subtitle = str_wrap("Have you, or has anyone in your household received any of the following:"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+### welfare_7
+total_7 <- NULL
+total_7 <- data[!is.na(data$welfare_7),]
+total_7 <- total_7 %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(n = n())
+welfare_7 <- data %>%
+  filter(welfare_7 == "Yes") %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(welfare_7 = n())
+welfare_7_pct <- data.frame(total_7[,"zipcode"],total_7[,"race_eth2"],total_7[,"n"],welfare_7[,"welfare_7"])
+colnames(welfare_7_pct) <- c("zipcode","race_eth2","n","welfare_7")
+welfare_7_pct <- welfare_7_pct %>%
+  mutate(pct = welfare_7/n,
+         lbl = scales::percent(pct, accuracy = 0.1))
+welfare_7_pct %>%
+  ggplot(aes(x = pct, y = reorder(race_eth2,pct),color = zipcode)) + 
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 10. % of Welfare_7 Other types of need-based assistance from the city or federal government by race and ethnicity", 
        subtitle = str_wrap("Have you, or has anyone in your household received any of the following:"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
@@ -1204,9 +1361,8 @@ data %>%
   themeuf
 ```
 
-
 #######  
-```{r}
+```{r, include=FALSE}
 #install.packages("mosaic")
 hp1 <- mosaic::prop.test(hardships_1 ~ zipcode, data = data, na.rm = T, conf.level = .9)
 hp2 <- mosaic::prop.test(hardships_2 ~ zipcode, data = data, na.rm = T, conf.level = .9)
@@ -1309,7 +1465,7 @@ hshp.6 <- data %>%
 hshp.dt <- rbind(hshp.1, hshp.2, hshp.3, hshp.4, hshp.5, hshp.6)
 ```
 
-```{r, message=FALSE}
+```{r, include=FALSE, message=FALSE}
 hshp.1 %>%
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
   geom_linerange(aes(xmin = lower, xmax = upper), size = 1, position = position_dodge(width=0.5)) +
