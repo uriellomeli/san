@@ -1,5 +1,5 @@
 ---
-title: "brief1"
+title: "Socioeconomic and Health Outcomes of Residence in San Antonio During the Covid19-Pandemic | Evidence from a Local Community Survey"
 author: "..."
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -9,6 +9,11 @@ output:
     code_folding: hide
     highlight: tango
 ---
+
+<style>
+body {
+text-align: justify}
+</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -78,13 +83,19 @@ themeuf <- theme(legend.position = "top",
                  text = element_text(family = "foo"))
 ```
 
-# Hardships
+# Background
 
-Loss of employment became a major economic shock to many families and individuals who experienced it or are still experiencing it. Since the onset of the COVID-19 pandemic, unemployment in the United States has reached record highs.
+Ever since San Antonio confirmed its first COVID-19 case more than one year ago, the COVID-19 pandemic and the associated social and economic fallout have upended the lives of many locally. The significant social and economic disruptions have caused tremendous stress for virtually everyone in our communities. The pandemic has challenged people's everyday routines on an unprecedented scale. Joblessness remains high and many report that their households lack sufficient food to eat or are not able to make rental, medical, utility bill payments. These significant stressors following COVID-19 could exert negative impacts on people's physical and mental health. The potential economic hardship and health consequences following the pandemic are likely to be unequally distributed and shaped by different ecological structure of local neighborhood conditions. In this policy brief, we compare and contrast two neighborhoods with drastic differences in racial and ethnic composition and socioeconomic status. [maybe add a sentence or two about families with dependent, childcare, etc]
 
-In the summer of 2020, the Household Pulse Survey showed that in the United States, 126, 554, 411 people (51.1% of the adult population) had experienced loss of employment income. In Texas they were 11, 384, 721 (53.5%), and in the two metropolitan areas of this state that were considered, Dallas-Forth Worth-Arlington and Houston-The Woodlands-Sugar Land, they were 3, 002, 219 (56.3%) and 3, 687, 668 (59.2%), respectively.
+# Data collection and Methods
 
-The **San Antonio Energy and Time Use Survey** is an online survey that was answered between March 22-24 by residents of zip codes 78230 (referred to as **Elm Creek**) and 78202 (referred to as **Jefferson Heights**). With the information obtained from this source, we present a snapshot of the employment loss hardships experienced by these San Antonio residents. 
+-questionnaire design
+
+The **San Antonio Energy and Time Use Survey** is an online survey that was answered between March 22-24 by residents of zip codes 78230 (referred to as Elm Creek) and 78202 (referred to as Jefferson Heights). The household level questionnaire collects information on time use, energy consumption, health status and medical devices, employment situation and demographic characteristics.  Upon completion of the survey, respondents received a $10 Target e-gift card as a compensation for their time. We specifically chose two study sites that are different from each other in terms of racial and ethnic composition and socioeconomic conditions. **Elm Creek** neighborhood, contained within the city limits of San Antonio, TX, Shavano Park, TX, and Castle Hills, TX.  … [describe the neighborhood characteristics here] Whereas **Jefferson Heights** —a disadvantaged neighborhood located at XXX. [describe the neighborhood characteristics here. From census data, show basic demographic and socioeconomic data of each neighborhood. Highlight the disparities in racial composition, average HH income, and unemployment rate.] The study was approved by UTSA IRB. 
+
+We launched our online survey on [date] on [platform]. From XX to XX, we collected XX survey respondents, of which XX were valid responses with complete information on key demographic and socioeconomic information. We further excluded XX respondents due to lack of information on XXX (I don’t remember the process we used to finalize our sample. Did we drop a few because the zipcodes reported were not in the study sites? Please complete this section.) The final analytical sample consists of XX respondents in total, of which XX are from Elm Creek and XX are from Jefferson Heights. 
+
+ With the information obtained from this source, we present a snapshot of the employment loss hardships experienced by these San Antonio residents. 
 
 Since the onset of COVID-19 (March 2020), **57.4%** experienced the loss of employment income. This figure was **60% in Elm Creek** and **40% in Jefferson Heights**. Figure 1 also shows the percentage of residents by race and ethnicity who experienced job loss. 
 
@@ -606,7 +617,6 @@ hrs_work %>%
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
   themeuf
-
 
 ### welfare_1
 asian <- NULL
@@ -1362,7 +1372,7 @@ data %>%
 ```
 
 #######  
-```{r, include=FALSE}
+```{r, include=FALSE, eval=FALSE}
 #install.packages("mosaic")
 hp1 <- mosaic::prop.test(hardships_1 ~ zipcode, data = data, na.rm = T, conf.level = .9)
 hp2 <- mosaic::prop.test(hardships_2 ~ zipcode, data = data, na.rm = T, conf.level = .9)
@@ -1400,7 +1410,7 @@ hshp.6$upper[c(2,4)] <- hp6.dt$upper
 
 ```
 
-```{r, include=FALSE, message=FALSE}
+```{r, include=FALSE, message=FALSE, eval=FALSE}
 hshp.1 <- data %>% 
   filter(!is.na(hardships_1)) %>% 
   rename(hardships = hardships_1) %>% 
@@ -1465,7 +1475,7 @@ hshp.6 <- data %>%
 hshp.dt <- rbind(hshp.1, hshp.2, hshp.3, hshp.4, hshp.5, hshp.6)
 ```
 
-```{r, include=FALSE, message=FALSE}
+```{r, include=FALSE, message=FALSE, eval=FALSE}
 hshp.1 %>%
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
   geom_linerange(aes(xmin = lower, xmax = upper), size = 1, position = position_dodge(width=0.5)) +
