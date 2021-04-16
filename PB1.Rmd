@@ -1,0 +1,381 @@
+---
+title: "Socioeconomic and Health Outcomes of Residents in San Antonio During the COVID-19 Pandemic: Evidence from a Local Community Survey"
+author: "..."
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    highlight: tango
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libs, message=FALSE, include=FALSE}
+library(ggplot2)
+library(ggrepel)
+library(dplyr)
+library(kableExtra)
+library(summarytools)
+library(ggsci)
+library(wesanderson)
+library(stringr)
+```
+
+```{r load, include=FALSE}
+load(file = "~/GitHub/saetus/data_recode.RData")
+
+data <- data %>% 
+  mutate_at(vars(hardships_1:hardships_6), funs(recode(., "Yes" = as.numeric(1), "No" = as.numeric(0)))) %>% 
+  mutate(hards = hardships_1 + hardships_2 + hardships_3 + hardships_4 + hardships_5 + hardships_6, 
+         race_eth2 = case_when(race_eth %in% "NH-White" ~ "Non-Hispanic White",
+                               race_eth %in% "Hispanic" ~ "Hispanic",
+                               race_eth %in% "NH-Black" ~ "Non-Hispanic Black",
+                               race_eth %in% "NH-Asian" ~ "Non-Hispanic Asian",
+                               race_eth %in% c("NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
+         bad = if_else(hards == 1, "One hardship", 
+                       if_else(hards == 2, "Two hardships",
+                               if_else(hards > 2, "More than two", NA_character_))))
+
+data$bad <- ordered(data$bad, levels = c("One hardship", "Two hardships", "More than two"))
+data$race_eth <- ordered(data$race_eth, levels = c("Hispanic", "NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other"))
+data$race_eth2 <- ordered(data$race_eth2, 
+                          levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Black", "Non-Hispanic Asian","Non-Hispanic Other"))
+data$health <- ordered(data$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
+```
+
+```{r themeu, include=FALSE, message=FALSE, warning=FALSE}
+sysfonts::font_add_google(name = 'Lato', family = "foo")
+showtext::showtext_auto()
+
+themeu <- theme(legend.position = "bottom", 
+                legend.text = element_text(size = 15, color = "gray40"), 
+                legend.key.size = unit(.5, "cm"),
+                panel.background = element_rect(colour = "black"),
+                plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5, lineheight = .5), 
+                plot.caption = element_text(size = 15),
+                plot.subtitle = element_text(colour = "gray50", face = "bold", size = 22, lineheight = .5, hjust = .5, vjust = .5),
+                axis.text = element_text(size = 20), 
+                text = element_text(family = "foo"))
+
+themeuf <- theme(legend.position = "top", 
+                 legend.text = element_text(size = 17, color = "gray40"), 
+                 legend.key.size = grid::unit(.5, "cm"), 
+                 legend.title = element_text(color = "gray40", face = "bold", size = 17), 
+                 panel.background = element_rect(colour = "black"),
+                 plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5, lineheight = .5), 
+                 plot.caption = element_text(size = 15),
+                 plot.subtitle = element_text(colour = "gray50", face = "bold", size = 22, lineheight = .5, hjust = .5, vjust = .5),
+                 axis.text = element_text(size = 20),
+                 strip.text = element_text(size = 20), 
+                 axis.title.x = element_text(color = "gray40", size = 20), 
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.minor.x = element_blank(),
+                 panel.grid.major.y = element_line(colour = "grey70", linetype = "dotted"),
+                 text = element_text(family = "foo"))
+```
+
+## Background
+
+Ever since San Antonio confirmed its first COVID-19 case more than one year ago, the COVID-19 pandemic and the associated social and economic fallout have upended the lives of many locally. The significant social and economic disruptions have caused tremendous stress for virtually everyone in our communities. The pandemic has challenged people's everyday routines on an unprecedented scale. Joblessness remains high and many report that their households lack sufficient food to eat or are not able to make rental, medical, utility bill payments. These significant stressors following COVID-19 could exert negative impacts on people's physical and mental health. The potential economic hardship and health consequences following the pandemic are likely to be unequally distributed and shaped by different ecological structure of local neighborhood conditions. In this policy brief, we compare and contrast two neighborhoods with drastic differences in racial and ethnic composition and socioeconomic status. [maybe add a sentence or two about families with dependent, childcare, etc]
+
+## Data collection and Methods
+
+-questionnaire design
+
+The **San Antonio Energy and Time Use Survey** is an online survey that was answered between March 22-24 by residents of zip codes 78230 (referred to as Elm Creek) and 78202 (referred to as Jefferson Heights). The household level questionnaire collects information on time use, energy consumption, health status and medical devices, employment situation and demographic characteristics.  Upon completion of the survey, respondents received a \$10 Target e-gift card as a compensation for their time. We specifically chose two study sites that are different from each other in terms of racial and ethnic composition and socioeconomic conditions. The study was approved by UTSA IRB. 
+
+**Elm Creek** neighborhood, contained within the city limits of San Antonio, TX, Shavano Park, TX, and Castle Hills, TX. The income per capita of \$38,640 is 1.3 times the income per capita for the San Antonio-New Braunfels Metro Area ($29,071). 93.6% of the population within the zip code has at least gained their high school diploma while only 6% of the population has not gained any sort of degree. 48% of the population is of Hispanic heritage, followed by 39% of the population identifying as White. The minority population in Elm Creek is Asian, with only 5% identifying as Asian. Regarding poverty, **12.5% of people are below the poverty line** with children (under 18) at a 17% below the poverty line and seniors (65 and over) are at a 7%.
+
+Whereas **Jefferson Heights** — a disadvantaged neighborhood located in the east side of San Antonio, TX, income per capita of \$18,710 is almost two-thirds of the per capita income of San Antonio-New Braunfels Metro Area. 68.1% of the population in Jefferson Heights has at least gained their high school diploma while 32% of the population has not gained any sort of degree. 60% of the population is of Hispanic heritage, followed by 27% of the population identifying as Black. Aside from a 2% identifying as two or more races, the minority population in this zip code is White, with only 11% identifying as White. Regarding poverty, **37.8% of people are below the poverty line**, making it more than double of the average 14.4% rate in the San Antonio-New Braunfels Metro Area with children (under 18) at a 58% poverty and seniors (65 and over) are at 21% poverty.
+
+We launched our online survey on March 22, 2021 on [platform]. From March 22 to March 24, we collected 1022 survey respondents, of which 805 were valid responses with complete information on key demographic and socioeconomic information. We excluded 63 respondents from other zip codes and 154 respondents for  due to lack of information, and inconsistencies with their response time and the number of valid responses. The final analytical sample consists of 805 respondents in total, of which 479 are from Elm Creek and 326 are from Jefferson Heights. 
+
+*Include 1 table & 1 figure to demonstrate the differences between two neighborhoods*
+
+## Results
+
+### Proportion of frontline workers by race and ethnicity and by neighborhood
+
+```{r frontline_plot, message=FALSE, warning=FALSE}
+frontline <- NULL
+total <- NULL
+frontline_pct <- NULL
+total <- data %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(n = n(),na.rm = TRUE)
+frontline <- data %>%
+  filter(frontline == "Yes") %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(frontline_n = n())
+frontline_pct <- data.frame(total[,"zipcode"],total[,"race_eth2"],total[,"n"],frontline[,"frontline_n"])
+frontline_pct <- frontline_pct %>%
+  mutate(pct = frontline_n/n,
+               lbl = scales::percent(pct, accuracy = 0.1))
+
+frontline_pct %>%
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct),color = zipcode)) + 
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 1. Frontline workers by race and ethnicity", 
+       subtitle = str_wrap("Are you a frontline worker?"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+```
+
+###	Unemployment status by race and ethnicity and by neighborhood
+
+```{r unemp_plot, warning=FALSE, message=FALSE}
+data <- data %>%
+  mutate_at(vars(emp_status), ~if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
+                                    if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
+                                            if_else(. %in% c("Retired", "Unable to work"), "retired", "NA"))))
+unemployed <- NULL
+asian <- NULL
+zipcode <- "Jefferson Heights"
+race_eth2 <- "Non-Hispanic Asian"
+unemployed_n <- 0
+asian <- data.frame(zipcode,race_eth2,unemployed_n)
+colnames(asian) <- c("zipcode","race_eth2","unemployed_n")
+unemployed <- data %>%
+  filter(emp_status == "unemployed") %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(unemployed_n = n())
+unemployed <- data.frame(unemployed)
+colnames(unemployed) <- c("zipcode","race_eth2","unemployed_n")
+unemployed <- rbind(unemployed,asian)
+unemployed <- unemployed[with(unemployed,order(zipcode,race_eth2)),] 
+unemployed_pct <- data.frame(total[,"zipcode"],total[,"race_eth2"],total[,"n"],unemployed[,"unemployed_n"])
+colnames(unemployed_pct) <- c("zipcode","race_eth2","n","unemployed_n")
+unemployed_pct$unemployed_n <- as.numeric(unemployed_pct$unemployed_n)
+unemployed_pct <- unemployed_pct %>%
+        mutate(pct = unemployed_n/n,
+               lbl = scales::percent(pct, accuracy = 0.1))
+
+unemployed_pct %>%
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct),color = zipcode)) + 
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 2. Unemployed by race and ethnicity", 
+       subtitle = str_wrap("What is your employment status?"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+```
+
+### Income loss by race and ethnicity and by neighborhood 
+
+```{r loss_income, include=FALSE, message=FALSE}
+loss <- data %>%
+  filter(hardships_1 == 1) %>% 
+  group_by(zipcode, race_eth2) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) 
+
+data %>%
+  filter(hardships_1 == 1) %>% 
+  group_by(zipcode) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) 
+```
+
+```{r plot_loss_income}
+loss %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth2, pct), color = zipcode)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .6), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
+         size = FALSE) +
+  labs(y = NULL, x = NULL, color = NULL, size = NULL,
+       title = str_wrap("Figure 3. Loss of employment by race and ethnicity", width = 75),
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced income loss"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+```
+
+### Average number of welfare receipt by race and ethnicity and by neighborhood
+
+```{r, message=FALSE, warning=FALSE}
+welfare <- data %>%
+  mutate_at(vars(welfare_1:welfare_7), ~if_else(.=="Yes",1,0))
+
+welfare$total_welfare <- rowSums(welfare[,c("welfare_1","welfare_2","welfare_3","welfare_4","welfare_5","welfare_6","welfare_7")],
+                                 na.rm = TRUE)
+welfare <- welfare %>%
+  group_by(zipcode, race_eth2) %>%
+  summarize(average_welfare = round(mean(total_welfare),1))
+
+welfare %>%
+  ggplot(aes(x = average_welfare, y = reorder(race_eth2,average_welfare),color = zipcode)) + 
+  geom_point(stat = "identity", size = 5) +
+  geom_text_repel(aes(label = round(average_welfare, 1)), 
+                  size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(1,2)) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1)) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 4. Average number of welfare benefits by race and ethnicity", 
+       subtitle = str_wrap("Have you, or has anyone in your household received any type of welfare benefit?"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+```
+
+### Material hardships by type and by neighborhood
+
+```{r hardships_re, include=FALSE, message=FALSE}
+loss.1 <- data %>% 
+  filter(!is.na(hardships_1)) %>% 
+  rename(hardships = hardships_1) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Job loss", 
+                               if_else(hardships == 0, "No difficulty", "NA"))) 
+
+loss.2 <- data %>% 
+  filter(!is.na(hardships_2)) %>% 
+  rename(hardships = hardships_2) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying utility bills", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.3 <- data %>% 
+  filter(!is.na(hardships_3)) %>% 
+  rename(hardships = hardships_3) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Affording foods", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.4 <- data %>% 
+  filter(!is.na(hardships_4)) %>% 
+  rename(hardships = hardships_4) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying rent/mortgage", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.5 <- data %>% 
+  filter(!is.na(hardships_5)) %>% 
+  rename(hardships = hardships_5) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Paying medical bills", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+loss.6 <- data %>% 
+  filter(!is.na(hardships_6)) %>% 
+  rename(hardships = hardships_6) %>% 
+  group_by(zipcode, hardships) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1),
+         hardships = if_else(hardships == 1, "Delay getting medical care", 
+                               if_else(hardships == 0, "No difficulty", "NA")))  
+
+hardships <- rbind(loss.1, loss.2, loss.3, loss.4, loss.5, loss.6)
+# hardships only by zip code
+
+```
+
+```{r hardships_plots, message=FALSE}
+hardships %>% 
+  filter(hardships != "No difficulty", hardships != "Job loss") %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .03) +
+  scale_x_continuous(limits = c(0, .45), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 5. Material hardships experienced by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following material hardships"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+hardships %>% 
+  filter(hardships != "No difficulty") %>% 
+  ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .03) +
+  scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 6. Type of hardship experienced by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+
+data %>%
+  filter(!is.na(bad)) %>% 
+  group_by(zipcode, bad) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 6.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .03) +
+  scale_x_continuous(limits = c(0, .7), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = "Figure 7. Number of hardships by zip code", 
+       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any type of hardships"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() +
+  themeuf
+```
+
+## Conclusions
+
+These disproportionate social and economic impacts following Covid19 reflect harsh, longstanding inequalities in employment and other spheres of social life. 
+Policy implications:
+
+
+
+
+
+
+
+
+
+
+
+
+
