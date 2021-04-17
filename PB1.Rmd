@@ -87,15 +87,12 @@ themeuf <- theme(legend.position = "top",
                  text = element_text(family = "foo"))
 ```
 
-## Background
-
-## Three race and ethnicity groups
-Hispanic, Non-Hispanic White and Non-Hispanic Other
-
+<center> <h1>Background</h1> </center> 
+<br>
 Ever since San Antonio confirmed its first COVID-19 case more than one year ago, the COVID-19 pandemic and the associated social and economic fallout have upended the lives of many locally. The significant social and economic disruptions have caused tremendous stress for virtually everyone in our communities. The pandemic has challenged people's everyday routines on an unprecedented scale. Joblessness remains high and many report that their households lack sufficient food to eat or are not able to make rental, medical, utility bill payments. These significant stressors following COVID-19 could exert negative impacts on people's physical and mental health. The potential economic hardship and health consequences following the pandemic are likely to be unequally distributed and shaped by different ecological structure of local neighborhood conditions. In this policy brief, we compare and contrast two neighborhoods with drastic differences in racial and ethnic composition and socioeconomic status. [maybe add a sentence or two about families with dependent, childcare, etc]
 
-## Data collection and Methods
-
+<center> <h1>Data collection and Methods</h1> </center>  
+<br>
 -questionnaire design
 
 The **San Antonio Energy and Time Use Survey** is an online survey that was answered between March 22-24 by residents of zip codes 78230 (referred to as Elm Creek) and 78202 (referred to as Jefferson Heights). The household level questionnaire collects information on time use, energy consumption, health status and medical devices, employment situation and demographic characteristics.  Upon completion of the survey, respondents received a \$10 Target e-gift card as a compensation for their time. We specifically chose two study sites that are different from each other in terms of racial and ethnic composition and socioeconomic conditions. The study was approved by UTSA IRB. 
@@ -108,10 +105,11 @@ We launched our online survey on March 22, 2021 on [platform]. From March 22 to 
 
 *Include 1 table & 1 figure to demonstrate the differences between two neighborhoods*
 
-## Results
+<center> <h1>Results</h1> </center>  
+<br>
 
-### Proportion of frontline workers by race and ethnicity and by neighborhood
-
+<center> <h2>Proportion of frontline workers by race and ethnicity and by neighborhood</h2> </center>  
+<br>
 ```{r frontline_plot, message=FALSE, warning=FALSE}
 frontline <- NULL
 total <- NULL
@@ -148,7 +146,7 @@ frontline_pct %>%
   themeuf
 ```
 
-###	Unemployment status by race and ethnicity and by neighborhood
+<center> <h2>Unemployment status by race and ethnicity and by neighborhood</h2> </center>  
 
 ```{r unemp_plot, warning=FALSE, message=FALSE}
 data <- data %>%
@@ -197,8 +195,8 @@ unemployed_pct %>%
   themeuf
 ```
 
-### Income loss by race and ethnicity and by neighborhood 
-
+<center> <h2>Income loss by race and ethnicity and by neighborhood</h2> </center>
+<br>
 ```{r loss_income, include=FALSE, message=FALSE}
 loss <- data %>%
   filter(hardships_1 == 1) %>% 
@@ -232,8 +230,8 @@ loss %>%
   themeuf
 ```
 
-### Average number of welfare receipt by race and ethnicity and by neighborhood
-
+<center> <h2>Average number of welfare receipt by race and ethnicity and by neighborhood</h2> </center> 
+<br>
 ```{r, message=FALSE, warning=FALSE}
 welfare <- data %>%
   mutate_at(vars(welfare_1:welfare_7), ~if_else(.=="Yes",1,0))
@@ -262,8 +260,8 @@ welfare %>%
   themeuf
 ```
 
-### Material hardships by type and by neighborhood
-
+<center> <h2>Material hardships by type and by neighborhood</h2> </center> 
+<br>
 ```{r hardships_re, include=FALSE, message=FALSE}
 loss.1 <- data %>% 
   filter(!is.na(hardships_1)) %>% 
@@ -484,8 +482,8 @@ data %>%
   themeuf + theme(axis.text.x = element_text(color = "gray40", size = 18))
 ```
 
-## Conclusions
-
+<center> <h1>Conclusions</h1> </center> 
+<br>
 These disproportionate social and economic impacts following Covid19 reflect harsh, longstanding inequalities in employment and other spheres of social life. 
 Policy implications:
 
