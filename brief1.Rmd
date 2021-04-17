@@ -41,6 +41,9 @@ data <- data %>%
                                race_eth %in% "NH-Black" ~ "Non-Hispanic Black",
                                race_eth %in% "NH-Asian" ~ "Non-Hispanic Asian",
                                race_eth %in% c("NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
+         race_eth3 = case_when(race_eth %in% "NH-White" ~ "Non-Hispanic White",
+                               race_eth %in% "Hispanic" ~ "Hispanic",
+                               race_eth %in% c("NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
          bad = if_else(hards == 1, "One hardship", 
                        if_else(hards == 2, "Two hardships",
                                if_else(hards > 2, "More than two", NA_character_))))
@@ -49,6 +52,8 @@ data$bad <- ordered(data$bad, levels = c("One hardship", "Two hardships", "More 
 data$race_eth <- ordered(data$race_eth, levels = c("Hispanic", "NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other"))
 data$race_eth2 <- ordered(data$race_eth2, 
                           levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Black", "Non-Hispanic Asian","Non-Hispanic Other"))
+data$race_eth3 <- ordered(data$race_eth3, 
+                          levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Other"))
 data$health <- ordered(data$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
 ```
 
