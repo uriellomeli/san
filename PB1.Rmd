@@ -101,7 +101,7 @@ The **San Antonio Energy and Time Use Survey** is an online survey that was answ
 
 Whereas **Jefferson Heights** — a disadvantaged neighborhood located in the east side of San Antonio, TX, income per capita of \$18,710 is almost two-thirds of the per capita income of San Antonio-New Braunfels Metro Area. 68.1% of the population in Jefferson Heights has at least gained their high school diploma while 32% of the population has not gained any sort of degree. 60% of the population is of Hispanic heritage, followed by 27% of the population identifying as Black. Aside from a 2% identifying as two or more races, the minority population in this zip code is White, with only 11% identifying as White. Regarding poverty, **37.8% of people are below the poverty line**, making it more than double of the average 14.4% rate in the San Antonio-New Braunfels Metro Area with children (under 18) at a 58% poverty and seniors (65 and over) are at 21% poverty.
 
-We launched our online survey on March 22, 2021 on Qualtrics. From March 22 to March 24, we collected 1022 survey respondents, of which 805 were valid responses with complete information on key demographic and socioeconomic information. We excluded 63 respondents from other zip codes and 154 respondents for  due to lack of information, and inconsistencies with their response time and the number of valid responses. The final analytical sample consists of 805 respondents in total, of which 479 are from Elm Creek and 326 are from Jefferson Heights. 
+We launched our online survey on March 22, 2021 on *Qualtrics*. From March 22 to March 24, we collected 1022 survey respondents, of which 805 were valid responses with complete information on key demographic and socioeconomic information. We excluded 63 respondents from other zip codes and 154 respondents for  due to lack of information, and inconsistencies with their response time and the number of valid responses. The final analytical sample consists of 805 respondents in total, of which 479 are from Elm Creek and 326 are from Jefferson Heights. 
 
 *Include 1 table & 1 figure to demonstrate the differences between two neighborhoods*
 
@@ -485,7 +485,7 @@ data %>%
 <center> <h1>Conclusions</h1> </center> 
 <br>
 
-These disproportionate social and economic impacts following Covid19 reflect harsh, longstanding inequalities in employment and other spheres of social life. 
+These disproportionate social and economic impacts following COVID-19 reflect harsh, longstanding inequalities in employment and other spheres of social life. 
 Policy implications:
 
 
