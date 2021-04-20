@@ -1369,45 +1369,6 @@ data %>%
   themeuf
 ```
 
-#######  
-```{r, include=FALSE, eval=FALSE}
-#install.packages("mosaic")
-hp1 <- mosaic::prop.test(hardships_1 ~ zipcode, data = data, na.rm = T, conf.level = .9)
-hp2 <- mosaic::prop.test(hardships_2 ~ zipcode, data = data, na.rm = T, conf.level = .9)
-hp3 <- mosaic::prop.test(hardships_3 ~ zipcode, data = data, na.rm = T, conf.level = .9)
-hp4 <- mosaic::prop.test(hardships_4 ~ zipcode, data = data, na.rm = T, conf.level = .9)
-hp5 <- mosaic::prop.test(hardships_5 ~ zipcode, data = data, na.rm = T, conf.level = .9)
-hp6 <- mosaic::prop.test(hardships_6 ~ zipcode, data = data, na.rm = T, conf.level = .9)
-
-hp1.dt <- data.frame(prop = 1 - hp1$estimate, ci.l = hp1$conf.int[1], ci.r = hp1$conf.int[2]) 
-hp2.dt <- data.frame(prop = 1 - hp2$estimate, ci.l = hp2$conf.int[1], ci.r = hp2$conf.int[2]) 
-hp3.dt <- data.frame(prop = 1 - hp3$estimate, ci.l = hp3$conf.int[1], ci.r = hp3$conf.int[2]) 
-hp4.dt <- data.frame(prop = 1 - hp4$estimate, ci.l = hp4$conf.int[1], ci.r = hp4$conf.int[2]) 
-hp5.dt <- data.frame(prop = 1 - hp5$estimate, ci.l = hp5$conf.int[1], ci.r = hp5$conf.int[2]) 
-hp6.dt <- data.frame(prop = 1 - hp6$estimate, ci.l = hp6$conf.int[1], ci.r = hp6$conf.int[2]) 
-
-hp1.dt <- hp1.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
-hp2.dt <- hp2.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
-hp3.dt <- hp3.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
-hp4.dt <- hp4.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
-hp5.dt <- hp5.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
-hp6.dt <- hp6.dt %>% mutate(lower = ci.l + prop, upper = ci.r + prop)
-
-hshp.1$lower[c(2,4)] <- hp1.dt$lower
-hshp.1$upper[c(2,4)] <- hp1.dt$upper
-hshp.2$lower[c(2,4)] <- hp2.dt$lower
-hshp.2$upper[c(2,4)] <- hp2.dt$upper
-hshp.3$lower[c(2,4)] <- hp3.dt$lower
-hshp.3$upper[c(2,4)] <- hp3.dt$upper
-hshp.4$lower[c(2,4)] <- hp4.dt$lower
-hshp.4$upper[c(2,4)] <- hp4.dt$upper
-hshp.5$lower[c(2,4)] <- hp5.dt$lower
-hshp.5$upper[c(2,4)] <- hp5.dt$upper
-hshp.6$lower[c(2,4)] <- hp6.dt$lower
-hshp.6$upper[c(2,4)] <- hp6.dt$upper
-
-```
-
 ```{r, include=FALSE, message=FALSE, eval=FALSE}
 hshp.1 <- data %>% 
   filter(!is.na(hardships_1)) %>% 
@@ -1565,9 +1526,125 @@ hshp.6 %>%
   themeuf
 ```
 
+## CI
+```{r moe_frontline}
+#devtools::install_github("peterdalle/moe")
+library(moe)
 
+data2 <- data %>% 
+  mutate(zipcode = if_else(zipcode == "Elm Creek", 0 , 1))
 
+data.ec <- data2 %>% 
+  filter(zipcode == 0)
 
+data.jh <- data2 %>% 
+  filter(zipcode == 1)
+
+nec <- 230 + 173 + 65
+njh <- 146 + 139 + 33
+
+frontline.prop.ec <- prop.table(table(data.ec$frontline, data.ec$race_eth3), 2)
+frontline.prop.jh <- prop.table(table(data.jh$frontline, data.jh$race_eth3), 2)
+
+frontline_pct_ec <- c(0.4782609, 0.3236994, 0.1538462)
+frontline_pct_jh <- c(0.5342466, 0.4100719, 0.3636364)
+
+frontline_ec_moe <- sapply(frontline_pct_ec, FUN = moe, n = nec, population.correction = T, population.size = 18223)
+frontline_jh_moe <- sapply(frontline_pct_jh, FUN = moe, n = njh, population.correction = T, population.size = 3812)
+
+lower1 <- round(frontline_ec_moe[, 1]$conf.lower/100, 2)
+upper1 <- round(frontline_ec_moe[, 1]$conf.upper/100, 2)
+
+lower2 <- round(frontline_ec_moe[, 2]$conf.lower/100, 2)
+upper2 <- round(frontline_ec_moe[, 2]$conf.upper/100, 2)
+
+lower3 <- round(frontline_ec_moe[, 3]$conf.lower/100, 2)
+upper3 <- round(frontline_ec_moe[, 3]$conf.upper/100, 2)
+
+lower1b <- round(frontline_jh_moe[, 1]$conf.lower/100, 2)
+upper1b <- round(frontline_jh_moe[, 1]$conf.upper/100, 2)
+
+lower2b <- round(frontline_jh_moe[, 2]$conf.lower/100, 2)
+upper2b <- round(frontline_jh_moe[, 2]$conf.upper/100, 2)
+
+lower3b <- round(frontline_jh_moe[, 3]$conf.lower/100, 2)
+upper3b <- round(frontline_jh_moe[, 3]$conf.upper/100, 2)
+
+frontline_pct$lower <- c(lower1, lower2, lower3, lower1b, lower2b, lower3b)
+frontline_pct$upper <- c(upper1, upper2, upper3, upper1b, upper2b, upper3b)
+```
+
+```{r moe_unemployed}
+data.ec.unemp <- data %>% 
+  filter(emp_status != "NA", zipcode == "Elm Creek")
+data.jh.unemp <- data %>% 
+  filter(emp_status != "NA", zipcode == "Jefferson Heights")
+
+nec.unemp <- 230 + 171 + 64
+njh.unemp <- 145 + 142 + 32
+
+unemp.prop.ec <- prop.table(table(data.ec.unemp$emp_status, data.ec.unemp$race_eth3), 2)
+unemp.prop.jh <- prop.table(table(data.jh.unemp$emp_status, data.jh.unemp$race_eth3), 2)
+
+unemp_pct_ec <- c(0.14347826,         0.14619883,         0.20312500)
+unemp_pct_jh <- c(0.10344828,         0.18309859,         0.37500000)
+
+unemp_ec_moe <- sapply(unemp_pct_ec, FUN = moe, n = nec.unemp, population.correction = T, population.size = 18223)
+unemp_jh_moe <- sapply(unemp_pct_jh, FUN = moe, n = njh.unemp, population.correction = T, population.size = 3812)
+
+lower1u <- round(unemp_ec_moe[, 1]$conf.lower/100, 2)
+upper1u <- round(unemp_ec_moe[, 1]$conf.upper/100, 2)
+
+lower2u <- round(unemp_ec_moe[, 2]$conf.lower/100, 2)
+upper2u <- round(unemp_ec_moe[, 2]$conf.upper/100, 2)
+
+lower3u <- round(unemp_ec_moe[, 3]$conf.lower/100, 2)
+upper3u <- round(unemp_ec_moe[, 3]$conf.upper/100, 2)
+
+lower1bu <- round(unemp_jh_moe[, 1]$conf.lower/100, 2)
+upper1bu <- round(unemp_jh_moe[, 1]$conf.upper/100, 2)
+
+lower2bu <- round(unemp_jh_moe[, 2]$conf.lower/100, 2)
+upper2bu <- round(unemp_jh_moe[, 2]$conf.upper/100, 2)
+
+lower3bu <- round(unemp_jh_moe[, 3]$conf.lower/100, 2)
+upper3bu <- round(unemp_jh_moe[, 3]$conf.upper/100, 2)
+
+unemployed_pct$lower <- c(lower1u, lower2u, lower3u, lower1bu, lower2bu, lower3bu)
+unemployed_pct$upper <- c(upper1u, upper2u, upper3u, upper1bu, upper2bu, upper3bu)
+```
+
+```{r moe_loss}
+loss.ec <- loss %>% filter(zipcode == "Elm Creek")
+loss.jh <- loss %>% filter(zipcode == "Jefferson Heights")
+
+nec.loss <- sum(loss.ec$n)
+njh.loss <- sum(loss.jh$n)
+
+loss_ec_moe <- sapply(loss.ec$pct, FUN = moe, n = nec.loss, population.correction = T, population.size = 18223)
+loss_jh_moe <- sapply(loss.jh$pct, FUN = moe, n = njh.loss, population.correction = T, population.size = 3812)
+
+lower1u <- round(loss_ec_moe[, 1]$conf.lower/100, 2)
+upper1u <- round(loss_ec_moe[, 1]$conf.upper/100, 2)
+
+lower2u <- round(loss_ec_moe[, 2]$conf.lower/100, 2)
+upper2u <- round(loss_ec_moe[, 2]$conf.upper/100, 2)
+
+lower3u <- round(loss_ec_moe[, 3]$conf.lower/100, 2)
+upper3u <- round(loss_ec_moe[, 3]$conf.upper/100, 2)
+
+lower1bu <- round(loss_jh_moe[, 1]$conf.lower/100, 2)
+upper1bu <- round(loss_jh_moe[, 1]$conf.upper/100, 2)
+
+lower2bu <- round(loss_jh_moe[, 2]$conf.lower/100, 2)
+upper2bu <- round(loss_jh_moe[, 2]$conf.upper/100, 2)
+
+lower3bu <- round(loss_jh_moe[, 3]$conf.lower/100, 2)
+upper3bu <- round(loss_jh_moe[, 3]$conf.upper/100, 2)
+
+loss$lower <- c(lower1u, lower2u, lower3u, lower1bu, lower2bu, lower3bu)
+loss$upper <- c(upper1u, upper2u, upper3u, upper1bu, upper2bu, upper3bu)
+```
 
 
 
