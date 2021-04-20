@@ -116,23 +116,25 @@ total <- NULL
 frontline_pct <- NULL
 
 total <- data %>%
+  filter(!is.na(frontline)) %>% 
   group_by(zipcode, race_eth3) %>%
-  summarize(n = n(), na.rm = TRUE)
+  summarize(n = n())
 
 frontline <- data %>%
-  filter(frontline == "Yes") %>%
+  filter(frontline == 1) %>%
   group_by(zipcode, race_eth3) %>%
   summarize(frontline_n = n())
 
-frontline_pct <- data.frame(total[,"zipcode"],total[,"race_eth3"],total[,"n"],frontline[,"frontline_n"])
+frontline_pct <- data.frame(total[,"zipcode"], total[,"race_eth3"], total[,"n"], frontline[,"frontline_n"])
 
 frontline_pct <- frontline_pct %>%
   mutate(pct = frontline_n/n,
                lbl = scales::percent(pct, accuracy = 0.1))
 
 frontline_pct %>%
-  ggplot(aes(x = pct, y = reorder(race_eth3, pct),color = zipcode)) + 
-  geom_point(stat = "identity", aes(size = n)) +
+  ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) + 
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
+  geom_point(aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .6), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
@@ -181,7 +183,8 @@ unemployed_pct <- unemployed_pct %>%
 
 unemployed_pct %>%
   ggplot(aes(x = pct, y = reorder(race_eth3, -pct),color = zipcode)) + 
-  geom_point(stat = "identity", aes(size = n)) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
+  geom_point(aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .45), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
@@ -216,6 +219,7 @@ data %>%
 ```{r plot_loss_income}
 loss %>% 
   ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .6), breaks = seq(0, 1, .15), label = scales::percent) +
