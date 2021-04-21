@@ -1,5 +1,5 @@
 ---
-title: "Socioeconomic and Health Outcomes of Residents in San Antonio During the COVID-19 Pandemic: Evidence from a Local Community Survey"
+title: "Socioeconomic Outcomes of Residents in San Antonio During the COVID-19 Pandemic: Evidence from a Local Community Survey"
 author: "..."
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -23,11 +23,10 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(ggrepel)
 library(dplyr)
-library(kableExtra)
-library(summarytools)
 library(ggsci)
 library(wesanderson)
 library(stringr)
+library(moe)
 ```
 
 ```{r load, include=FALSE}
@@ -110,6 +109,240 @@ We launched our online survey on March 22, 2021 on *Qualtrics*. From March 22 to
 
 <center> <h2>Proportion of frontline workers by race and ethnicity and by neighborhood</h2> </center>  
 <br>
+
+```{r moe_frontline, include=FALSE, message=FALSE, warning=FALSE}
+#devtools::install_github("peterdalle/moe")
+data.ec <- data %>% 
+  filter(zipcode == "Elm Creek")
+
+data.jh <- data %>% 
+  filter(zipcode == "Jefferson Heights")
+
+nec <- 230 + 173 + 65
+njh <- 146 + 139 + 33
+
+frontline.prop.ec <- prop.table(table(data.ec$frontline, data.ec$race_eth3), 2)
+frontline.prop.jh <- prop.table(table(data.jh$frontline, data.jh$race_eth3), 2)
+
+frontline_pct_ec <- c(0.4782609, 0.3236994, 0.1538462)
+frontline_pct_jh <- c(0.5342466, 0.4100719, 0.3636364)
+
+frontline_ec_moe <- sapply(frontline_pct_ec, FUN = moe, n = nec, population.correction = T, population.size = 18223)
+frontline_jh_moe <- sapply(frontline_pct_jh, FUN = moe, n = njh, population.correction = T, population.size = 3812)
+
+lower1 <- round(frontline_ec_moe[, 1]$conf.lower/100, 2)
+upper1 <- round(frontline_ec_moe[, 1]$conf.upper/100, 2)
+
+lower2 <- round(frontline_ec_moe[, 2]$conf.lower/100, 2)
+upper2 <- round(frontline_ec_moe[, 2]$conf.upper/100, 2)
+
+lower3 <- round(frontline_ec_moe[, 3]$conf.lower/100, 2)
+upper3 <- round(frontline_ec_moe[, 3]$conf.upper/100, 2)
+
+lower1b <- round(frontline_jh_moe[, 1]$conf.lower/100, 2)
+upper1b <- round(frontline_jh_moe[, 1]$conf.upper/100, 2)
+
+lower2b <- round(frontline_jh_moe[, 2]$conf.lower/100, 2)
+upper2b <- round(frontline_jh_moe[, 2]$conf.upper/100, 2)
+
+lower3b <- round(frontline_jh_moe[, 3]$conf.lower/100, 2)
+upper3b <- round(frontline_jh_moe[, 3]$conf.upper/100, 2)
+```
+
+```{r moe_unemployed, include=FALSE, message=FALSE, warning=FALSE}
+data <- data %>%
+  mutate_at(vars(emp_status), ~if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
+                                    if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
+                                            if_else(. %in% c("Retired", "Unable to work"), "retired", "NA"))))
+data.ec.unemp <- data %>% 
+  filter(emp_status != "NA", zipcode == "Elm Creek")
+
+data.jh.unemp <- data %>% 
+  filter(emp_status != "NA", zipcode == "Jefferson Heights")
+
+nec.unemp <- 230 + 171 + 64
+njh.unemp <- 145 + 142 + 32
+
+unemp.prop.ec <- prop.table(table(data.ec.unemp$emp_status, data.ec.unemp$race_eth3), 2)
+unemp.prop.jh <- prop.table(table(data.jh.unemp$emp_status, data.jh.unemp$race_eth3), 2)
+
+unemp_pct_ec <- c(0.14347826,         0.14619883,         0.20312500)
+unemp_pct_jh <- c(0.10344828,         0.18309859,         0.37500000)
+
+unemp_ec_moe <- sapply(unemp_pct_ec, FUN = moe, n = nec.unemp, population.correction = T, population.size = 18223)
+unemp_jh_moe <- sapply(unemp_pct_jh, FUN = moe, n = njh.unemp, population.correction = T, population.size = 3812)
+
+lower1u <- round(unemp_ec_moe[, 1]$conf.lower/100, 2)
+upper1u <- round(unemp_ec_moe[, 1]$conf.upper/100, 2)
+
+lower2u <- round(unemp_ec_moe[, 2]$conf.lower/100, 2)
+upper2u <- round(unemp_ec_moe[, 2]$conf.upper/100, 2)
+
+lower3u <- round(unemp_ec_moe[, 3]$conf.lower/100, 2)
+upper3u <- round(unemp_ec_moe[, 3]$conf.upper/100, 2)
+
+lower1bu <- round(unemp_jh_moe[, 1]$conf.lower/100, 2)
+upper1bu <- round(unemp_jh_moe[, 1]$conf.upper/100, 2)
+
+lower2bu <- round(unemp_jh_moe[, 2]$conf.lower/100, 2)
+upper2bu <- round(unemp_jh_moe[, 2]$conf.upper/100, 2)
+
+lower3bu <- round(unemp_jh_moe[, 3]$conf.lower/100, 2)
+upper3bu <- round(unemp_jh_moe[, 3]$conf.upper/100, 2)
+```
+
+```{r moe_loss, include=FALSE, message=FALSE, warning=FALSE}
+loss <- data %>%
+  filter(hardships_1 == 1) %>% 
+  group_by(zipcode, race_eth3) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) 
+
+loss.ec <- loss %>% filter(zipcode == "Elm Creek")
+loss.jh <- loss %>% filter(zipcode == "Jefferson Heights")
+
+nec.loss <- sum(loss.ec$n)
+njh.loss <- sum(loss.jh$n)
+
+loss_ec_moe <- sapply(loss.ec$pct, FUN = moe, n = nec.loss, population.correction = T, population.size = 18223)
+loss_jh_moe <- sapply(loss.jh$pct, FUN = moe, n = njh.loss, population.correction = T, population.size = 3812)
+
+lower1u <- round(loss_ec_moe[, 1]$conf.lower/100, 2)
+upper1u <- round(loss_ec_moe[, 1]$conf.upper/100, 2)
+
+lower2u <- round(loss_ec_moe[, 2]$conf.lower/100, 2)
+upper2u <- round(loss_ec_moe[, 2]$conf.upper/100, 2)
+
+lower3u <- round(loss_ec_moe[, 3]$conf.lower/100, 2)
+upper3u <- round(loss_ec_moe[, 3]$conf.upper/100, 2)
+
+lower1bu <- round(loss_jh_moe[, 1]$conf.lower/100, 2)
+upper1bu <- round(loss_jh_moe[, 1]$conf.upper/100, 2)
+
+lower2bu <- round(loss_jh_moe[, 2]$conf.lower/100, 2)
+upper2bu <- round(loss_jh_moe[, 2]$conf.upper/100, 2)
+
+lower3bu <- round(loss_jh_moe[, 3]$conf.lower/100, 2)
+upper3bu <- round(loss_jh_moe[, 3]$conf.upper/100, 2)
+
+loss$lower <- c(lower1u, lower2u, lower3u, lower1bu, lower2bu, lower3bu)
+loss$upper <- c(upper1u, upper2u, upper3u, upper1bu, upper2bu, upper3bu)
+```
+
+```{r moe_welfare, include=FALSE, message=FALSE, warning=FALSE}
+welfare <- data %>%
+  mutate_at(vars(welfare_1:welfare_7), ~if_else(. == "Yes", 1, 0))
+
+welfare$total_welfare <- rowSums(welfare[, c("welfare_1","welfare_2","welfare_3","welfare_4","welfare_5","welfare_6","welfare_7")],
+                                 na.rm = TRUE)
+welfare <- welfare %>%
+  filter(!is.na(welfare_1)&!is.na(welfare_2)&!is.na(welfare_3)&
+           !is.na(welfare_4)&!is.na(welfare_5)&!is.na(welfare_6)&!is.na(welfare_7)) %>% 
+  group_by(zipcode, race_eth3) %>%
+  summarize(average_welfare = round(mean(total_welfare), 2),
+            n = n())
+
+welfare.ec <- c(1.77, 1.79, 1.63)
+welfare.jh <- c(1.84, 1.86, 1.81)
+
+t.test(welfare$average_welfare ~ welfare$zipcode)
+summary(aov(formula = average_welfare ~ zipcode+race_eth3, data = welfare))
+```
+
+```{r moe_hardships, include=FALSE, message=FALSE, warning=FALSE}
+hardships.ec <- hardships %>% 
+  filter(zipcode == "Elm Creek", hardships != "No difficulty")
+
+hardships.jh <- hardships %>% 
+  filter(zipcode == "Jefferson Heights", hardships != "No difficulty")
+
+hardships.jh$pct
+nec <- 230 + 173 + 65
+njh <- 146 + 139 + 33
+
+hardships_pct_ec <- c(0.65484634, 0.20803783, 0.25059102, 0.26950355, 0.17494090, 0.08510638)
+hardships_pct_jh <- c(0.6583630, 0.2206406, 0.2953737, 0.3202847, 0.1886121, 0.1281139)
+
+hardships_ec_moe <- sapply(hardships_pct_ec, FUN = moe, n = 423, population.correction = T, population.size = 18223)
+hardships_jh_moe <- sapply(hardships_pct_jh, FUN = moe, n = 281, population.correction = T, population.size = 3812)
+
+lower1 <- round(hardships_ec_moe[, 1]$conf.lower/100, 2)
+upper1 <- round(hardships_ec_moe[, 1]$conf.upper/100, 2)
+
+lower2 <- round(hardships_ec_moe[, 2]$conf.lower/100, 2)
+upper2 <- round(hardships_ec_moe[, 2]$conf.upper/100, 2)
+
+lower3 <- round(hardships_ec_moe[, 3]$conf.lower/100, 2)
+upper3 <- round(hardships_ec_moe[, 3]$conf.upper/100, 2)
+
+lower4 <- round(hardships_ec_moe[, 4]$conf.lower/100, 2)
+upper4 <- round(hardships_ec_moe[, 4]$conf.upper/100, 2)
+
+lower5 <- round(hardships_ec_moe[, 5]$conf.lower/100, 2)
+upper5 <- round(hardships_ec_moe[, 5]$conf.upper/100, 2)
+
+lower6 <- round(hardships_ec_moe[, 6]$conf.lower/100, 2)
+upper6 <- round(hardships_ec_moe[, 6]$conf.upper/100, 2)
+
+lower1b <- round(hardships_jh_moe[, 1]$conf.lower/100, 2)
+upper1b <- round(hardships_jh_moe[, 1]$conf.upper/100, 2)
+
+lower2b <- round(hardships_jh_moe[, 2]$conf.lower/100, 2)
+upper2b <- round(hardships_jh_moe[, 2]$conf.upper/100, 2)
+
+lower3b <- round(hardships_jh_moe[, 3]$conf.lower/100, 2)
+upper3b <- round(hardships_jh_moe[, 3]$conf.upper/100, 2)
+
+lower4b <- round(hardships_jh_moe[, 4]$conf.lower/100, 2)
+upper4b <- round(hardships_jh_moe[, 4]$conf.upper/100, 2)
+
+lower5b <- round(hardships_jh_moe[, 5]$conf.lower/100, 2)
+upper5b <- round(hardships_jh_moe[, 5]$conf.upper/100, 2)
+
+lower6b <- round(hardships_jh_moe[, 6]$conf.lower/100, 2)
+upper6b <- round(hardships_jh_moe[, 6]$conf.upper/100, 2)
+```
+
+```{r moe_bad, include=FALSE, message=FALSE, warning=FALSE}
+bad <- data %>%
+  filter(!is.na(bad)) %>% 
+  group_by(zipcode, bad) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1))
+
+bad.ec <- bad %>% filter(zipcode == "Elm Creek")
+bad.jh <- bad %>% filter(zipcode == "Jefferson Heights")
+
+nec.bad <- sum(bad.ec$n)
+njh.bad <- sum(bad.jh$n)
+
+bad_ec_moe <- sapply(bad.ec$pct, FUN = moe, n = nec.bad, population.correction = T, population.size = 18223)
+bad_jh_moe <- sapply(bad.jh$pct, FUN = moe, n = njh.bad, population.correction = T, population.size = 3812)
+
+lower1bad <- round(bad_ec_moe[, 1]$conf.lower/100, 2)
+upper1bad <- round(bad_ec_moe[, 1]$conf.upper/100, 2)
+
+lower2bad <- round(bad_ec_moe[, 2]$conf.lower/100, 2)
+upper2bad <- round(bad_ec_moe[, 2]$conf.upper/100, 2)
+
+lower3bad <- round(bad_ec_moe[, 3]$conf.lower/100, 2)
+upper3bad <- round(bad_ec_moe[, 3]$conf.upper/100, 2)
+
+lower1bbad <- round(bad_jh_moe[, 1]$conf.lower/100, 2)
+upper1bbad <- round(bad_jh_moe[, 1]$conf.upper/100, 2)
+
+lower2bbad <- round(bad_jh_moe[, 2]$conf.lower/100, 2)
+upper2bbad <- round(bad_jh_moe[, 2]$conf.upper/100, 2)
+
+lower3bbad <- round(bad_jh_moe[, 3]$conf.lower/100, 2)
+upper3bbad <- round(bad_jh_moe[, 3]$conf.upper/100, 2)
+
+bad$lower <- c(lower1bad, lower2bad, lower3bad, lower1bbad, lower2bbad, lower3bbad)
+bad$upper <- c(upper1bad, upper2bad, upper3bad, upper1bbad, upper2bbad, upper3bbad)
+```
+
 ```{r frontline_plot, message=FALSE, warning=FALSE}
 frontline <- NULL
 total <- NULL
@@ -121,7 +354,7 @@ total <- data %>%
   summarize(n = n())
 
 frontline <- data %>%
-  filter(frontline == 1) %>%
+  filter(frontline == "Yes") %>%
   group_by(zipcode, race_eth3) %>%
   summarize(frontline_n = n())
 
@@ -130,6 +363,9 @@ frontline_pct <- data.frame(total[,"zipcode"], total[,"race_eth3"], total[,"n"],
 frontline_pct <- frontline_pct %>%
   mutate(pct = frontline_n/n,
                lbl = scales::percent(pct, accuracy = 0.1))
+
+frontline_pct$lower <- c(lower1, lower2, lower3, lower1b, lower2b, lower3b)
+frontline_pct$upper <- c(upper1, upper2, upper3, upper1b, upper2b, upper3b)
 
 frontline_pct %>%
   ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) + 
@@ -151,10 +387,6 @@ frontline_pct %>%
 <center> <h2>Unemployment status by race and ethnicity and by neighborhood</h2> </center>  
 
 ```{r unemp_plot, warning=FALSE, message=FALSE}
-data <- data %>%
-  mutate_at(vars(emp_status), ~if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
-                                    if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
-                                            if_else(. %in% c("Retired", "Unable to work"), "retired", "NA"))))
 total <- data %>%
   filter(emp_status != "NA") %>%
   group_by(zipcode, race_eth3) %>%
@@ -181,6 +413,9 @@ unemployed_pct <- unemployed_pct %>%
         mutate(pct = unemployed_n/n,
                lbl = scales::percent(pct, accuracy = 0.1))
 
+unemployed_pct$lower <- c(lower1u, lower2u, lower3u, lower1bu, lower2bu, lower3bu)
+unemployed_pct$upper <- c(upper1u, upper2u, upper3u, upper1bu, upper2bu, upper3bu)
+
 unemployed_pct %>%
   ggplot(aes(x = pct, y = reorder(race_eth3, -pct),color = zipcode)) + 
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
@@ -200,23 +435,7 @@ unemployed_pct %>%
 
 <center> <h2>Income loss by race and ethnicity and by neighborhood</h2> </center>
 <br>
-```{r loss_income, include=FALSE, message=FALSE}
-loss <- data %>%
-  filter(hardships_1 == 1) %>% 
-  group_by(zipcode, race_eth3) %>%
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1)) 
-
-data %>%
-  filter(hardships_1 == 1) %>% 
-  group_by(zipcode) %>%
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1)) 
-```
-
-```{r plot_loss_income}
+```{r loss_income_plot, include=FALSE, message=FALSE}
 loss %>% 
   ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
@@ -236,23 +455,13 @@ loss %>%
 
 <center> <h2>Average number of welfare receipt by race and ethnicity and by neighborhood</h2> </center> 
 <br>
-```{r, message=FALSE, warning=FALSE}
-welfare <- data %>%
-  mutate_at(vars(welfare_1:welfare_7), ~if_else(.=="Yes",1,0))
-
-welfare$total_welfare <- rowSums(welfare[,c("welfare_1","welfare_2","welfare_3","welfare_4","welfare_5","welfare_6","welfare_7")],
-                                 na.rm = TRUE)
-welfare <- welfare %>%
-  group_by(zipcode, race_eth3) %>%
-  summarize(average_welfare = round(mean(total_welfare), 1),
-            n = n())
-
+```{r ave_welfare_plot, message=FALSE, warning=FALSE}
 welfare %>%
-  ggplot(aes(x = average_welfare, y = reorder(race_eth3,average_welfare),color = zipcode)) + 
+  ggplot(aes(x = average_welfare, y = reorder(race_eth3, average_welfare), color = zipcode)) + 
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = round(average_welfare, 1)), 
                   size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
-  scale_x_continuous(breaks = seq(1, 2, .2), limits = c(1.2, 2)) +
+  scale_x_continuous(breaks = seq(1, 2, .2), limits = c(1.4, 2)) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
          size = FALSE) +
@@ -331,9 +540,15 @@ hardships <- rbind(loss.1, loss.2, loss.3, loss.4, loss.5, loss.6)
 ```
 
 ```{r hardships_plots, message=FALSE}
+hardships <- hardships %>% filter(hardships != "No difficulty") %>% arrange(zipcode)
+
+hardships$lower <- c(lower1, lower2, lower3, lower4, lower5, lower6, lower1b, lower2b, lower3b, lower4b, lower5b, lower6b)  
+hardships$upper <- c(upper1, upper2, upper3, upper4, upper5, upper6, upper1b, upper2b, upper3b, upper4b, upper5b, upper6b)  
+
 hardships %>% 
-  filter(hardships != "No difficulty", hardships != "Job loss") %>% 
+  filter(hardships != "Job loss") %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .03) +
   scale_x_continuous(limits = c(0, .45), breaks = seq(0, 1, .15), label = scales::percent) +
@@ -349,6 +564,7 @@ hardships %>%
 hardships %>% 
   filter(hardships != "No difficulty") %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 6, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .03) +
   scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
@@ -361,13 +577,9 @@ hardships %>%
   theme_classic() +
   themeuf
 
-data %>%
-  filter(!is.na(bad)) %>% 
-  group_by(zipcode, bad) %>%
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+bad %>%
   ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 6.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .03) +
   scale_x_continuous(limits = c(0, .7), breaks = seq(0, 1, .15), label = scales::percent) +
