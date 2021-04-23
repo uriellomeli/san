@@ -580,7 +580,7 @@ hardships %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Figure 6. Type of hardship experienced by zip code", 
+       title = "Figure 5. Type of hardship experienced by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
@@ -598,7 +598,7 @@ bad %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Figure 7. Number of hardships by zip code", 
+       title = "Figure 6. Number of hardships by zip code", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any type of hardships"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
