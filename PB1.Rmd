@@ -70,16 +70,16 @@ themeu <- theme(legend.position = "bottom",
                 text = element_text(family = "foo"))
 
 themeuf <- theme(legend.position = "top", 
-                 legend.text = element_text(size = 20, color = "gray30"), 
+                 legend.text = element_text(size = 25, color = "gray30"), 
                  legend.key.size = grid::unit(.5, "cm"), 
-                 legend.title = element_text(color = "gray30", face = "bold", size = 20), 
+                 legend.title = element_text(color = "gray25", face = "bold", size = 20), 
                  panel.background = element_rect(colour = "black"),
                  plot.title = element_text(face = "bold", size = 32, hjust = .5, vjust = .5, lineheight = .5), 
-                 plot.caption = element_text(size = 18),
-                 plot.subtitle = element_text(colour = "gray40", face = "bold", size = 26, lineheight = .5, hjust = .5, vjust = .5),
-                 axis.text = element_text(size = 22, color = "gray20"),
-                 strip.text = element_text(size = 22), 
-                 axis.title.x = element_text(color = "gray20", size = 24), 
+                 plot.caption = element_text(size = 19),
+                 plot.subtitle = element_text(colour = "gray30", face = "bold", size = 26, lineheight = .5, hjust = .5, vjust = .5),
+                 axis.text = element_text(size = 27, color = "gray10"),
+                 strip.text = element_text(size = 25), 
+                 axis.title.x = element_text(color = "gray10", size = 25), 
                  axis.ticks.y = element_blank(),
                  panel.grid.major.x = element_blank(),
                  panel.grid.minor.x = element_blank(),
@@ -574,7 +574,7 @@ hardships %>%
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
   geom_point(stat = "identity", aes(size = n)) +
-  geom_text_repel(aes(label = lbl), size = 7, color = "gray20", segment.alpha = 0, family = "foo", nudge_y = .3) +
+  geom_text_repel(aes(label = lbl), size = 7, color = "gray20", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
   scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
