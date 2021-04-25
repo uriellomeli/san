@@ -27,6 +27,7 @@ library(ggsci)
 library(wesanderson)
 library(stringr)
 library(moe)
+library(patchwork)
 ```
 
 ```{r load, include=FALSE}
@@ -84,6 +85,7 @@ themeuf <- theme(legend.position = "top",
                  panel.grid.major.x = element_blank(),
                  panel.grid.minor.x = element_blank(),
                  panel.grid.major.y = element_line(colour = "grey70", linetype = "dotted"),
+                 plot.tag = element_text(size = 30),
                  text = element_text(family = "foo"))
 ```
 
@@ -477,21 +479,19 @@ unemployed_pct <- unemployed_pct %>%
 unemployed_pct$lower <- c(lower1u, lower2u, lower3u, lower1bu, lower2bu, lower3bu)
 unemployed_pct$upper <- c(upper1u, upper2u, upper3u, upper1bu, upper2bu, upper3bu)
 
-unemployed_pct %>%
+fig2 <- unemployed_pct %>%
   ggplot(aes(x = pct, y = reorder(race_eth3, -pct), color = zipcode)) + 
-  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .45), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
-  labs(y = NULL, x = NULL, color = NULL,
-       title = "Figure 2. Unemployed by race and ethnicity", 
-       subtitle = str_wrap("What is your employment status?"),
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  labs(y = NULL, x = NULL, color = NULL, 
+       subtitle = "A) Unemployment by race and ethnicity") +
   theme_classic() +
-  themeuf
+  themeuf + theme(legend.position = "bottom") 
 
 ggsave(filename = "figure_2.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 ```
@@ -499,9 +499,9 @@ ggsave(filename = "figure_2.png", plot = last_plot(), path = "~/GitHub/saetus/",
 <center> <h2>Income loss by race and ethnicity and by neighborhood</h2> </center>
 <br>
 ```{r loss_income_plot, include=FALSE, message=FALSE}
-loss %>% 
+fig3 <- loss %>% 
   ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
-  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
   scale_x_continuous(limits = c(0, .6), breaks = seq(0, 1, .15), label = scales::percent) +
@@ -509,13 +509,21 @@ loss %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
          size = FALSE) +
   labs(y = NULL, x = NULL, color = NULL, size = NULL,
-       title = str_wrap("Figure 3. Loss of employment by race and ethnicity", width = 75),
-       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), has anyone in this household experienced income loss"),
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+       subtitle = "B) Income loss by race and ethnicity") +
   theme_classic() +
-  themeuf
+  themeuf + theme(axis.text.y = element_blank(), legend.position = "bottom")
 
 ggsave(filename = "figure_3.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+
+
+new.fig2 <- fig2 + fig3 + 
+  plot_annotation(title = "Figure 2. Employment status and loss of employment by race and ethnicity",
+                                          caption = "Source: 2021 San Antonio Energy and Time Use Survey", 
+                                          theme = themeuf) +
+  plot_layout(guides = "collect") & theme(legend.position = "bottom")
+
+ggsave(filename = "figure_new_2.png", plot = last_plot(), path = "~/GitHub/saetus/", 
+       width = 6, height = 4.5, units = "in", dpi = "print")
 ```
 
 <center> <h2>Average number of welfare receipt by race and ethnicity and by neighborhood</h2> </center> 
@@ -527,17 +535,17 @@ welfare$order <- c(1, 2, 3, 1, 2, 3)
 welfare %>%
   ggplot(aes(x = average_welfare, y = reorder(race_eth3, -order), color = zipcode)) + 
   geom_point(aes(size = n)) +
-  geom_text_repel(aes(label = round(average_welfare, 1)), 
+  geom_text_repel(aes(label = round(average_welfare, 2)), 
                   size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
-  scale_x_continuous(breaks = seq(1, 2, .2), limits = c(1.4, 2)) +
+  scale_x_continuous(breaks = seq(1, 2, .1), limits = c(1.5, 2)) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
          size = FALSE) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Figure 4. Average number of welfare benefits by race and ethnicity", 
+       title = "Figure 3. Average number of welfare benefits by race and ethnicity", 
        subtitle = str_wrap("Have you, or has anyone in your household received any type of welfare benefit?"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
-  theme_classic() +
+  theme_classic() + 
   themeuf
 
 ggsave(filename = "figure_4.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
@@ -570,9 +578,9 @@ hardships$upper <- c(upper1, upper2, upper3, upper4, upper5, upper6, upper1b, up
 
 #ggsave(filename = "figure_5.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
-hardships %>% 
+fig5 <- hardships %>% 
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
-  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .02) +
   scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
@@ -580,31 +588,36 @@ hardships %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Figure 5. Type of hardship experienced by zip code", 
-       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+       subtitle = str_wrap("A) Type of hardship")) +
   theme_classic() +
-  themeuf
+  themeuf + theme(legend.position = "bottom", plot.subtitle = element_text(hjust = 0))
 
 ggsave(filename = "figure_6.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
-bad %>%
+fig6 <- bad %>%
   ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
-  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(stat = "identity", aes(size = n)) +
-  geom_text_repel(aes(label = lbl), size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .03) +
+  geom_text_repel(aes(label = lbl), size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .02) +
   scale_x_continuous(limits = c(0, .7), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Figure 6. Number of hardships by zip code", 
-       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any type of hardships"),
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+       subtitle = str_wrap("B) Number of hardships")) +
   theme_classic() +
-  themeuf
+  themeuf + theme(legend.position = "bottom", plot.subtitle = element_text(hjust = 0))
 
 ggsave(filename = "figure_7.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+
+new.fig4 <- fig5 / fig6 + 
+  plot_annotation(title = "Figure 4. Material hardships experienced by zip code",
+                                          caption = "Source: 2021 San Antonio Energy and Time Use Survey", 
+                                          theme = themeuf) +
+  plot_layout(guides = "collect") & theme(legend.position = "bottom")
+
+ggsave(filename = "figure_new_4.png", plot = last_plot(), path = "~/GitHub/saetus/", 
+       width = 6, height = 8, units = "in", dpi = "print")
 ```
 
 ```{r, include=FALSE, message=FALSE}
