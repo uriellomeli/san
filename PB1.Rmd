@@ -737,7 +737,7 @@ data %>%
 These disproportionate social and economic impacts following COVID-19 reflect harsh, longstanding inequalities in employment and other spheres of social life. 
 Policy implications:
 
-
+the end
 
 
 
