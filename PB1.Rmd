@@ -853,8 +853,10 @@ hardships.r %>%
        title = "Figure 3. Main hardships experienced by race and ethnicity", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
-  theme_classic() +
+  theme_minimal() +
   themeuf + theme(legend.position = "top", strip.text = element_text(size = 27))
+
+ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 7, height = 4.5, units = "in", dpi = "print")
 
 # data %>%
 #   filter(!is.na(bad)) %>% 
