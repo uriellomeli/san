@@ -839,7 +839,7 @@ hardships.r$upper <- c(upper1r, upper2r, upper3r, upper4r, upper5r, upper6r, upp
 
 hardships.r %>% 
   filter(hardships != "No difficulty", 
-         (hardships=="Affording food"|hardships=="Paying rent/mortgage"|hardships=="Delay getting medical care"|hardships=="Job loss"))%>% 
+         (hardships=="Affording food" | hardships=="Paying rent/mortgage" | hardships=="Delay getting medical care"))%>% 
   ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(stat = "identity", aes(size = n)) +
@@ -848,15 +848,13 @@ hardships.r %>%
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
-  facet_wrap(~hardships, labeller = labeller(hardships = hardships_lbl), shrink = T) +
+  facet_grid(~hardships, labeller = labeller(hardships = hardships_lbl), shrink = T, scales = "free") +
   labs(y = NULL, x = NULL, color = NULL,
        title = "Figure 3. Main hardships experienced by race and ethnicity", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
   themeuf + theme(legend.position = "top", strip.text = element_text(size = 27))
-
-ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 6, units = "in", dpi = "print")
 
 # data %>%
 #   filter(!is.na(bad)) %>% 
