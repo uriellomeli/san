@@ -409,7 +409,7 @@ bad$lower <- c(lower1bad, lower2bad, lower3bad, lower1bbad, lower2bbad, lower3bb
 bad$upper <- c(upper1bad, upper2bad, upper3bad, upper1bbad, upper2bbad, upper3bbad)
 ```
 
-```{r frontline_plot, message=FALSE, warning=FALSE}
+```{r frontline_plot, message=FALSE, warning=FALSE, include=FALSE}
 frontline <- NULL
 total <- NULL
 frontline_pct <- NULL
@@ -514,15 +514,19 @@ fig3 <- loss %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
          size = FALSE) +
   labs(y = NULL, x = NULL, color = NULL, size = NULL,
-       subtitle = "B) Income loss by race and ethnicity") +
+       title = "Figure 1. Job loss exprienced by race and ethnicity",
+       subtitle = 
+         str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced job lobss?", 
+                  width = 85),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
-  themeuf + theme(axis.text.y = element_blank(), legend.position = "bottom")
+  themeuf + theme(legend.position = "top")
 
-ggsave(filename = "figure_3.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+ggsave(filename = "figure_1_new.png", plot = fig3, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
 
 new.fig2 <- fig2 + fig3 + 
-  plot_annotation(title = "Figure 2. Employment status and loss of employment by race and ethnicity",
+  plot_annotation(title = "Figure 1. Job loss experienced by neighborhood and by race and ethnicity",
                                           caption = "Source: 2021 San Antonio Energy and Time Use Survey", 
                                           theme = themeuf) +
   plot_layout(guides = "collect") & theme(legend.position = "bottom")
@@ -548,7 +552,7 @@ welfare %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
          size = FALSE) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Figure 3. Average number of welfare benefits by race and ethnicity", 
+       title = "Figure 4. Average number of welfare benefits by race and ethnicity", 
        subtitle = str_wrap("Have you, or has anyone in your household received any type of welfare benefit?"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() + 
@@ -594,36 +598,39 @@ fig5 <- hardships %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
   labs(y = NULL, x = NULL, color = NULL,
-       subtitle = str_wrap("A) Type of hardship")) +
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey",
+       title = "Figure 2. Material hardships experienced by zip code",
+       subtitle = 
+         str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following?", width = 85)) +
   theme_classic() +
-  themeuf + theme(legend.position = "bottom", plot.subtitle = element_text(hjust = 0))
+  themeuf + theme(legend.position = "top", plot.subtitle = element_text(hjust = 0.5))
 
-ggsave(filename = "figure_6.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+ggsave(filename = "figure_4_newnew.png", plot = fig5, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
-fig6 <- bad %>%
-  ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
-  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
-  geom_point(stat = "identity", aes(size = n)) +
-  geom_text_repel(aes(label = lbl), size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .02) +
-  scale_x_continuous(limits = c(0, .7), breaks = seq(0, 1, .15), label = scales::percent) +
-  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
-         size = F) +
-  labs(y = NULL, x = NULL, color = NULL,
-       subtitle = str_wrap("B) Number of hardships")) +
-  theme_classic() +
-  themeuf + theme(legend.position = "bottom", plot.subtitle = element_text(hjust = 0))
-
-ggsave(filename = "figure_7.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
-
-new.fig4 <- fig5 / fig6 + 
-  plot_annotation(title = "Figure 4. Material hardships experienced by zip code",
-                                          caption = "Source: 2021 San Antonio Energy and Time Use Survey", 
-                                          theme = themeuf) +
-  plot_layout(guides = "collect") & theme(legend.position = "bottom")
-
-ggsave(filename = "figure_new_4.png", plot = last_plot(), path = "~/GitHub/saetus/", 
-       width = 6, height = 8, units = "in", dpi = "print")
+# fig6 <- bad %>%
+#   ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
+#   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
+#   geom_point(stat = "identity", aes(size = n)) +
+#   geom_text_repel(aes(label = lbl), size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .02) +
+#   scale_x_continuous(limits = c(0, .7), breaks = seq(0, 1, .15), label = scales::percent) +
+#   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+#   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
+#          size = F) +
+#   labs(y = NULL, x = NULL, color = NULL,
+#        subtitle = str_wrap("B) Number of hardships")) +
+#   theme_classic() +
+#   themeuf + theme(legend.position = "bottom", plot.subtitle = element_text(hjust = 0))
+# 
+# ggsave(filename = "figure_7.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+# 
+# new.fig4 <- fig5 / fig6 + 
+#   plot_annotation(title = "Figure 4. Material hardships experienced by zip code",
+#                                           caption = "Source: 2021 San Antonio Energy and Time Use Survey", 
+#                                           theme = themeuf) +
+#   plot_layout(guides = "collect") & theme(legend.position = "bottom")
+# 
+# ggsave(filename = "figure_new_4.png", plot = last_plot(), path = "~/GitHub/saetus/", 
+#        width = 6, height = 8, units = "in", dpi = "print")
 ```
 
 ```{r, include=FALSE, message=FALSE}
@@ -691,44 +698,186 @@ loss.6r <- data %>%
 hardships.r <- rbind(loss.1r, loss.2r, loss.3r, loss.4r, loss.5r, loss.6r)
 ```
 
+```{r moe_race_hards, message=FALSE, warning=FALSE}
+hardships.r.ec <- hardships.r %>% filter(zipcode == "Elm Creek", hardships != "No difficulty") %>% arrange(zipcode)
+hardships.r.jh <- hardships.r %>% filter(zipcode == "Jefferson Heights", hardships != "No difficulty") %>% arrange(zipcode)
+
+hardships_pct_ec_r <- c(0.49097473, 0.35740072, 0.15162455, 0.46590909, 0.26136364, 0.27272727, 0.52830189, 0.33018868, 0.14150943,
+                        0.58771930, 0.37719298, 0.03508772, 0.54054054, 0.37837838, 0.08108108, 0.41666667, 0.41666667, 0.16666667)
+hardships_pct_jh_r <- c(0.48108108, 0.39459459, 0.12432432, 0.50000000, 0.40322581, 0.09677419, 0.43373494, 0.43373494, 0.13253012,
+                        0.56666667, 0.31111111, 0.12222222, 0.50943396, 0.37735849, 0.11320755, 0.41666667, 0.52777778, 0.05555556)
+
+hardships_ec_r_moe <- sapply(hardships_pct_ec_r, FUN = moe, n = 423, population.correction = T, population.size = 18223)
+hardships_jh_r_moe <- sapply(hardships_pct_jh_r, FUN = moe, n = 281, population.correction = T, population.size = 3812)
+
+lower1r <- round(hardships_ec_r_moe[, 1]$conf.lower/100, 2)
+upper1r <- round(hardships_ec_r_moe[, 1]$conf.upper/100, 2)
+
+lower2r <- round(hardships_ec_r_moe[, 2]$conf.lower/100, 2)
+upper2r <- round(hardships_ec_r_moe[, 2]$conf.upper/100, 2)
+
+lower3r <- round(hardships_ec_r_moe[, 3]$conf.lower/100, 2)
+upper3r <- round(hardships_ec_r_moe[, 3]$conf.upper/100, 2)
+
+lower4r <- round(hardships_ec_r_moe[, 4]$conf.lower/100, 2)
+upper4r <- round(hardships_ec_r_moe[, 4]$conf.upper/100, 2)
+
+lower5r <- round(hardships_ec_r_moe[, 5]$conf.lower/100, 2)
+upper5r <- round(hardships_ec_r_moe[, 5]$conf.upper/100, 2)
+
+lower6r <- round(hardships_ec_r_moe[, 6]$conf.lower/100, 2)
+upper6r <- round(hardships_ec_r_moe[, 6]$conf.upper/100, 2)
+
+lower7r <- round(hardships_ec_r_moe[, 7]$conf.lower/100, 2)
+upper7r <- round(hardships_ec_r_moe[, 7]$conf.upper/100, 2)
+
+lower8r <- round(hardships_ec_r_moe[, 8]$conf.lower/100, 2)
+upper8r <- round(hardships_ec_r_moe[, 8]$conf.upper/100, 2)
+
+lower9r <- round(hardships_ec_r_moe[, 9]$conf.lower/100, 2)
+upper9r <- round(hardships_ec_r_moe[, 9]$conf.upper/100, 2)
+
+lower10r <- round(hardships_ec_r_moe[, 10]$conf.lower/100, 2)
+upper10r <- round(hardships_ec_r_moe[, 10]$conf.upper/100, 2)
+
+lower11r <- round(hardships_ec_r_moe[, 11]$conf.lower/100, 2)
+upper11r <- round(hardships_ec_r_moe[, 11]$conf.upper/100, 2)
+
+lower12r <- round(hardships_ec_r_moe[, 12]$conf.lower/100, 2)
+upper12r <- round(hardships_ec_r_moe[, 12]$conf.upper/100, 2)
+
+lower13r <- round(hardships_ec_r_moe[, 13]$conf.lower/100, 2)
+upper13r <- round(hardships_ec_r_moe[, 13]$conf.upper/100, 2)
+
+lower14r <- round(hardships_ec_r_moe[, 14]$conf.lower/100, 2)
+upper14r <- round(hardships_ec_r_moe[, 14]$conf.upper/100, 2)
+
+lower15r <- round(hardships_ec_r_moe[, 15]$conf.lower/100, 2)
+upper15r <- round(hardships_ec_r_moe[, 15]$conf.upper/100, 2)
+
+lower16r <- round(hardships_ec_r_moe[, 16]$conf.lower/100, 2)
+upper16r <- round(hardships_ec_r_moe[, 16]$conf.upper/100, 2)
+
+lower17r <- round(hardships_ec_r_moe[, 17]$conf.lower/100, 2)
+upper17r <- round(hardships_ec_r_moe[, 17]$conf.upper/100, 2)
+
+lower18r <- round(hardships_ec_r_moe[, 18]$conf.lower/100, 2)
+upper18r <- round(hardships_ec_r_moe[, 18]$conf.upper/100, 2)
+
+lower1br <- round(hardships_jh_r_moe[, 1]$conf.lower/100, 2)
+upper1br <- round(hardships_jh_r_moe[, 1]$conf.upper/100, 2)
+
+lower2br <- round(hardships_jh_r_moe[, 2]$conf.lower/100, 2)
+upper2br <- round(hardships_jh_r_moe[, 2]$conf.upper/100, 2)
+
+lower3br <- round(hardships_jh_r_moe[, 3]$conf.lower/100, 2)
+upper3br <- round(hardships_jh_r_moe[, 3]$conf.upper/100, 2)
+
+lower4br <- round(hardships_jh_r_moe[, 4]$conf.lower/100, 2)
+upper4br <- round(hardships_jh_r_moe[, 4]$conf.upper/100, 2)
+
+lower5br <- round(hardships_jh_r_moe[, 5]$conf.lower/100, 2)
+upper5br <- round(hardships_jh_r_moe[, 5]$conf.upper/100, 2)
+
+lower6br <- round(hardships_jh_r_moe[, 6]$conf.lower/100, 2)
+upper6br <- round(hardships_jh_r_moe[, 6]$conf.upper/100, 2)
+
+lower7br <- round(hardships_jh_r_moe[, 7]$conf.lower/100, 2)
+upper7br <- round(hardships_jh_r_moe[, 7]$conf.upper/100, 2)
+
+lower8br <- round(hardships_jh_r_moe[, 8]$conf.lower/100, 2)
+upper8br <- round(hardships_jh_r_moe[, 8]$conf.upper/100, 2)
+
+lower9br <- round(hardships_jh_r_moe[, 9]$conf.lower/100, 2)
+upper9br <- round(hardships_jh_r_moe[, 9]$conf.upper/100, 2)
+
+lower10br <- round(hardships_jh_r_moe[, 10]$conf.lower/100, 2)
+upper10br <- round(hardships_jh_r_moe[, 10]$conf.upper/100, 2)
+
+lower11br <- round(hardships_jh_r_moe[, 11]$conf.lower/100, 2)
+upper11br <- round(hardships_jh_r_moe[, 11]$conf.upper/100, 2)
+
+lower12br <- round(hardships_jh_r_moe[, 12]$conf.lower/100, 2)
+upper12br <- round(hardships_jh_r_moe[, 12]$conf.upper/100, 2)
+
+lower13br <- round(hardships_jh_r_moe[, 13]$conf.lower/100, 2)
+upper13br <- round(hardships_jh_r_moe[, 13]$conf.upper/100, 2)
+
+lower14br <- round(hardships_jh_r_moe[, 14]$conf.lower/100, 2)
+upper14br <- round(hardships_jh_r_moe[, 14]$conf.upper/100, 2)
+
+lower15br <- round(hardships_jh_r_moe[, 15]$conf.lower/100, 2)
+upper15br <- round(hardships_jh_r_moe[, 15]$conf.upper/100, 2)
+
+lower16br <- round(hardships_jh_r_moe[, 16]$conf.lower/100, 2)
+upper16br <- round(hardships_jh_r_moe[, 16]$conf.upper/100, 2)
+
+lower17br <- round(hardships_jh_r_moe[, 17]$conf.lower/100, 2)
+upper17br <- round(hardships_jh_r_moe[, 17]$conf.upper/100, 2)
+
+lower18br <- round(hardships_jh_r_moe[, 18]$conf.lower/100, 2)
+upper18br <- round(hardships_jh_r_moe[, 18]$conf.upper/100, 2)
+```
+
 ```{r plots_2, message=FALSE, warning=FALSE}
+# facet names
+hardships_lbl <- c("Job loss", "Paying utility bills", "Food insecurity", "Paying rent/mortgage", 
+                   "Paying medical bills", "Delay medical care")
+names(hardships_lbl) <- c("Job loss", "Paying utility bills", "Affording food", "Paying rent/mortgage", 
+                   "Paying medical bills", "Delay getting medical care")
+
+hardships.r <- hardships.r %>% filter(hardships != "No difficulty") %>%  arrange(zipcode)
+
+hardships.r$lower <- c(lower1r, lower2r, lower3r, lower4r, lower5r, lower6r, lower7r, lower8r, lower9r, lower10r,
+                       lower11r, lower12r, lower13r, lower14r, lower15r, lower16r, lower17r, lower18r, 
+                       lower1br, lower2br, lower3br, lower4br, lower5br, lower6br, lower7br, lower8br, lower9br, lower10br,
+                       lower11br, lower12br, lower13br, lower14br, lower15br, lower16br, lower17br, lower18br)
+hardships.r$upper <- c(upper1r, upper2r, upper3r, upper4r, upper5r, upper6r, upper7r, upper8r, upper9r, upper10r,
+                       upper11r, upper12r, upper13r, upper14r, upper15r, upper16r, upper17r, upper18r,
+                       upper1br, upper2br, upper3br, upper4br, upper5br, upper6br, upper7br, upper8br, upper9br, upper10br,
+                       upper11br, upper12br, upper13br, upper14br, upper15br, upper16br, upper17br, upper18br)
+
 hardships.r %>% 
-  filter(hardships != "No difficulty") %>% 
-  ggplot(aes(x = pct, y = reorder(hardships, -pct), color = race_eth3)) +
-  geom_point(stat = "identity", size = 5) +
-  geom_text_repel(aes(label = lbl), size = 4.5, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .25, nudge_x = .025) +
+  filter(hardships != "No difficulty", 
+         (hardships=="Affording food"|hardships=="Paying rent/mortgage"|hardships=="Delay getting medical care"|hardships=="Job loss"))%>% 
+  ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
+  geom_point(stat = "identity", aes(size = n)) +
+  geom_text_repel(aes(label = lbl), size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .25, nudge_x = .025) +
   scale_x_continuous(limits = c(0, .65), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
-  facet_grid(~zipcode) +
+  facet_wrap(~hardships, labeller = labeller(hardships = hardships_lbl), shrink = T) +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Type of hardship experienced by race and ethnicity", 
+       title = "Figure 3. Main hardships experienced by race and ethnicity", 
        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() +
-  themeuf + theme(legend.position = "top")
+  themeuf + theme(legend.position = "top", strip.text = element_text(size = 27))
 
-data %>%
-  filter(!is.na(bad)) %>% 
-  group_by(zipcode, bad, race_eth3) %>%
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
-  ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
-  geom_point(aes(size = n)) +
-  geom_text_repel(aes(label = lbl), size = 5, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .01) +
-  scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
-  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
-         size = F) +
-  facet_grid(~bad, scales = "free") +
-  labs(y = NULL, x = NULL, color = NULL,
-       title = "Number of hardships by zip code", 
-       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any type of hardships"),
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
-  theme_classic() +
-  themeuf + theme(axis.text.x = element_text(color = "gray40", size = 18))
+ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 6, units = "in", dpi = "print")
+
+# data %>%
+#   filter(!is.na(bad)) %>% 
+#   group_by(zipcode, bad, race_eth3) %>%
+#   summarize(n = n()) %>% 
+#   mutate(pct = n/sum(n),
+#          lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+#   ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
+#   geom_point(aes(size = n)) +
+#   geom_text_repel(aes(label = lbl), size = 5, color = "gray30", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .01) +
+#   scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
+#   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+#   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
+#          size = F) +
+#   facet_grid(~bad, scales = "free") +
+#   labs(y = NULL, x = NULL, color = NULL,
+#        title = "Number of hardships by zip code", 
+#        subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any type of hardships"),
+#        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+#   theme_classic() +
+#   themeuf + theme(axis.text.x = element_text(color = "gray40", size = 18))
 ```
 
 <center> <h1>Conclusions</h1> </center> 
