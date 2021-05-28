@@ -563,8 +563,8 @@ fig5 <- hardships %>%
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(stat = "identity", aes(size = n)) +
-  geom_text_repel(aes(label = lbl), size = 8, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .25, nudge_x = .02) +
-  scale_x_continuous(limits = c(0, .45), breaks = seq(0, 1, .15), label = scales::percent) +
+  geom_text_repel(aes(label = lbl), size = 8, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .02) +
+  scale_x_continuous(limits = c(0, .45), breaks = seq(0, 1, 0.15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
