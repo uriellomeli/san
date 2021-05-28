@@ -558,8 +558,6 @@ hardships$upper <- c(upper1, upper2, upper3, upper4, upper5, upper6, upper1b, up
 
 #ggsave(filename = "figure_5.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
-NO JOB LOSS HARDSHIPS 
-
 fig5 <- hardships %>% 
   filter(hardships != "Job loss") %>%
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
