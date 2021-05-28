@@ -558,12 +558,15 @@ hardships$upper <- c(upper1, upper2, upper3, upper4, upper5, upper6, upper1b, up
 
 #ggsave(filename = "figure_5.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
+NO JOB LOSS HARDSHIPS 
+
 fig5 <- hardships %>% 
+  filter(hardships != "Job loss") %>%
   ggplot(aes(x = pct, y = reorder(hardships, pct), color = zipcode)) +
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 8, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .25, nudge_x = .02) +
-  scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_x_continuous(limits = c(0, .45), breaks = seq(0, 1, .15), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
