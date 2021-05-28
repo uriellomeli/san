@@ -447,7 +447,7 @@ frontline_pct %>%
   theme_minimal() +
   themeuf
 
-ggsave(filename = "figure_1.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+#ggsave(filename = "figure_1.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 ```
 
 ```{r unemp_plot, warning=FALSE, message=FALSE, include=FALSE}
@@ -494,10 +494,10 @@ fig2 <- unemployed_pct %>%
   theme_classic() +
   themeuf + theme(legend.position = "bottom") 
 
-ggsave(filename = "figure_2.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+#ggsave(filename = "figure_2.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 ```
 
-```{r loss_income_plot, include=FALSE, message=FALSE}
+```{r loss_income_plot, warning=FALSE, message=FALSE}
 fig3 <- loss %>% 
   ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
@@ -516,9 +516,9 @@ fig3 <- loss %>%
   theme_minimal() +
   themeuf + theme(legend.position = "top")
 
-ggsave(filename = "figure_1_new.png", plot = fig3, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
-
 fig3
+
+#ggsave(filename = "figure_1_new.png", plot = fig3, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
 # new.fig2 <- fig2 + fig3 + 
 #   plot_annotation(title = "Figure 1. Job loss experienced by neighborhood and by race and ethnicity",
@@ -575,7 +575,7 @@ fig5 <- hardships %>%
   theme_minimal() +
   themeuf + theme(legend.position = "top", plot.subtitle = element_text(hjust = 0.5))
 
-ggsave(filename = "figure_4_newnew.png", plot = fig5, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+#ggsave(filename = "figure_4_newnew.png", plot = fig5, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
 # fig6 <- bad %>%
 #   ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
@@ -829,7 +829,7 @@ hardships.r %>%
   theme_minimal() +
   themeuf + theme(legend.position = "top", strip.text = element_text(size = 27))
 
-ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 7, height = 4.5, units = "in", dpi = "print")
+#ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 7, height = 4.5, units = "in", dpi = "print")
 
 # data %>%
 #   filter(!is.na(bad)) %>% 
@@ -877,7 +877,7 @@ welfare %>%
   theme_minimal() + 
   themeuf
 
-ggsave(filename = "figure_4.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+#ggsave(filename = "figure_4.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 ```
 
 <h1>Lessons from the San Antonio Energy and Time Use Survey </h1>
