@@ -79,7 +79,7 @@ themeu <- theme(legend.position = "bottom",
                 text = element_text(family = "foo"))
 
 themeuf <- theme(legend.position = "top", 
-                 legend.text = element_text(size = 25, color = "gray30"), 
+                 legend.text = element_text(size = 25, color = "gray10"), 
                  legend.key.size = grid::unit(.5, "cm"), 
                  legend.title = element_text(color = "gray25", face = "bold", size = 20), 
                  panel.background = element_rect(colour = "black"),
@@ -508,17 +508,15 @@ fig3 <- loss %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
          size = FALSE) +
   labs(y = NULL, x = NULL, color = NULL, size = NULL,
-       title = "Figure 1. Job loss exprienced by race and ethnicity",
-       subtitle = 
-         str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced job lobss?", 
-                  width = 85),
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+       title = NULL,
+       subtitle = NULL,
+       caption = NULL) +
   theme_minimal() +
-  themeuf + theme(legend.position = "top")
+  themeuf + theme(legend.position = c(0.85, 0.1))
 
 fig3
 
-#ggsave(filename = "figure_1_new.png", plot = fig3, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+ggsave(filename = "figure_1_new.png", plot = fig3, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
 # new.fig2 <- fig2 + fig3 + 
 #   plot_annotation(title = "Figure 1. Job loss experienced by neighborhood and by race and ethnicity",
@@ -569,14 +567,13 @@ fig5 <- hardships %>%
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
   labs(y = NULL, x = NULL, color = NULL,
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey",
-       title = "Figure 2. Material hardships experienced by zip code",
-       subtitle = 
-         str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following?", width = 85)) +
+       caption = NULL,
+       title = NULL,
+       subtitle = NULL) +
   theme_minimal() +
-  themeuf + theme(legend.position = "top", plot.subtitle = element_text(hjust = 0.5))
+  themeuf + theme(legend.position = c(0.85, 0.08), plot.subtitle = element_text(hjust = 0.5))
 
-#ggsave(filename = "figure_4_newnew.png", plot = fig5, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+ggsave(filename = "figure_4_newnew.png", plot = fig5, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
 # fig6 <- bad %>%
 #   ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
@@ -824,13 +821,13 @@ hardships.r %>%
          size = F) +
   facet_grid(~hardships, labeller = labeller(hardships = hardships_lbl), shrink = T, scales = "free") +
   labs(y = NULL, x = NULL, color = NULL,
-       title = "Figure 3. Main hardships experienced by race and ethnicity", 
-       subtitle = str_wrap("Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships"),
-       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+       title = NULL, 
+       subtitle = NULL,
+       caption = NULL) +
   theme_minimal() +
-  themeuf + theme(legend.position = "top", strip.text = element_text(size = 27))
+  themeuf + theme(legend.position = c(.85, .1), strip.text = element_text(size = 27))
 
-#ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 7, height = 4.5, units = "in", dpi = "print")
+ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 7, height = 4.5, units = "in", dpi = "print")
 
 # data %>%
 #   filter(!is.na(bad)) %>% 
