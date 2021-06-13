@@ -36,6 +36,7 @@ library(wesanderson)
 library(stringr)
 library(moe)
 library(patchwork)
+library(GGally)
 ```
 
 ```{r load, include=FALSE}
@@ -97,24 +98,7 @@ themeuf <- theme(legend.position = "top",
                  text = element_text(family = "foo"))
 ```
 
-<br>
-Ever since San Antonio confirmed its first COVID-19 case more than one year ago , the COVID-19 pandemic and the associated social and economic fallouts have upended the lives of many. Although vaccine rollouts offer hopes for a rapid economic recovery, unemployment and other types of economic hardships persist, and many people are at risk of long-term economic distress. At the national level, unemployment rate continues to be higher than before the COVID-19 pandemic  and many households report that their households lack sufficient food to eat or are unable to make rental, medical, or utility bill payments.  At the local level, these economic hardships are likely to be distributed and shaped by the unequal ecological structures of local communities. Low-income and minority communities are disproportionately suffering from the COVID-19 pandemic and its related hardships. Black and Latino households were more than twice as likely as their White counterparts to report insufficient food (16% each, compared to 6% of White households). Additionally, the number of struggling families has increased dramatically, with a disproportionate impact on Latino and Black communities . The Household Pulse Survey show that 29% of Latino and 31% of Black households with children experienced three or more economic and health-related hardships as a result of the pandemic. This is almost twice the share among Asian (13%) and White (16%) households with children . Lastly, about 115 million people had experienced a loss of employment income from March 2020 to February 2021.  In this policy brief, we use household survey data in two selected local communities to assess how household economic hardships distribute across different communities. We also explore the unequal impacts of COVID-19 crisis on economic hardships across racial and ethnic groups. 
-The key findings of this policy brief are 1) job loss, followed by paying rent, affording food, and delaying medical care were the most experienced hardships, and 2) while job loss varies little by neighborhood, racial inequalities prevail regardless. The challenge before us now is to create the conditions that make economic security possible for all. Recover from COVID-19 crisis is not only about controlling the spread of a virus, improving the economy, and getting people vaccinated; it is also about ensuring that the individuals and communities that have suffered the most can recover from this pandemic and be more resilient in the future. Low-income and minority communities also need targeted outreach and assistance implementing recovery measures. The design and implementation of the recovery measures will be a reflection of our humanity.
-
-<h1>Data</h1>
-<br>
-Our analysis of the COVID-19 economic crisis in local communities is based on the San Antonio Energy and Time Use Survey. This is an online survey conducted between March 22-24, 2021 in Elm Creek (78230) and Jefferson Heights (78202). The household-level questionnaire collected information on time use, energy consumption, self-reported health and medical devices at home, employment situation, hardships experienced, and demographic characteristics. The study was approved by the University of Texas at San Antonio Institutional Review Board.
-We selected Elm Creek and Jefferson Heights as our study sites because they represent different socioeconomic and demographic contexts (Table 1). The Elm Creek neighborhood (78230) is located in North central of San Antonio, Texas, and the Jefferson Heights neighborhood (78202) is located in the Eastside of downtown San Antonio. Residents in these two neighborhoods are exposed to drastically different socioeconomic conditions. For example, more than 90% of the residents in Elm Creek have at least a high school diploma. In sharp contrast, less than 70% of the residents in Jefferson Heights achieved a high school diploma or equivalent. 
-Partly driven by the large disparity in educational attainment between two neighborhoods, the per capita income in 2019 in Elm Creek (`$`38,640) is almost two times higher than that of Jefferson Heights (`$`18,710). Compared to Elm Creek, where 12% of residents are below the poverty line, 38% of residents in Jefferson Heights fall below the poverty line. The difference between these neighborhoods is most pronounced between residents under 18 and older adults (over 65). While 17% of residents under 18 and 7% of senior residents in Elm Creek are below the poverty line, in Jefferson Heights these rates are three times higher. The ethnic and racial composition of the neighborhoods varies considerably. For instance, almost half the residents in Elm Creek are Hispanics (48%), while in Jefferson Heights, 60% are Hispanics. The non-Hispanic Whites and non-Hispanic Others  in Elm Creek are the 39% and 13% of its residents, respectively. In contrast, non-Hispanic Whites and non-Hispanic Others in Jefferson Heights are 11% and 29% of its residents, respectively.
-We distributed the San Antonio Energy and Time Use Survey on March 22, 2021, using Qualtrics , a survey software tool used to design, send, and collect surveys online. From March 22 to March 24, we collected surveys from 1,022 respondents, of which 805 were valid responses with complete information on key demographic and socioeconomic information. We excluded 63 respondents from other zip codes and 154 respondents due to lack of information and inconsistencies with their response time. The final analytical sample consists of 805 respondents in total, of which 479 are from Elm Creek and 326 are from Jefferson Heights.
-People of color are the majority of San Antonio's population, and their share of the total population continues to grow. As this demographic shift unfolds, their social and economic well-being will determine the future and prosperity of the city. In the next section, we present results related to occupation types and employment situation (e.g., frontline workers share, currently unemployed, and job loss), welfare benefits received, and material hardships that residents of Elm Creek and Jefferson Heights have experienced since the onset of COVID-19.
-
-<h1>Key Findings</h1>
-<br>
 <h2>1) Job loss by race and ethnicity and by neighborhood</h2>
-<br>
-**The economic fallout in job loss varies little by neighborhood type, but racial inequalities prevail regardless. Almost half of Hispanic households experienced job loss, in comparison to a third of non-Hispanic White households**. 49.1% of Hispanics in Elm Creek and 48.1% of Hispanics in Jefferson Heights reported experiencing job loss during the pandemic, in comparison to 35.7% of non-Hispanic Whites in Elm Creek and 39.5% of non-Hispanic Whites in Jefferson Heights. Non-Hispanic Other (including Blacks, Asians, and other racial minorities) face higher rates of job loss than the other racial and ethnic groups, 12.4% in Elm Creek and 15.2% in Jefferson Heights.
-	Figure 1 shows the percentage of respondents who experienced job loss since March 2020. This data is collected by using the survey question, “Since the onset of COVID-19 (March 2020), have you, or has anyone in your household experienced any of the following hardships?” Across figures, we represented Elm Creek with the brown circle (a more advantaged neighborhood), and Jefferson Heights with the dark blue circle (a more disadvantage neighborhood). The size of the circle is proportional to the number of respondents in each racial and ethnic group. We also display the margins of error for each proportion or mean shown. 
 
 ```{r moe_frontline, include=FALSE, message=FALSE, warning=FALSE}
 #devtools::install_github("peterdalle/moe")
@@ -512,7 +496,7 @@ fig3 <- loss %>%
        subtitle = NULL,
        caption = NULL) +
   theme_minimal() +
-  themeuf + theme(legend.position = c(0.85, 0.1))
+  themeuf + theme(legend.position = "bottom")
 
 fig3
 
@@ -529,8 +513,7 @@ ggsave(filename = "figure_1_new.png", plot = fig3, path = "~/GitHub/saetus/", wi
 ```
 
 <h2>2) Material hardships by race and ethnicity and by neighborhood</h2>
-<br>
-**The hardship most experienced in both neighborhoods since the start of the pandemic was job loss, followed by difficulties paying rent, affording food, and delaying medical care.** Material hardship is defined as going without basic needs like food, medical care, housing, or utilities due to a lack of money. We do not observe a statistical difference between the different hardships experienced (e.g., job loss, difficulty in paying the next rent or mortgage payment, difficulty in affording the kinds of food need, difficulty in paying utility bills, difficulty in paying medical bills or health insurance and delaying getting medical care or prescription medication) among the residents in Jefferson Heights and Elm Creek. Figure 2 shows that almost two-thirds of the respondents in both neighborhoods claimed that they or someone else in their household has lost their job since the COVID-19 outbreak. Additionally, 27% of respondents in Elm Creek and 32% in Jefferson Heights said they have problems with paying their rent/mortgage after beginning of the COVID-19 pandemic. The least frequent hardship experienced among residents of both neighborhoods was delayed medical care, 9% in Elm Creek and 13% of respondents in Jefferson Heights. In Figure 3 we shown that among Hispanics in both neighborhoods there is no difference between the residents that experienced difficulties affording food, paying rent or mortgage and delay getting medical care. A third of non-Hispanic Whites in Elm Creek had trouble affording food compared to 43.4% of Whites in Jefferson Heights. More than half of Whites in Jefferson Heights delay getting medical care, in comparison with 41.7% of Whites in Elm Creek. About three times more of non-Hispanic Others in Elm Creek (16.7%) than in Jefferson Heights (5.6%) delay getting medical care. 3.5% of non-Hispanic Others in Elm Creek had difficulties paying rent or mortgage, almost four times less than non-Hispanic Others in Jefferson Heights (12.2%).
+
 ```{r hardships_plots, message=FALSE, include=FALSE}
 hardships <- hardships %>% filter(hardships != "No difficulty") %>%  arrange(zipcode)
 
@@ -571,7 +554,7 @@ fig5 <- hardships %>%
        title = NULL,
        subtitle = NULL) +
   theme_minimal() +
-  themeuf + theme(legend.position = c(0.85, 0.08), plot.subtitle = element_text(hjust = 0.5))
+  themeuf + theme(legend.position = "bottom", plot.subtitle = element_text(hjust = 0.5))
 
 ggsave(filename = "figure_4_newnew.png", plot = fig5, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
@@ -810,7 +793,7 @@ hardships.r$upper <- c(upper1r, upper2r, upper3r, upper4r, upper5r, upper6r, upp
 
 hardships.r %>% 
   filter(hardships != "No difficulty", 
-         (hardships=="Affording food" | hardships=="Paying rent/mortgage" | hardships=="Delay getting medical care"))%>% 
+         (hardships=="Affording food" | hardships=="Paying rent/mortgage" | hardships=="Paying utility bills"))%>% 
   ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(stat = "identity", aes(size = n)) +
@@ -825,7 +808,7 @@ hardships.r %>%
        subtitle = NULL,
        caption = NULL) +
   theme_minimal() +
-  themeuf + theme(legend.position = c(.85, .1), strip.text = element_text(size = 27))
+  themeuf + theme(legend.position = "bottom", strip.text = element_text(size = 27))
 
 ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 7, height = 4.5, units = "in", dpi = "print")
 
@@ -852,8 +835,7 @@ ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/sa
 ```
 
 <h2>3) The average number of welfare benefits by race and ethnicity</h2> 
-<br>
-Households within both Elm Creek and Jefferson Heights have experienced all kinds of hardships during the pandemic, so it is unsurprising that the use of welfare benefits has been on the rise. Figure 3 shows the average number of welfare benefits per household. We considered “welfare benefits” anyone in the household receiving any of the following: unemployment insurance, social security benefits (retirement, disability, or survivors), supplemental security income, Medicare benefits, stimulus payment(s), supplemental nutrition assistance program (SNAP), and other types of need-based assistance from the city or federal government. Although we do not find major differences between racial and ethnic groups, non-Hispanic Others in Elm Creek have received the fewest welfare benefits on average, while non-Hispanic Whites in Jefferson Heights have received the most. 
+
 ```{r ave_welfare_plot, message=FALSE, warning=FALSE}
 # welfare$race_eth3 <- factor(welfare$race_eth3, ordered = F)
 # welfare$order <- c(1, 2, 3, 1, 2, 3)
@@ -878,21 +860,71 @@ Households within both Elm Creek and Jefferson Heights have experienced all kind
 #ggsave(filename = "figure_4.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 ```
 
-<h1>Lessons from the San Antonio Energy and Time Use Survey </h1>
-<br>
-The effects of the pandemic on the economy have reached everyone. The economic hardships are likely to be unequally distributed and shaped by different local neighborhood conditions. 
-The disproportionate social and economic impacts in Texas and elsewhere following COVID-19 reflect harsh, longstanding inequalities in employment and other spheres of social life. The early findings discussed here show how the impacts of the COVID-19 pandemic have been incredibly broad among the workforce in two distinct San Antonio neighborhoods. Jefferson Heights is characterized by a greater share of frontline workers. This can have important implications for SARS-CoV-2 transmission and geographic variation in the burden of COVID-19 cases in San Antonio, as frontline workers are more likely to be exposed to the virus.
-The Household Pulse Survey  shows for June 2020 that 51.1% of the US residents and 53.5% of Texans lost their jobs. We ask a similar question to find out that in March 2021, about 65.5% in Elm Creek and 65.8% in Jefferson Heights lost their jobs. We find that the most common hardship people suffered during the pandemic was losing their job, but that there are important disparities, as exemplified by 37.5% of unemployed Non-Hispanic Others in Jefferson Heights compared to just 20.3% in Elm Creek. Although we did not observe a statistically significant difference in job loss between these two neighborhoods, nearly half of Hispanics who participated in the survey lost their job since the onset of COVID-19 (48.1% in Jefferson Heights and 49.1% in Elm Creek). Additionally, we find greater use of state and federal welfare mechanisms in Jefferson Heights than in Elm Creek, although these results are not statistically significant. This highlights the need to ensure that residents of Jefferson Heights and similar neighborhoods are aware of, and have access to, any and all relevant local, state, or federal aid, particularly since these neighborhoods likely bear the brunt of the pandemic.
-As attention begins to turn to COVID-19 recovery, it is critically important to remember that neighborhoods were impacted – and continue to be impacted – differently. These disparities will shape the trajectory and speed of their recovery for better or worse. Beyond the obvious measures of socioeconomic status that may contribute to faster recovery, social capital (resources available to people through their social networks) is also associated with recovery through several mechanisms (Aldrich, 2011). These include the presence of “social safety nets” that can provide financial and physical assistance as well as the ability of better connected and politically active communities to more effectively interact with authorities and obtain resources. Following the 1995 Kobe earthquake in Japan, social capital was the strongest predictor of population recovery (Aldrich, 2011). In the US, social capital varies widely and is known to be protective against COVID-19 deaths and hospitalizations (Borgonovi et al., 2021). Recovery efforts in San Antonio should keep the “social infrastructure” of neighborhoods in mind when planning. Additionally, we suggest that recovery efforts should also seek – wherever possible – to improve existing disparities in housing, social capital, access to healthcare, and other factors that collectively contribute to social vulnerability (Finch et al., 2010). It is the intersections of these dimensions that make communities vulnerable to catastrophes and mending them now can help ensure that these neighborhoods do not unjustly bear the brunt of future disasters. Finally, we advise that policymakers bear in mind evidence from other natural disasters that shows that federal aid and similar resources often disproportionately help the advantaged, thereby exacerbating existing race/ethnicity income disparities (Howell and Elliott, 2018; 2019). Efforts should be taken to ensure that the same does not happen in the wake of COVID-19.
-The ongoing pandemic demands detailed and timely data, and the San Antonio Energy and Time Use Survey is an important tool that can help our community assess the impact of COVID-19 on households as the pandemic evolves. Because of the high rate of job loss, job recovery must be a key element for the design of upcoming labor policies. This is especially relevant for the community of Blacks, Asian, American Indian or Alaskan Native, Native Hawaiian or Other Pacific Islander, of two or more races. Attending to the recovery of employment, especially in Jefferson Heights, will help to reduce the difference with Elm Creek. 
-More broadly, the local evidence also indicates that during the pandemic, economically less favored neighborhoods, as in Jefferson Heights, experience material difficulties to a greater extent than economically more favored neighborhoods, as Elm Creek.
-<br>
-<h1>References</h1>
-<br>
-1.	Aldrich, Daniel P. (2011). The power of people: social capital’s role in recovery from the 1995 Kobe earthquake. Nat Hazards 56:595-611
-2.	Finch, Christina, Emrich, Christopher T, Cutter, Susan L. (2010). Disaster disparities and differential recovery in New Orleans. Popul Environ 31:179-202.
-3.	Howell, Junia and Elliott, James R. (2018). As disaster costs rise, so does inequality. Socius 4:1-3
-4.	Howell, Junia and Elliott, James R. (2019). Damages done: the longitudinal impacts of natural hazards on wealth inequality in the United States. Social Problems 66:448-467.
+<h2> Supplementary analysis
+
+
+```{r}
+round(prop.table(table(data$race_eth3, data$marital_st), 1)*100, 1)
+
+round(prop.table(table(data$race_eth3, data$ageg), 1)*100, 1)
+```
+
+```{r message=FALSE, warning=FALSE}
+data$mental_health_anxious <- ordered(data$mental_health_anxious, levels = c("Not at all", "Several days",
+                                                                             "More than half the days", "Nearly every day"))
+data$mental_health_worry <- ordered(data$mental_health_worry, levels = c("Not at all", "Several days",
+                                                                         "More than half the days", "Nearly every day"))
+data$mental_health_interest <- ordered(data$mental_health_interest, levels = c("Not at all", "Several days",
+                                                                         "More than half the days", "Nearly every day"))
+data$mental_health_down <- ordered(data$mental_health_down, levels = c("Not at all", "Several days",
+                                                                         "More than half the days", "Nearly every day"))
+
+data %>% 
+  ggtable(columnsX = c("zipcode"), 
+          columnsY = c("race_eth3", "marital_st", "ageg", "depen", "num_hsh"), 
+          cells = "col.prop")
+
+data %>% 
+  #filter(!is.na(impairment)) %>% 
+  ggtable(columnsX = c("race_eth3"), 
+          columnsY = c("marital_st", "ageg", "depen", "num_hsh", "health", "impairment"), 
+          cells = "col.prop")
+
+data %>% 
+  filter(!is.na(pre_mental_health), !is.na(pre_phy_health), !is.na(mental_health_anxious), !is.na(mental_health_worry),
+         !is.na(mental_health_interest), !is.na(mental_health_down)) %>% 
+  ggtable(columnsX = c("race_eth3"), 
+          columnsY = c("pre_mental_health", "pre_phy_health", "mental_health_anxious", "mental_health_worry",
+                       "mental_health_interest", "mental_health_down"), 
+          cells = "col.prop")
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+data %>% 
+  filter(!is.na(frontline), emp_status != "NA") %>% 
+  ggtable("race_eth3", 
+          c("frontline", "emp_status"),
+          cells = "col.prop")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
