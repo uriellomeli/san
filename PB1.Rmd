@@ -836,7 +836,7 @@ ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/sa
 
 <h2>3) The average number of welfare benefits by race and ethnicity</h2> 
 
-```{r ave_welfare_plot, message=FALSE, warning=FALSE}
+```{r ave_welfare_plot, message=FALSE, warning=FALSE, include=FALSE}
 # welfare$race_eth3 <- factor(welfare$race_eth3, ordered = F)
 # welfare$order <- c(1, 2, 3, 1, 2, 3)
 # 
@@ -861,14 +861,6 @@ ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/sa
 ```
 
 <h2> Supplementary analysis
-
-
-```{r}
-round(prop.table(table(data$race_eth3, data$marital_st), 1)*100, 1)
-
-round(prop.table(table(data$race_eth3, data$ageg), 1)*100, 1)
-```
-
 ```{r message=FALSE, warning=FALSE}
 data$mental_health_anxious <- ordered(data$mental_health_anxious, levels = c("Not at all", "Several days",
                                                                              "More than half the days", "Nearly every day"))
@@ -879,29 +871,27 @@ data$mental_health_interest <- ordered(data$mental_health_interest, levels = c("
 data$mental_health_down <- ordered(data$mental_health_down, levels = c("Not at all", "Several days",
                                                                          "More than half the days", "Nearly every day"))
 
-data %>% 
+ctab1 <- data %>% 
   ggtable(columnsX = c("zipcode"), 
           columnsY = c("race_eth3", "marital_st", "ageg", "depen", "num_hsh"), 
-          cells = "col.prop")
+          cells = "col.prop") +
+  theme(text = element_text(size = 22))
 
-data %>% 
+ctab2 <- data %>% 
   #filter(!is.na(impairment)) %>% 
   ggtable(columnsX = c("race_eth3"), 
           columnsY = c("marital_st", "ageg", "depen", "num_hsh", "health", "impairment"), 
           cells = "col.prop")
 
-data %>% 
+ctab3 <- data %>% 
   filter(!is.na(pre_mental_health), !is.na(pre_phy_health), !is.na(mental_health_anxious), !is.na(mental_health_worry),
          !is.na(mental_health_interest), !is.na(mental_health_down)) %>% 
   ggtable(columnsX = c("race_eth3"), 
           columnsY = c("pre_mental_health", "pre_phy_health", "mental_health_anxious", "mental_health_worry",
                        "mental_health_interest", "mental_health_down"), 
           cells = "col.prop")
-```
 
-
-```{r, message=FALSE, warning=FALSE}
-data %>% 
+ctab4 <- data %>% 
   filter(!is.na(frontline), emp_status != "NA") %>% 
   ggtable("race_eth3", 
           c("frontline", "emp_status"),
@@ -909,6 +899,24 @@ data %>%
 ```
 
 
+```{r}
+# library(summarytools)
+
+data %>% 
+  filter(!is.na(frontline), emp_status!= "NA") %>% 
+  group_by(race_eth3) %>% 
+  freq(var = frontline, round.digits = 1, cumul = F)
+
+data %>% 
+  filter(!is.na(frontline), emp_status!= "NA") %>% 
+  group_by(race_eth3) %>% 
+  freq(var = emp_status, round.digits = 1, cumul = F)
+
+data %>% 
+  group_by(race_eth3) %>% 
+  freq(var = marital_st, round.digits = 1, cumul = F)
+
+```
 
 
 
