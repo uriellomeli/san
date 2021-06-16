@@ -959,6 +959,11 @@ data %>%
   freq(var = mental_health_down, round.digits = 1, cumul = F, style = "grid")
 ```
 
+```{r}
+data %>%
+  group_by(race_eth3) %>%
+  summarise(av.hsh.size = mean(num_hsh, na.rm = T), med.hsh.size = median(num_hsh, na.rm = T))
+```
 
 
 
