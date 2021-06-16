@@ -556,7 +556,7 @@ fig5 <- hardships %>%
   theme_minimal() +
   themeuf + theme(legend.position = "bottom", plot.subtitle = element_text(hjust = 0.5))
 
-ggsave(filename = "figure_4_newnew.png", plot = fig5, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+ggsave(filename = "figure_2_new.png", plot = fig5, path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 
 # fig6 <- bad %>%
 #   ggplot(aes(x = pct, y = reorder(bad, pct), color = zipcode)) +
@@ -775,7 +775,7 @@ fig5
 
 ```{r plot_figure_3, message=FALSE, warning=FALSE}
 # facet names
-hardships_lbl <- c("Job loss", "Paying utility bills", "Food insecurity", "Paying rent/mortgage", 
+hardships_lbl <- c("Job loss", "Paying utility bills", "Affording food", "Paying rent/mortgage", 
                    "Paying medical bills", "Delay medical care")
 names(hardships_lbl) <- c("Job loss", "Paying utility bills", "Affording food", "Paying rent/mortgage", 
                    "Paying medical bills", "Delay getting medical care")
@@ -793,7 +793,7 @@ hardships.r$upper <- c(upper1r, upper2r, upper3r, upper4r, upper5r, upper6r, upp
 
 hardships.r %>% 
   filter(hardships != "No difficulty", 
-         (hardships=="Affording food" | hardships=="Paying rent/mortgage" | hardships=="Paying utility bills"))%>% 
+         (hardships == "Affording food" | hardships == "Paying rent/mortgage" | hardships == "Paying utility bills"))%>% 
   ggplot(aes(x = pct, y = reorder(race_eth3, pct), color = zipcode)) +
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(stat = "identity", aes(size = n)) +
@@ -802,7 +802,8 @@ hardships.r %>%
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
-  facet_grid(~hardships, labeller = labeller(hardships = hardships_lbl), shrink = T, scales = "free") +
+  facet_grid(~factor(hardships, levels = c("Paying rent/mortgage", "Affording food", "Paying utility bills")),
+             labeller = labeller(hardships = hardships_lbl), shrink = T, scales = "free") +
   labs(y = NULL, x = NULL, color = NULL,
        title = NULL, 
        subtitle = NULL,
@@ -810,7 +811,7 @@ hardships.r %>%
   theme_minimal() +
   themeuf + theme(legend.position = "bottom", strip.text = element_text(size = 27))
 
-ggsave(filename = "figure_3_newnew.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 7, height = 4.5, units = "in", dpi = "print")
+ggsave(filename = "figure_3_new.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 7, height = 4.5, units = "in", dpi = "print")
 
 # data %>%
 #   filter(!is.na(bad)) %>% 
@@ -898,10 +899,8 @@ ctab4 <- data %>%
           cells = "col.prop")
 ```
 
-
 ```{r}
 # library(summarytools)
-
 data %>% 
   filter(!is.na(frontline), emp_status!= "NA") %>% 
   group_by(race_eth3) %>% 
