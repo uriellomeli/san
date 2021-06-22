@@ -181,7 +181,7 @@ upper3bu <- round(unemp_jh_moe[, 3]$conf.upper/100, 2)
 ```
 ```{r moe_loss, include=FALSE, message=FALSE, warning=FALSE}
 loss <- data %>%
-  filter(hardships_1 == 1) %>% 
+  filter(hardships_1 == 1, emp_status != "retired", emp_status != "NA") %>% 
   group_by(zipcode, race_eth3) %>%
   summarize(n = n()) %>% 
   mutate(pct = n/sum(n),
@@ -861,7 +861,7 @@ ggsave(filename = "figure_3_new.png", plot = last_plot(), path = "~/GitHub/saetu
 #ggsave(filename = "figure_4.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
 ```
 
-<h2> Supplementary analysis
+<h2> Supplementary analysis</h2>
 ```{r message=FALSE, warning=FALSE}
 data$mental_health_anxious <- ordered(data$mental_health_anxious, levels = c("Not at all", "Several days",
                                                                              "More than half the days", "Nearly every day"))
@@ -917,10 +917,51 @@ data %>%
 
 ```
 
+<h2> Figure 4</h2>
+```{r}
+
+table(data$emp_status)
+
+jobrecovery <- data %>% 
+  filter(emp_status != "Unable to work" | emp_status != "Retired") %>% 
+  mutate(job_recovery = if_else(hardships_1 == 1 & emp_status == "Work for pay at a job", "Job recovery", 
+                                if_else(hardships_1 == 1 & 
+                                          emp_status == "Layoff from a job" | 
+                                          emp_status == "Temporarily absent from job" |
+                                          emp_status == "Actively looking for a job", 
+                                        "No job recovery", NA_character_))) %>% 
+  select(zipcode, emp_status, hardships_1, age:job_recovery) 
+
+job.tab <- jobrecovery %>% 
+  filter(!is.na(job_recovery)) %>% 
+  group_by(zipcode, race_eth3, job_recovery) %>% 
+  summarise(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) 
+
+job.tab2 <- jobrecovery %>% 
+  filter(!is.na(job_recovery)) %>% 
+  group_by(zipcode, race_eth3, job_recovery) %>% 
+  summarise(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) 
+
+job.tab %>% 
+  filter(job_recovery == "No job recovery")
+```
 
 
+<h2> Figure 1 w/o retired </h2>
+```{r}
+tab.jobloss.ret <- data %>%
+  filter(emp_status != "retired", emp_status != "NA", !is.na(hardships_1)) %>% 
+  group_by(zipcode, hardships_1, ageg) %>% 
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) 
 
-
+write.csv(tab.jobloss.ret,"~/GitHub/saetus/table_jobloss.csv", row.names = FALSE)
+```
 
 
 
