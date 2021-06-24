@@ -950,7 +950,6 @@ job.tab %>%
   filter(job_recovery == "No job recovery")
 ```
 
-
 <h2> Figure 1 w/o retired </h2>
 ```{r}
 tab.jobloss.ret <- data %>%
@@ -963,7 +962,24 @@ tab.jobloss.ret <- data %>%
 write.csv(tab.jobloss.ret,"~/GitHub/saetus/table_jobloss.csv", row.names = FALSE)
 ```
 
+```{r}
+mydata$emp_recover = mydata$hardships_1==1 & mydata$emp_status=="employed" & mydata$emp_status_partner=="employed"
 
+data.check <- data %>%
+  filter(emp_status != "NA", emp_status != "retired", emp_status_partner != "NA", emp_status_partner != "retired") %>% 
+  mutate_at(vars(emp_status_partner), ~if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
+                                    if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
+                                            if_else(. %in% c("Retired", "Unable to work"), "retired", "NA")))) %>% 
+  mutate(emp_recover = if_else(hardships_1 == 1 & emp_status == "employed" & emp_status_partner == "employed", "Recover", 
+                               "No recover")) %>% 
+  filter(emp_recover != "NA") %>% 
+  group_by(zipcode, emp_recover, race_eth3) %>% 
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  filter(emp_recover == "Recover")
+```
 
 
 
