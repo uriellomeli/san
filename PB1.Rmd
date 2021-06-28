@@ -926,34 +926,197 @@ tab.jobloss.ret <- data %>%
   mutate(pct = n/sum(n),
          lbl = scales::percent(pct, accuracy = 0.1)) 
 
-
-# age progile
-data %>%
+# age profile
+tab.a <- data %>%
   filter(frontline != "NA") %>% 
   group_by(zipcode, race_eth3, frontline) %>% 
-  summarize(median.age = median(age, na.rm = T),
-            mean.age = round(mean(age, na.rm = T), 1))
-
-data %>%
-  filter(frontline == "Yes") %>% 
-  group_by(zipcode, race_eth3, frontline) %>% 
-  summarize(median.age = median(age, na.rm = T),
-            mean.age = round(mean(age, na.rm = T), 1))
-
-data %>%
-  filter(frontline != "NA", !is.na(hardships_1)) %>% 
-  group_by(race_eth3, frontline, hardships_1) %>% 
   summarize(median.age = median(age, na.rm = T),
             n = n()) %>% 
   mutate(pct = n/sum(n),
          lbl = scales::percent(pct, accuracy = 0.1))
 
-csstab race]front
-#write.csv(tab.jobloss.ret,"~/GitHub/saetus/table_jobloss.csv", row.names = FALSE)
+tab.b <- data %>%
+  filter(frontline != "NA") %>% 
+  group_by(race_eth3, frontline) %>% 
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1))
+
+tab.c0 <- data %>%
+  filter(!is.na(hardships_1), hardships_1 == 1) %>% 
+  group_by(race_eth3) %>% 
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1))
+
+tab.c <- data %>%
+  filter(frontline != "NA", !is.na(hardships_1), hardships_1 == 1) %>% 
+  group_by(race_eth3) %>% 
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1))
+
+
+tab.d <- data %>%
+  filter(!is.na(frontline), !is.na(hardships_1)) %>% 
+  mutate(recover = if_else(hardships_1 == 1 & emp_status == "employed", "recovered", 
+                           if_else(hardships_1 == 1 & emp_status == "unemployed", "no recovered", 
+                                   if_else(hardships_1 == 0 & emp_status == "employed", "never unemployed",
+                                           if_else(hardships_1 == 0 & emp_status == "unemployed", "recent unemployed", NA_character_)))))%>% 
+  filter(!is.na(recover)) %>% 
+  group_by(race_eth3, recover) %>% 
+  summarise(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1))
+
+tab.e <- data %>%
+  filter(!is.na(frontline), !is.na(hardships_1)) %>% 
+  mutate(recover = if_else(hardships_1 == 1 & emp_status == "employed", "recovered", 
+                           if_else(hardships_1 == 1 & emp_status == "unemployed", "no recovered", 
+                                   if_else(hardships_1 == 0 & emp_status == "employed", "never unemployed",
+                                           if_else(hardships_1 == 0 & emp_status == "unemployed", "recent unemployed", NA_character_)))))%>% 
+  filter(!is.na(recover)) %>% 
+  group_by(race_eth3, frontline, recover) %>% 
+  summarise(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1))
+
+write.csv(tab.e,"~/GitHub/saetus/tab.e.csv", row.names = FALSE)
+```
+
+```{r split}
+split.data <- split(data, data$race_eth3)
+
+hispanics <- split.data[[1]]
+whites <- split.data[[2]]
+others <- split.data[[3]]
+
+hispanics %>% 
+  filter(!is.na(frontline)) %>% 
+  group_by(zipcode, frontline) %>% 
+  summarise(median.age = median(age, na.rm = T))
+
+hispanics %>% 
+  filter(!is.na(frontline), !is.na(hardships_1)) %>% 
+  mutate(recover = if_else(hardships_1 == 1 & frontline == "Yes" & emp_status == "employed", 
+                           "recover", "no recover")) %>% 
+  select(zipcode, race_eth3, frontline, recover) %>% 
+  group_by(race_eth3, frontline, recover) %>% 
+  summarise(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1))
+  
 ```
 
 
+```{r peter}
+######################################################
+### make emp_status2 variable treating Temporarily ###
+### absent from job as a job recovery event        ###
+######################################################
+mydata <- data %>%
+  mutate(emp_status2 = if_else(emp_status %in% c("Work for pay at a job"), "employed",
+                                if_else(emp_status %in% c("Temporarily absent from job", "Layoff from a job", "Actively looking for a job"), "unemployed",
+                                        if_else(emp_status %in% c("Retired", "Unable to work"),"retired","NA"))))
+#mydata <- mydata %>%
+#  mutate_at(vars(emp_status), ~ if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
+#                                       if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
+#                                               if_else(. %in% c("Retired", "Unable to work"), "retired", "NA"))))
 
+mydata$emp_status_partner3 <- if_else(mydata$emp_status_partner %in% c("Work for pay at a job"), "employed",
+                                      if_else(mydata$emp_status_partner %in% c("Temporarily absent from job", "Layoff from a job", "Actively looking for a job"), "unemployed",
+                                      if_else(mydata$emp_status %in% c("Retired", "Unable to work"),"retired","NA")))
+
+
+#################################
+### Total Target Respondents  ###
+#################################
+n_recover <- NULL
+
+mydata <- mydata[which(mydata$emp_status2 != "retired" & mydata$emp_status2 != "NA" & mydata$emp_status_partner3 != "retired" & mydata$emp_status_partner3 != "NA"), ]
+
+total <- mydata[which(mydata$hardships_1 == 1),] # job loss since 2020
+
+############
+### plot ###
+############
+n_recover <- total %>% 
+  group_by(zipcode, race_eth3) %>% 
+  summarize(n = n())
+
+n_recover <- data.frame(n_recover)
+
+colnames(n_recover) <- c("Zipcode","Race","Total")
+
+
+n_recover_fw <- total %>% 
+  filter(!is.na(frontline)) %>% 
+  group_by(zipcode, race_eth3, frontline) %>% 
+  summarize(n = n())
+
+n_recover_fw <- data.frame(n_recover_fw)
+
+colnames(n_recover_fw) <- c("Zipcode","Race","Frontline", "Total")
+
+#################
+### unrecover ###
+#################
+unrecover <- total[which(total$emp_status2 == "Unrecovery" & total$emp_status_partner3 == "Unrecovery"), ]
+
+unrecover <- unrecover %>% 
+  group_by(zipcode, race_eth3) %>% 
+  summarize(n = n())
+
+unrecover <- data.frame(unrecover)
+
+colnames(unrecover) <- c("Zipcode","Race","Unrecover")
+
+unrecover_fw <- unrecover %>% 
+  filter(!is.na(frontline)) %>% 
+  group_by(zipcode, race_eth3, frontline) %>% 
+  summarize(n = n())
+
+unrecover_fw[12, ] <- c("Elm Creek", "Non-Hispanic Other", "Yes", 0)
+
+colnames(unrecover_fw) <- c("Zipcode","Race", "Frontline", "Unrecovered")
+
+unrecover_fw <- data.frame(unrecover_fw)
+
+unrecover_fw <- unrecover_fw %>% arrange(Zipcode)
+
+n_recover_fw <- cbind(n_recover_fw, unrecover_fw$Unrecover)
+
+colnames(n_recover_fw) <- c("Zipcode","Race", "Frontline", "Total", "Unrecover")
+
+###########
+### pct ###
+###########
+n_recover_fw <- n_recover_fw %>%
+  group_by(factor(Zipcode), factor(Race)) %>% 
+  mutate(pct = as.numeric(Unrecover)/as.numeric(Total),
+         lbl = scales::percent(pct, accuracy = 0.1))
+
+n_recover$lower = n_recover$pct - 1.645*(n_recover$pct * (1 - n_recover$pct)/n_recover$Total)^0.5
+n_recover$upper = n_recover$pct + 1.645*(n_recover$pct * (1 - n_recover$pct)/n_recover$Total)^0.5
+n_recover$Race2 <- ordered(n_recover$Race, 
+                           levels = c("Hispanic","Non-Hispanic White","Non-Hispanic Other"))
+
+n_recover %>%
+  ggplot(aes(x = pct, y = reorder(Race2,-pct), color = Zipcode)) + 
+  geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
+  geom_point(aes(size = Total)) +
+  geom_text_repel(aes(label = lbl), size = 3, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
+  #scale_y_discrete(limits = levels(n_recover$Race))+
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
+         size = F) +
+  labs(y = NULL, x = NULL, color = NULL,
+       title = NULL) +
+  theme_classic() +
+  themeuf +
+  theme(legend.position = "bottom")
+```
 
 
 
