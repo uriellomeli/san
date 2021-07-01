@@ -1,13 +1,23 @@
-"zipcode","race_eth3","frontline","median.age","n","pct","lbl"
-"Elm Creek","Hispanic","No",38,120,0.521739130434783,"52.2%"
-"Elm Creek","Hispanic","Yes",40,110,0.478260869565217,"47.8%"
-"Elm Creek","Non-Hispanic White","No",38,117,0.676300578034682,"67.6%"
-"Elm Creek","Non-Hispanic White","Yes",37,56,0.323699421965318,"32.4%"
-"Elm Creek","Non-Hispanic Other","No",38,55,0.846153846153846,"84.6%"
-"Elm Creek","Non-Hispanic Other","Yes",39,10,0.153846153846154,"15.4%"
-"Jefferson Heights","Hispanic","No",38,68,0.465753424657534,"46.6%"
-"Jefferson Heights","Hispanic","Yes",39.5,78,0.534246575342466,"53.4%"
-"Jefferson Heights","Non-Hispanic White","No",37,82,0.589928057553957,"59.0%"
-"Jefferson Heights","Non-Hispanic White","Yes",39,57,0.410071942446043,"41.0%"
-"Jefferson Heights","Non-Hispanic Other","No",37,21,0.636363636363636,"63.6%"
-"Jefferson Heights","Non-Hispanic Other","Yes",36.5,12,0.363636363636364,"36.4%"
+zipcode,race_eth3,frontline,median.age,n,lbl,,hardships == 1,lost their job since March 2020,,,,,,race_eth3,recover,n,lbl,,Frontline workers == No,,,,,Frontline workers == Yes,,,
+Elm Creek,Hispanic,No,38,120,52.2%,,race_eth3,frontline,n,lbl,,,,Hispanic,never unemployed,103,30.7%,,race_eth3,recover,n,lbl,,,,,
+Elm Creek,Non-Hispanic Other,No,38,55,84.6%,,Hispanic,No,99,44.60%,36.1%,21.9%,,Non-Hispanic White,never unemployed,67,27.8%,,Hispanic,never unemployed,56,35.9%,,Hispanic,never unemployed,47,26.3%
+Elm Creek,Non-Hispanic White,No,38,117,67.6%,,Hispanic,Yes,123,55.40%,69.1%,27.2%,,Non-Hispanic Other,never unemployed,13,15.7%,,Hispanic,no recovered,10,6.4%,,Hispanic,no recovered,17,9.5%
+Jefferson Heights,Hispanic,No,38,68,46.6%,,Non-Hispanic White,No,123,73.70%,44.9%,27.2%,,Hispanic,no recovered,27,8.1%,,Hispanic,recent unemployed,7,4.5%,,Hispanic,recent unemployed,12,6.7%
+Jefferson Heights,Non-Hispanic Other,No,37,21,63.6%,,Non-Hispanic White,Yes,44,26.30%,24.7%,9.7%,,Non-Hispanic White,no recovered,33,13.7%,,Hispanic,recovered,83,53.2%,,Hispanic,recovered,103,57.5%
+Jefferson Heights,Non-Hispanic White,No,37,82,59.0%,,Non-Hispanic Other,No,52,82.50%,19.0%,11.5%,,Non-Hispanic Other,no recovered,15,18.1%,,Non-Hispanic White,never unemployed,35,21.3%,,Non-Hispanic White,never unemployed,32,41.6%
+Elm Creek,Hispanic,Yes,40,110,47.8%,,Non-Hispanic Other,Yes,11,17.50%,6.2%,2.4%,,Hispanic,recent unemployed,19,5.7%,,Non-Hispanic White,no recovered,28,17.1%,,Non-Hispanic White,no recovered,5,6.5%
+Elm Creek,Non-Hispanic Other,Yes,39,10,15.4%,,,,,,,,,Non-Hispanic White,recent unemployed,14,5.8%,,Non-Hispanic White,recent unemployed,11,6.7%,,Non-Hispanic White,recent unemployed,3,3.9%
+Elm Creek,Non-Hispanic White,Yes,37,56,32.4%,,,,,,,,,Non-Hispanic Other,recent unemployed,9,10.8%,,Non-Hispanic White,recovered,90,54.9%,,Non-Hispanic White,recovered,37,48.1%
+Jefferson Heights,Hispanic,Yes,39.5,78,53.4%,,,,,,,,,Hispanic,recovered,186,55.5%,,Non-Hispanic Other,never unemployed,6,9.1%,,Non-Hispanic Other,never unemployed,7,41.2%
+Jefferson Heights,Non-Hispanic Other,Yes,36.5,12,36.4%,,,,,,,,,Non-Hispanic White,recovered,127,52.7%,,Non-Hispanic Other,no recovered,12,18.2%,,Non-Hispanic Other,no recovered,3,17.6%
+Jefferson Heights,Non-Hispanic White,Yes,39,57,41.0%,,,,,,,,,Non-Hispanic Other,recovered,46,55.4%,,Non-Hispanic Other,recent unemployed,8,12.1%,,Non-Hispanic Other,recent unemployed,1,5.9%
+,,,,,,,,,,,,,,,,,,,Non-Hispanic Other,recovered,40,60.6%,,Non-Hispanic Other,recovered,6,35.3%
+,race_eth3,frontline,n,lbl,,,,,,,,,,,,,,,,,,,,,,,
+,Hispanic,No,188,50.0%,40.6%,,,,,,,,,,,,,,,,,,,,,,
+,Non-Hispanic White,No,199,63.8%,43.0%,,,,,,,,,,,,,,,,,,,,,,
+,Non-Hispanic Other,No,76,77.6%,16.4%,,,,,,,,,,,,,,,,,,,,,,
+,Hispanic,Yes,188,50.0%,58.2%,Hispanics are 58.2% of the frontline working force.,,,,,,,,,,,,,,,,,,,,,
+,Non-Hispanic White,Yes,113,36.2%,35.0%,,,,,,,,,,,,,,,,,,,,,,
+,Non-Hispanic Other,Yes,22,22.4%,6.8%,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,
