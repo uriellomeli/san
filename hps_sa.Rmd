@@ -29,6 +29,7 @@ library(survey)
 library(showtext)
 library(sysfonts)
 library(hrbrthemes)
+library(stringr)
 ```
 
 ```{r loading}
@@ -199,6 +200,105 @@ hps %>%
   dplyr::count(gender, mh_anxious, wt = pweight) %>% 
   mutate(pct = n/sum(n),
          lbl = scales::percent(pct, accuracy = 0.1)) 
+
+hps$race_eth <- interaction(hps$race, hps$hispanic)
+
+hps$race_eth2<-ifelse(str_sub(as.character(hps$race_eth), start = -12)==
+                        "Non-Hispanic", as.character(hps$race_eth),"Hispanic")
+
+
 ```
+
+```{r}
+data %>%
+  filter(!is.na(mental_health_anxious)) %>% 
+  group_by(gender2, mental_health_anxious) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1))  
+```
+
+```{r }
+library(gtsummary)
+install.packages("flextable")
+library(flextable)
+options(survey.lonely.psu = "adjust")
+# To have a compact table (not necessary if you need a compact table or can be postprocessed)
+set_gtsummary_theme(theme_gtsummary_compact(set_theme = TRUE))
+
+hps$mh_anxious <- factor(hps$mh_anxious)
+hps$gender <- factor(hps$gender)
+
+table <- survey::svydesign(ids=~1, weights = ~pweight, data = hps, strata = NULL, nest = F) %>%
+  tbl_svysummary(by= "mh_anxious", # stratification variable.
+                 include = c(mh_anxious, gender), 
+                 percent = "column",  #Column or Row percentage, depending on your needs
+                 
+                 digits = list(all_continuous() ~ c(1,1), 
+                               all_categorical() ~ 1))
+
+class(hps$gender)
+```
+
+```{r}
+# install.packages("expss")
+# library(expss)
+
+fre(hps$mh_anxious, weight = hps$pweight)
+
+fre(data$mental_health_anxious)
+```
+
+```{r}
+cro_cpct(cell_vars = hps$mh_anxious, col_vars = hps$gender, weight = hps$pweight)
+cro_cpct(cell_vars = data$mental_health_anxious, col_vars = data$gender2)
+
+cro_cpct(cell_vars = hps$mh_anxious, col_vars = hps$race_eth2, weight = hps$pweight)
+cro_cpct(cell_vars = data$mental_health_anxious, col_vars = data$race_eth)
+```
+
+```{r}
+cro_cpct(cell_vars = hps$mh_worry, col_vars = hps$gender, weight = hps$pweight)
+
+cro_cpct(cell_vars = data$mental_health_worry, col_vars = data$gender2)
+```
+
+```{r}
+cro_cpct(cell_vars = hps$mh_interest, col_vars = hps$gender, weight = hps$pweight)
+
+cro_cpct(cell_vars = data$mental_health_interest, col_vars = data$gender2)
+```
+
+```{r}
+cro_cpct(cell_vars = hps$mh_down, col_vars = hps$gender, weight = hps$pweight)
+
+cro_cpct(cell_vars = data$mental_health_down, col_vars = data$gender2)
+```
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
