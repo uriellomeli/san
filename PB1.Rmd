@@ -1,27 +1,22 @@
 ---
 title: "Economic Hardships During the COVID-19 Pandemic Require Targeted Recovery Assistance"
-subtitle: "Findings from San Antonio Community Survey"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
+subtitle: |
+  Findings from the San Antonio Energy and Time Use Survey
+date: |
+  July 2021
 author: 
-- Ying Huang, Ph.D.^[University of Texas at San Antonio, ying.huang@utsa.edu]
-- Uriel Lomelí, M.Sc.^[University of Texas at San Antonio, uriel.lomelcarrillo@utsa.edu]
-- Renhao Sun^[University of Texas at San Antonio, renhao.sun@my.utsa.edu]
-- Marla Gutierrez^[University of Texas at San Antonio, marlagutz09@gmail.com]
-- Joel Sanchez^[University of Texas at San Antonio, bbrjs1112@yahoo.com]
-- Eric Shattuck, Ph.D.^[University of Texas at San Antonio, eric.shattuck@utsa.edu]
-- Wenbo Wu, Ph.D.^[University of Texas at San Antonio, wenbo.wu@utsa.edu]
+  - Uriel Lomelí-Carrillo^[Department of Demography, College for Health, Community and Policy]
+  - Renhao Sun^[Department of Management Science and Statistics, Alvarez College of Business]
+  - Marla Gutierrez^[Institute for Health Disparities Research, College for Health, Community and Policy]
+  - Joel Sanchez^[Institute for Health Disparities Research, College for Health, Community and Policy]
+  - Eric Shattuck^[Institute for Health Disparities Research, College for Health, Community and Policy]
+  - Ying Huang^[Department of Demography, College for Health, Community and Policy]
+  - Wenbo Wu^[Department of Management Science and Statistics, Alvarez College of Business]
 output: 
   html_document:
-    toc: true
-    toc_float: true
     code_folding: hide
     highlight: tango
 ---
-
-<style>
-body {
-text-align: justify}
-</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -97,9 +92,72 @@ themeuf <- theme(legend.position = "top",
                  plot.tag = element_text(size = 30),
                  text = element_text(family = "foo"))
 ```
+<p>&nbsp;</p>
+<p align="justify">
+Ever since San Antonio confirmed its first COVID-19 case more than one year ago,^1^ the COVID-19 pandemic and the associated social and economic fallouts have upended the lives of many. Although vaccine rollouts offer hopes for a rapid economic recovery, many people are at risk of long-term economic distress. At the national level, the unemployment rate continues to be higher than before the COVID-19 pandemic.^2^ About 115 million people experienced income loss from March 2020 to February 2021.^3^ According to the Household Pulse Survey, a nationally representative data designed to measure household experiences during the COVID-19 pandemic, about 30% of Latino and Black households with children experienced three or more economic and health-related hardships during the pandemic. This is almost twice the share among Asian (13%) and White (16%) households with children.^4^  
+</p>
 
-<h2>1) Job loss by race and ethnicity and by neighborhood</h2>
+<p align="justify">
+At the local level, economic hardships are distributed unequally by racial/ethnic groups and by neighborhood characteristics. Black and Latino households were more than twice as likely as their White counterparts to report having insufficient food (16% each, compared to 6% of White households).^4^ Additionally, the number of struggling families are overrepresented in racial and ethnic minority communities.^5^  People of color account for 75.3% of the population in San Antonio, and their share continues to grow.^6^  As this demographic shift unfolds, their social and economic well-being will determine the future and prosperity of the city. In this policy brief, we use household survey data in two selected local communities to describe household economic hardships by racial/ethnic groups and across neighborhoods. 
+</p>
 
+<p align="justify">
+Key findings from the analysis are 1) job loss, followed by difficulty in making rent/mortgage payment, affording food, and paying utility bills are the most experienced hardships during the pandemic, 2) while job loss varies little by neighborhood, racial and ethnic inequalities in job loss prevail regardless, and 3) residents in disadvantaged neighborhoods may face stalled employment recovery relative to their counterparts in more advantaged neighborhoods. The challenge before us now is to create the conditions that make economic security possible for all. Recovery from the COVID-19 crisis is not only about controlling the spread of a virus and getting people vaccinated; it is also about ensuring that the individuals and communities that have suffered the most can recover from this pandemic and be more resilient in the future. Low-income and minority communities need targeted outreach and assistance in implementing recovery measures.
+</p>
+<p>&nbsp;</p>
+##### **Data**
+
+<p align="justify">
+Our analysis of the COVID-19 economic crisis in local communities is based on the San Antonio Energy and Time Use Survey. This is an online survey conducted between March 22-24, 2021 in Elm Creek (78230) and Jefferson Heights (78202). We selected Elm Creek and Jefferson Heights as our study sites because they represent different socioeconomic and demographic contexts (Table 1). The Elm Creek neighborhood (78230) is located in North-Central San Antonio, Texas, and the Jefferson Heights neighborhood (78202) is located in the east of downtown San Antonio. Residents in these two neighborhoods are exposed to drastically different socioeconomic conditions. For example, more than 90% of the residents in Elm Creek have at least a high school diploma. In contrast, less than 70% of the residents in Jefferson Heights achieved a high school diploma or equivalent. Partly driven by the large disparity in educational attainment between the two neighborhoods, the per capita annual income in 2019 in Elm Creek ($38,640) is almost two times higher than that of Jefferson Heights ($18,710). About 38% of residents in Jefferson Heights live in poverty, compared to only 13% of residents in Elm Creek. The ethnic and racial composition of the two neighborhoods also varies considerably. For instance, 39% of the residents in Elm Creek are Whites, compared to only 11% in Jefferson Heights.   
+</p>
+<p>&nbsp;</p>
+<center>**Table 1.** Sociodemographic Characteristics of Elm Creek and Jefferson Heights</center>
+
+---
+
+||**Elm Creek (78230)**|**Jefferson Heights (78202)**| 
+|-------------|:-------------:|:-------------:|
+|**Demographic Composition**|||
+|Female|52%|50%|
+|Male|48%|50%|
+|**Race and Ethnic Composition**|||
+|Hispanic|48%|60%|
+|White|39%|11%|		
+|Other|13%|29%|
+|**Economic Status**|||
+|Per capita income|$38,640|$18,710|
+|Median household income|$62,332|$28,130|
+|Under $50K|42%|70%|
+|$50K - $100K|29%|19%|
+|$100K - $200K|21%|8%|
+|Over $200K|8%|3%|
+|**Poverty Rate**|||
+|Persons below poverty line|13%|38%|
+|Children (Under 18)|17%|58%|
+|Seniors (65 and over)|7%|21%|
+|<font size="1">Source: U.S. Census Bureau (2019). American Community Survey 5-year estimates. Retrieved from Census Reporter Profile.</font>|  
+
+<p>&nbsp;</p>
+<p align="justify">
+The household-level questionnaire collected information on time use, energy consumption, self-reported health and usage of medical devices at home, employment situation, hardships experienced, and demographic characteristics. The study was approved by the University of Texas at San Antonio Institutional Review Board. We use Qualtrics,^7^ a survey software tool, to design, send, and collect surveys online. We distributed the survey on March 22, 2021, and between March 22 to March 24, we collected surveys from 1,022 respondents. In the analysis, we excluded 63 respondents from other zip codes and an additional 154 respondents due to lack of information and inconsistencies with their response time. The final sample consists of 805 respondents in total, of whom 479 are from Elm Creek and 326 are from Jefferson Heights.&nbsp  
+</p>
+
+<p align="justify">
+In the next section, we present key findings related to the employment situation and material hardships by race/ethnic groups, including Hispanics, non-Hispanic Whites, and non-Hispanic Others (including Asians, Blacks, and other race and ethnic groups). We also present the key findings by neighborhood, including a more advantaged neighborhood -Elm Creek- and a more disadvantaged neighborhood- Jefferson Heights. We use brown circles to represent Elm Creek and dark blue circles to represent Jefferson Heights. The size of the circle is proportional to the number of respondents in each racial and ethnic group.&nbsp  
+</p>
+<p>&nbsp;</p>
+##### **Key Findings**  
+
+**1) Job loss by race and ethnicity and by neighborhood**
+
+<p align="justify">
+*The economic fallout in job loss varies little by neighborhood, but racial inequalities prevail regardless. Almost half of Hispanic households experienced job loss, in comparison to a third of non-Hispanic White households.*
+</p>
+<p align="justify">
+Figure 1 shows the percentage of respondents who experienced job loss since March 2020. These data are collected with the question, *“Since the onset of COVID-19 (March 2020), have you or has anyone in your household experienced any of the following hardships?”* Very similar percentage of Hispanics, about 49% in both neighborhoods, reported experiencing job loss during the pandemic, in comparison to 35.7% and 39.4% of non-Hispanic Whites in respective neighborhoods. Although job loss varies little by neighborhood, the rates of job loss among non-Hispanic Others are considerably lower than Hispanics and Whites, 12.0% in Elm Creek and 15.8% in Jefferson Heights. 
+</p>
+<p>&nbsp;</p>
+<center>**Figure 1.** Percentage of People Experienced Job Loss by Race and Ethnicity, and by Neighborhood</center>
 ```{r moe_frontline, include=FALSE, message=FALSE, warning=FALSE}
 #devtools::install_github("peterdalle/moe")
 data.ec <- data %>% 
@@ -512,8 +570,17 @@ ggsave(filename = "figure_1_new.png", plot = fig3, path = "~/GitHub/saetus/", wi
 #        width = 6, height = 4.5, units = "in", dpi = "print")
 ```
 
-<h2>2) Material hardships by race and ethnicity and by neighborhood</h2>
+<p>&nbsp;</p>
+**2) Material hardships by race and ethnicity and by neighborhood**
+<p align="justify">
+*A considerable portion of households face challenges meeting their basic needs, such as making payments to mortgage/rent and utility bills. Hispanic families are much more likely than their White counterparts to experience all types of hardships in both neighborhoods.*
+</p>
 
+<p align="justify">
+Material hardship is defined as going without basic needs such as food, medical care, housing, or utilities due to inadequate income. We use several indicators to capture the prevalence of material hardship since the pandemic, including difficulty in making the next rent or mortgage payment, in affording sufficient food, in paying utility bills, and in paying medical bills, as well as delaying needed medical care or prescription medication because of cost. Since the start of the pandemic, the most experienced hardship in both neighborhoods has been having trouble paying rent or mortgage. As with job loss (Figure 1), Figure 2 demonstrates that there are no significant differences in the prevalence of hardships between residents in Jefferson Heights and Elm Creek as indicated by the overlapping margins of error. Roughly a third of respondents (and their families) in Elm Creek and in Jefferson Heights experienced difficulty in making rent/mortgage payments since the start of the COVID-19 pandemic. The least prevalent hardship experienced among residents of both neighborhoods was delayed needed medical care or prescription medication, 9% and 13% of respondents in Elm Creek and Jefferson Heights, respectively.
+</p>
+<p>&nbsp;</p>
+<center>**Figure 2.** Percentage of People Who Experienced Types of Material Hardship, by Neighborhood</center>
 ```{r hardships_plots, message=FALSE, include=FALSE}
 hardships <- hardships %>% filter(hardships != "No difficulty") %>%  arrange(zipcode)
 
@@ -772,7 +839,12 @@ upper18br <- round(hardships_jh_r_moe[, 18]$conf.upper/100, 2)
 ```{r plot_figure_2, message=FALSE, warning=FALSE}
 fig5
 ```
-
+<p>&nbsp;</p>
+<p align="justify">
+Figure 3 further breaks down the three most prevalent material hardships by race and ethnicity and by neighborhood. The racial and ethnic disparities in material hardships parallel the racial disparities in job loss. Regardless of neighborhood type, Hispanic households are the most disadvantaged, with roughly half of them experiencing hardships in mortgage/rent payment, affording food, and paying utility bills. Paralleling the patterns in Figure 1, non-Hispanic Others—many of whom did not experience job loss—are the group that is least impacted by material hardships. With regard to the disparities in material hardships by neighborhood, Figure 3 reveals some substantial differences in the material hardship prevalence between the two neighborhoods. For example, about 3% of non-Hispanic Others had difficulty making rent or mortgage payments in Elm Creek, while a non-trivial percentage (12.5%) of non-Hispanic Others in Jefferson Heights experienced this hardship. A more striking disparity exists in hardship of paying utility bill among Whites. While 26% of Whites in Elm Creek reported having trouble paying utility bills, more than 40% of Whites in Jefferson Heights experienced this type of hardship. This disparity might be driven by significant gaps in the age of housing stock and the availability of energy saving technologies in the advantaged and disadvantaged neighborhoods. 
+</p>
+<p>&nbsp;</p>
+<center>**Figure 3.** The Most Prevalent Material Hardship Types, by Race/Ethnicity and by Neighborhood</center>  
 ```{r plot_figure_3, message=FALSE, warning=FALSE}
 # facet names
 hardships_lbl <- c("Job loss", "Paying utility bills", "Affording food", "Paying rent/mortgage", 
@@ -798,7 +870,7 @@ hardships.r %>%
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
   geom_point(stat = "identity", aes(size = n)) +
   geom_text_repel(aes(label = lbl), size = 8, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .2, nudge_x = .025) +
-  scale_x_continuous(limits = c(0, .65), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_x_continuous(limits = c(0, .6), breaks = seq(0, 1, .2), label = scales::percent) +
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
          size = F) +
@@ -809,7 +881,8 @@ hardships.r %>%
        subtitle = NULL,
        caption = NULL) +
   theme_minimal() +
-  themeuf + theme(legend.position = "bottom", strip.text = element_text(size = 27))
+  themeuf + theme(legend.position = "bottom", strip.text = element_text(size = 25), 
+                  axis.text.x = element_text(size = 20, color = "gray10", face = "bold"))
 
 ggsave(filename = "figure_3_new.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 7, height = 4.5, units = "in", dpi = "print")
 
@@ -834,279 +907,101 @@ ggsave(filename = "figure_3_new.png", plot = last_plot(), path = "~/GitHub/saetu
 #   theme_classic() +
 #   themeuf + theme(axis.text.x = element_text(color = "gray40", size = 18))
 ```
+<p>&nbsp;</p>
+**3) Initial Evidence on Stalled Employment Recovery**
+<p align="justify">
+*The prevalence of stalled job recovery varies somewhat by racial/ethnic groups and by neighborhood. In particular, non-Hispanic Others in Jefferson Heights experienced a much stalled recovery relative to their counterparts in Elm Creek.* 
+</p>
 
-<h2>3) The average number of welfare benefits by race and ethnicity</h2> 
+<p align="justify">
+Our survey research was conducted roughly a year since the pandemic started. Early signs of economic recovery emerged at the time we collected our survey data in late March 2021. Although the full employment recovery path is still unclear at the local and national level, our community survey provides a first glimpse of the intricate details about the unequal employment recovery by racial and ethnic background and by neighborhood context. To gauge initial evidence of stalled employment recovery from the COVID-19 pandemic, we use the survey question asking respondent’s employment status. Those who reported income loss since the onset of the pandemic and those who are still out of the labor force (i.e., being laid off, temporarily out of the labor market, or actively looking for a job) at the time of the survey are considered having stalled employment recovery. Individuals who are retired or permanently out of the labor market (due to disability, for example) are excluded from the analysis.  
+</p>
 
-```{r ave_welfare_plot, message=FALSE, warning=FALSE, include=FALSE}
-# welfare$race_eth3 <- factor(welfare$race_eth3, ordered = F)
-# welfare$order <- c(1, 2, 3, 1, 2, 3)
+<p align="justify">
+Figure 4 shows the percentage of respondents who experience stalled employment recovery at the time of the survey by race and ethnicity and by neighborhood. Regardless of neighborhood, Hispanics outperform other racial/ethnic groups in employment recovery, as indicated by only 4.6% and 11% of Hispanics in Jefferson Heights and Elm Creek have not recovered their employment, respectively. Although Hispanics were hit disproportionately hard by the pandemic, they are also the ones that first recovered. It could be due to the quick recovery of the employment sectors in which Hispanics tend to work, such as the leisure and hospitality sectors, education, and health services.  Minority members, on the other hand, who left the workforce at the lowest rate also see the least initial employment recovery.
+</p>
+<p>&nbsp;</p>
+<center>**Figure 4.** Percentage of respondents who have not recovered their job by race and ethnicity and by neighborhood</center>
+```{r fig4, include=FALSE}
+# mydata <- data
 # 
-# welfare %>%
-#   ggplot(aes(x = average_welfare, y = reorder(race_eth3, -order), color = zipcode)) + 
-#   geom_errorbar(aes(xmin = lower.welfare.ec, xmax = upper.welfare.ec), show.legend = F, width = 0.1) +
-#   geom_point(aes(size = n)) +
-#   geom_text_repel(aes(label = round(average_welfare, 2)), 
-#                   size = 8, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
-#   scale_x_continuous(breaks = seq(1, 2.3, .1), limits = c(1.3, 2.3)) +
-#   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
-#   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
-#          size = FALSE) +
-#   labs(y = NULL, x = NULL, color = NULL,
-#        title = "Figure 4. Average number of welfare benefits by race and ethnicity", 
-#        subtitle = str_wrap("Have you, or has anyone in your household received any type of welfare benefit?"),
-#        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
-#   theme_minimal() + 
-#   themeuf
+# mydata$emp_status_partner2 <- if_else(mydata$emp_status_partner %in% c("Work for pay at a job", "Temporarily absent from job"), "employed",
+#                                       if_else(mydata$emp_status_partner %in% c("Layoff from a job", "Actively looking for a job"), "unemployed",
+#                                               if_else(mydata$emp_status_partner %in% c("Retired", "Unable to work"), "retired", "NA")))
 
-#ggsave(filename = "figure_4.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
-```
-
-<h2> Supplementary analysis</h2>
-```{r message=FALSE, warning=FALSE}
-data$mental_health_anxious <- ordered(data$mental_health_anxious, levels = c("Not at all", "Several days",
-                                                                             "More than half the days", "Nearly every day"))
-data$mental_health_worry <- ordered(data$mental_health_worry, levels = c("Not at all", "Several days",
-                                                                         "More than half the days", "Nearly every day"))
-data$mental_health_interest <- ordered(data$mental_health_interest, levels = c("Not at all", "Several days",
-                                                                         "More than half the days", "Nearly every day"))
-data$mental_health_down <- ordered(data$mental_health_down, levels = c("Not at all", "Several days",
-                                                                         "More than half the days", "Nearly every day"))
-
-ctab1 <- data %>% 
-  ggtable(columnsX = c("zipcode"), 
-          columnsY = c("race_eth3", "marital_st", "ageg", "depen", "num_hsh"), 
-          cells = "col.prop") +
-  theme(text = element_text(size = 22))
-
-ctab2 <- data %>% 
-  #filter(!is.na(impairment)) %>% 
-  ggtable(columnsX = c("race_eth3"), 
-          columnsY = c("marital_st", "ageg", "depen", "num_hsh", "health", "impairment"), 
-          cells = "col.prop")
-
-ctab3 <- data %>% 
-  filter(!is.na(pre_mental_health), !is.na(pre_phy_health), !is.na(mental_health_anxious), !is.na(mental_health_worry),
-         !is.na(mental_health_interest), !is.na(mental_health_down)) %>% 
-  ggtable(columnsX = c("race_eth3"), 
-          columnsY = c("pre_mental_health", "pre_phy_health", "mental_health_anxious", "mental_health_worry",
-                       "mental_health_interest", "mental_health_down"), 
-          cells = "col.prop")
-
-ctab4 <- data %>% 
-  filter(!is.na(frontline), emp_status != "NA") %>% 
-  ggtable("race_eth3", 
-          c("frontline", "emp_status"),
-          cells = "col.prop")
-```
-
-```{r}
-# library(summarytools)
-data %>% 
-  filter(!is.na(frontline), emp_status!= "NA") %>% 
-  group_by(race_eth3) %>% 
-  freq(var = frontline, round.digits = 1, cumul = F)
-
-data %>% 
-  filter(!is.na(frontline), emp_status!= "NA") %>% 
-  group_by(race_eth3) %>% 
-  freq(var = emp_status, round.digits = 1, cumul = F)
-
-data %>% 
-  group_by(race_eth3) %>% 
-  freq(var = marital_st, round.digits = 1, cumul = F)
-
-```
-
-<h2> Figure 1 w/o retired </h2>
-```{r}
-tab.jobloss.ret <- data %>%
-  filter(emp_status != "retired", emp_status != "NA", !is.na(hardships_1)) %>% 
-  group_by(zipcode, hardships_1, ageg) %>% 
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1)) 
-
-# age profile
-tab.a <- data %>%
-  filter(frontline != "NA") %>% 
-  group_by(zipcode, race_eth3, frontline) %>% 
-  summarize(median.age = median(age, na.rm = T),
-            n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1))
-
-tab.b <- data %>%
-  filter(frontline != "NA") %>% 
-  group_by(race_eth3, frontline) %>% 
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1))
-
-tab.c0 <- data %>%
-  filter(!is.na(hardships_1), hardships_1 == 1) %>% 
-  group_by(race_eth3) %>% 
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1))
-
-tab.c <- data %>%
-  filter(frontline != "NA", !is.na(hardships_1), hardships_1 == 1) %>% 
-  group_by(race_eth3) %>% 
-  summarize(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1))
-
-
-tab.d <- data %>%
-  filter(!is.na(frontline), !is.na(hardships_1)) %>% 
-  mutate(recover = if_else(hardships_1 == 1 & emp_status == "employed", "recovered", 
-                           if_else(hardships_1 == 1 & emp_status == "unemployed", "no recovered", 
-                                   if_else(hardships_1 == 0 & emp_status == "employed", "never unemployed",
-                                           if_else(hardships_1 == 0 & emp_status == "unemployed", "recent unemployed", NA_character_)))))%>% 
-  filter(!is.na(recover)) %>% 
-  group_by(race_eth3, recover) %>% 
-  summarise(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1))
-
-tab.e <- data %>%
-  filter(!is.na(frontline), !is.na(hardships_1)) %>% 
-  mutate(recover = if_else(hardships_1 == 1 & emp_status == "employed", "recovered", 
-                           if_else(hardships_1 == 1 & emp_status == "unemployed", "no recovered", 
-                                   if_else(hardships_1 == 0 & emp_status == "employed", "never unemployed",
-                                           if_else(hardships_1 == 0 & emp_status == "unemployed", "recent unemployed", NA_character_)))))%>% 
-  filter(!is.na(recover)) %>% 
-  group_by(race_eth3, frontline, recover) %>% 
-  summarise(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1))
-
-write.csv(tab.e,"~/GitHub/saetus/tab.e.csv", row.names = FALSE)
-```
-
-```{r split}
-split.data <- split(data, data$race_eth3)
-
-hispanics <- split.data[[1]]
-whites <- split.data[[2]]
-others <- split.data[[3]]
-
-hispanics %>% 
-  filter(!is.na(frontline)) %>% 
-  group_by(zipcode, frontline) %>% 
-  summarise(median.age = median(age, na.rm = T))
-
-hispanics %>% 
-  filter(!is.na(frontline), !is.na(hardships_1)) %>% 
-  mutate(recover = if_else(hardships_1 == 1 & frontline == "Yes" & emp_status == "employed", 
-                           "recover", "no recover")) %>% 
-  select(zipcode, race_eth3, frontline, recover) %>% 
-  group_by(race_eth3, frontline, recover) %>% 
-  summarise(n = n()) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1))
-  
-```
-
-
-```{r peter}
 ######################################################
 ### make emp_status2 variable treating Temporarily ###
 ### absent from job as a job recovery event        ###
 ######################################################
-mydata <- data %>%
-  mutate(emp_status2 = if_else(emp_status %in% c("Work for pay at a job"), "employed",
-                                if_else(emp_status %in% c("Temporarily absent from job", "Layoff from a job", "Actively looking for a job"), "unemployed",
-                                        if_else(emp_status %in% c("Retired", "Unable to work"),"retired","NA"))))
+# mydata <- mydata %>%
+#   mutate(emp_status2 = if_else(emp_status %in% c("Work for pay at a job"), "employed",
+#                                 if_else(emp_status %in% c("Temporarily absent from job", "Layoff from a job", "Actively looking for a job"), "Unrecovery",
+#                                         if_else(emp_status %in% c("Retired", "Unable to work"),"retired","NA"))))
 #mydata <- mydata %>%
 #  mutate_at(vars(emp_status), ~ if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
 #                                       if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
 #                                               if_else(. %in% c("Retired", "Unable to work"), "retired", "NA"))))
 
-mydata$emp_status_partner3 <- if_else(mydata$emp_status_partner %in% c("Work for pay at a job"), "employed",
-                                      if_else(mydata$emp_status_partner %in% c("Temporarily absent from job", "Layoff from a job", "Actively looking for a job"), "unemployed",
-                                      if_else(mydata$emp_status %in% c("Retired", "Unable to work"),"retired","NA")))
-
+# mydata$emp_status_partner3 <- if_else(mydata$emp_status_partner %in% c("Work for pay at a job"), "employed",
+#                                       if_else(mydata$emp_status_partner %in% c("Temporarily absent from job", "Layoff from a job", "Actively looking for a job"), "Unrecovery",
+#                                       if_else(mydata$emp_status %in% c("Retired", "Unable to work"),"retired","NA")))
 
 #################################
 ### Total Target Respondents  ###
 #################################
-n_recover <- NULL
-
-mydata <- mydata[which(mydata$emp_status2 != "retired" & mydata$emp_status2 != "NA" & mydata$emp_status_partner3 != "retired" & mydata$emp_status_partner3 != "NA"), ]
-
-total <- mydata[which(mydata$hardships_1 == 1),] # job loss since 2020
-
+# n_recover <- NULL
+# mydata <- mydata[which(mydata$emp_status2 != "retired" & mydata$emp_status2 != "NA" & mydata$emp_status_partner2 != "retired" & mydata$emp_status_partner2 != "NA"),]
+# total <- mydata[which(mydata$hardships_1 == 1),]
 ############
 ### plot ###
 ############
-n_recover <- total %>% 
-  group_by(zipcode, race_eth3) %>% 
-  summarize(n = n())
-
-n_recover <- data.frame(n_recover)
-
-colnames(n_recover) <- c("Zipcode","Race","Total")
-
-
-n_recover_fw <- total %>% 
-  filter(!is.na(frontline)) %>% 
-  group_by(zipcode, race_eth3, frontline) %>% 
-  summarize(n = n())
-
-n_recover_fw <- data.frame(n_recover_fw)
-
-colnames(n_recover_fw) <- c("Zipcode","Race","Frontline", "Total")
-
+# n_recover <- total %>% 
+#   group_by(zipcode, race_eth3) %>% 
+#   summarize(n = n())
+# n_recover <- data.frame(n_recover)
+# colnames(n_recover) <- c("Zipcode","Race","Total")
 #################
 ### unrecover ###
 #################
-unrecover <- total[which(total$emp_status2 == "Unrecovery" & total$emp_status_partner3 == "Unrecovery"), ]
-
-unrecover <- unrecover %>% 
-  group_by(zipcode, race_eth3) %>% 
-  summarize(n = n())
-
-unrecover <- data.frame(unrecover)
-
-colnames(unrecover) <- c("Zipcode","Race","Unrecover")
-
-unrecover_fw <- unrecover %>% 
-  filter(!is.na(frontline)) %>% 
-  group_by(zipcode, race_eth3, frontline) %>% 
-  summarize(n = n())
-
-unrecover_fw[12, ] <- c("Elm Creek", "Non-Hispanic Other", "Yes", 0)
-
-colnames(unrecover_fw) <- c("Zipcode","Race", "Frontline", "Unrecovered")
-
-unrecover_fw <- data.frame(unrecover_fw)
-
-unrecover_fw <- unrecover_fw %>% arrange(Zipcode)
-
-n_recover_fw <- cbind(n_recover_fw, unrecover_fw$Unrecover)
-
-colnames(n_recover_fw) <- c("Zipcode","Race", "Frontline", "Total", "Unrecover")
-
+# unrecover <- total[which(total$emp_status2 == "Unrecovery" & total$emp_status_partner3 == "Unrecovery"),]
+# unrecover <- unrecover %>% 
+#   group_by(zipcode, race_eth3) %>% 
+#   summarize(n = n())
+# unrecover <- data.frame(unrecover)
+# colnames(unrecover) <- c("Zipcode","Race","Unrecover")
+# n_recover <- cbind(n_recover,unrecover$Unrecover)
+# colnames(n_recover) <- c("Zipcode","Race","Total","Unrecover")
 ###########
 ### pct ###
 ###########
-n_recover_fw <- n_recover_fw %>%
-  group_by(factor(Zipcode), factor(Race)) %>% 
-  mutate(pct = as.numeric(Unrecover)/as.numeric(Total),
-         lbl = scales::percent(pct, accuracy = 0.1))
+# n_recover <- n_recover %>%
+#   mutate(pct = Unrecover/Total,
+#          lbl = scales::percent(pct, accuracy = 0.1))
+# n_recover$lower = n_recover$pct - 1.645*(n_recover$pct * (1 - n_recover$pct)/n_recover$Total)^0.5
+# n_recover$upper = n_recover$pct + 1.645*(n_recover$pct * (1 - n_recover$pct)/n_recover$Total)^0.5
+# n_recover$Race2 <- ordered(n_recover$Race, 
+#                            levels = c("Hispanic","Non-Hispanic White","Non-Hispanic Other"))
 
-n_recover$lower = n_recover$pct - 1.645*(n_recover$pct * (1 - n_recover$pct)/n_recover$Total)^0.5
-n_recover$upper = n_recover$pct + 1.645*(n_recover$pct * (1 - n_recover$pct)/n_recover$Total)^0.5
-n_recover$Race2 <- ordered(n_recover$Race, 
-                           levels = c("Hispanic","Non-Hispanic White","Non-Hispanic Other"))
 
-n_recover %>%
-  ggplot(aes(x = pct, y = reorder(Race2,-pct), color = Zipcode)) + 
+data_recovery <- data.frame(Zipcode = c(rep("Elm Creek", 3), rep("Jefferson Heights", 3)),
+                            Race = c("Hispanic","Non-Hispanic White","Non-Hispanic Other", 
+                                     "Hispanic","Non-Hispanic White","Non-Hispanic Other"),
+                            Total = c(120,  91,  36,  79,  68,  15),
+                            pct = c(0.110, 0.105, 0.071, 0.046, 0.205, 0.400))
+
+data_recovery <- data_recovery %>%
+  mutate(lbl = scales::percent(pct, accuracy = 0.1),
+         lower = pct - 1.645*(pct * (1 - pct)/Total)^0.5,
+         upper = pct + 1.645*(pct * (1 - pct)/Total)^0.5)
+
+data_recovery$Race <- ordered(data_recovery$Race, levels = c("Hispanic","Non-Hispanic White","Non-Hispanic Other"))
+
+fig4 <- data_recovery %>%
+  ggplot(aes(x = pct, y = reorder(Race,-pct), color = Zipcode)) + 
   geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.15) +
   geom_point(aes(size = Total)) +
-  geom_text_repel(aes(label = lbl), size = 3, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
-  scale_x_continuous(limits = c(0, .75), breaks = seq(0, 1, .15), label = scales::percent) +
+  geom_text_repel(aes(label = lbl), size = 8, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .65), breaks = seq(0, 1, .15), label = scales::percent) +
   #scale_y_discrete(limits = levels(n_recover$Race))+
   scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
   guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)),
@@ -1118,7 +1013,57 @@ n_recover %>%
   theme(legend.position = "bottom")
 ```
 
+```{r plot_fig4, message=FALSE, warning=FALSE}
+fig4
+```
+<p>&nbsp;</p>
+##### **Lessons from the San Antonio Energy and Time Use Survey**
+<p align="justify">
+The disproportionate social and economic impacts in Texas and elsewhere following COVID-19 reflect harsh, longstanding inequalities in employment, material hardship, and other spheres of social life. The Household Pulse Survey  shows in June 2020 that 51.1% of the US residents and 53.5% of Texans lost their jobs. Our survey conducted in March 2021 suggests that about 65.5% of the respondents in Elm Creek and 65.8% of the respondents in Jefferson Heights lost their jobs. Perhaps partially reflecting the demographic composition of the study sites, as many as half of Hispanics who participated in the survey reported losing their job since the onset of COVID-19 (48.6% in Jefferson Heights and 48.5% in Elm Creek).  In addition, our local survey data analysis also indicates that residents of economically less favored neighborhoods, such as Jefferson Heights, experienced stalled employment recovery to a greater extent than their counterparts living in economically more favored neighborhoods like Elm Creek.  
+</p>
 
+<p align="justify">
+As attention begins to turn to COVID-19 recovery, it is critically important to remember that residents in neighborhoods were impacted – and continue to be impacted – differently. These disparities will shape the trajectory and speed of their recovery for better or worse. Beyond the obvious measures of socioeconomic status that may contribute to faster recovery, social capital (resources available to people through their social networks) is also associated with recovery through several mechanisms.  Economic recovery efforts in San Antonio should keep the “social infrastructure” of neighborhoods in mind when planning. Given that racial minorities (particularly non-Hispanic blacks) in disadvantaged neighborhoods are being left behind in the employment recovery, local efforts are needed to build “social safety nets” that can provide financial and physical assistance, as well as other channels that connect them to job training and employment opportunities.  
+</p>
+
+<p align="justify">
+Additionally, we suggest that recovery efforts should also seek – wherever possible – to narrowing existing disparities in housing, social capital, access to healthcare, and other factors that collectively contribute to social vulnerability.  Our policy brief presents evidence on the alarming racial disparities in economic hardships and stalled employment recovery during the pandemic. It is worth noting that not only racial disparities in other socioeconomic dimensions exist, they are persistent over time and exacerbated during the pandemic. It is the intersections of these dimensions that make communities and their residents vulnerable to catastrophes; mending them now can help ensure that these neighborhoods and the residents in these communities do not unjustly bear the brunt of future disasters.  
+</p>
+<p>&nbsp;</p>
+##### **Conclusion**
+<p align="justify">
+The ongoing pandemic demands detailed and timely data, and the San Antonio Energy and Time Use Survey is an important tool that can help our community assess the impact of COVID-19 on households as the pandemic evolves and as the recovery unfolds. Because of the high rate of job loss, job recovery must be a key element in the design of upcoming labor policies. This will be especially relevant for the Black or other minority members, and particularly those living in disadvantaged neighborhoods like Jefferson Heights.
+</p>
+<p>&nbsp;</p>
+##### **Acknowledgments**
+<p align="justify">
+We thank the San Antonio residents who participated in our survey. We also thank Barbara Ankamah and her team at the City of San Antonio’s Neighborhood Engagement Team for assistance with participant recruitment. All viewpoints in this work are ours alone and do not represent IDSER. Any errors are ours alone as well. This research was funded (full or in part) by The University of Texas at San Antonio, Office of the Vice President for Research, Economic Development, and Knowledge Enterprise.  
+</p>
+<p>&nbsp;</p>
+##### **Notes**
+<p align="justify">
+^1^ On March 13th, 2020, San Antonio city officials confirmed the first two cases of COVID-19 unrelated to evacuees at Joint Base San Antonio-Lackland. See details in https://www.expressnews.com/business/health-care/article/San-Antonio-hospitals-prepare-for-worst-case-15131754.php
+
+^2^ According to the latest Employment Situation Summary of the U.S. Bureau of Labor Statistics, unemployment rate was at 6.1% in April 2021, while in February 2020 it was 3.5%. See details in https://www.bls.gov/news.release/empsit.nr0.html
+
+^3^ US Census Bureau. See details in https://www.census.gov/library/stories/2021/03/putting-economic-impact-of-pandemic-in-context.html
+
+^4^ Child Trends. See details in https://www.childtrends.org/publications/more-than-one-in-four-latino-and-black-households-with-children-are-experiencing-three-or-more-hardships-during-covid-19
+
+^5^ Center on Budget and Policy Priorities. See details in https://www.cbpp.org/research/poverty-and-inequality/tracking-the-covid-19-recessions-effects-on-food-housing-and
+
+^6^ U.S. Census Bureau, 2015-2019 American Community Survey 5-Year Estimates.
+
+^7^ Qualtrics survey software was launched in 2002 as a way for users to carry out research that previously, online survey tools had been unable to handle because of the complex needs of academic research. See details in https://www.qualtrics.com/core-xm/survey-software/
+
+^8^ Unemployment rate in San Antonio-New Braunfels MSA decreases to 5.3 percent. Workforce Solutions Alamo releases May 2021 job market information. 
+
+^9^ Measuring Household Experiences during the Coronavirus Pandemic. Interactive tool. See details in https://www.census.gov/data-tools/demo/hhp/#/
+
+^10^ Aldrich, Daniel P. (2011). The power of people: social capital’s role in recovery from the 1995 Kobe earthquake. Nat Hazards 56:595-611.
+
+^11^ Finch, Christina, Emrich, Christopher T, Cutter, Susan L. (2010). Disaster disparities and differential recovery in New Orleans. Popul Environ 31:179-202.
+</p>
 
 
 
