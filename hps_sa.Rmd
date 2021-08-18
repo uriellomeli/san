@@ -172,87 +172,45 @@ hps$state <- dplyr::recode(hps$est_st,
                     '51'='Virginia', '53'='Washington', '54'='West Virginia', '55'='Wisconsin', '56'='Wyoming')
 ```
 
-```{r, include=FALSE}
-# hps <- hps %>%
-#   select(scram:pweight, prifoodsuf:freefood, anxious:down, enroll1:teach5, income, eip:eipspnd13, hispanic:state)
-# 
-# hps %>%
-#   filter(!is.na(mh_anxious)) %>% 
-#   dplyr::count(gender, mh_anxious, wt = pweight)
-# 
-# hps %>%
-#   filter(!is.na(mh_anxious)) %>% 
-#   group_by(gender) %>% 
-#   dplyr::count(gender, mh_anxious, wt = pweight) %>% 
-#   mutate(pct = n/sum(n),
-#          lbl = scales::percent(pct, accuracy = 0.1)) 
-# 
-# hps$race_eth <- interaction(hps$race, hps$hispanic)
-# 
-# hps$race_eth2<-ifelse(str_sub(as.character(hps$race_eth), start = -12)==
-#                         "Non-Hispanic", as.character(hps$race_eth),"Hispanic")
-```
+```{r subset, include=FALSE}
+# subset hps
+hps <- hps %>%
+   select(scram, 5:7, anxious:down, hispanic:state)
 
-```{r, include=FALSE}
-# data <- data %>% 
-#   dplyr::mutate_at(vars(hardships_1:hardships_6), funs(recode(., "Yes" = as.numeric(1), "No" = as.numeric(0)))) %>% 
-#   mutate(hards = hardships_1 + hardships_2 + hardships_3 + hardships_4 + hardships_5 + hardships_6, 
-#          race_eth2 = case_when(race_eth %in% "NH-White" ~ "Non-Hispanic White",
-#                                race_eth %in% "Hispanic" ~ "Hispanic",
-#                                race_eth %in% "NH-Black" ~ "Non-Hispanic Black",
-#                                race_eth %in% "NH-Asian" ~ "Non-Hispanic Asian",
-#                                race_eth %in% c("NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
-#          race_eth3 = case_when(race_eth %in% "NH-White" ~ "Non-Hispanic White",
-#                                race_eth %in% "Hispanic" ~ "Hispanic",
-#                                race_eth %in% c("NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
-#          bad = if_else(hards == 1, "One hardship", 
-#                        if_else(hards == 2, "Two hardships",
-#                                if_else(hards > 2, "More than two", NA_character_))))
-# 
-# data$bad <- ordered(data$bad, levels = c("One hardship", "Two hardships", "More than two"))
-# data$race_eth <- ordered(data$race_eth, levels = c("Hispanic", "NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other"))
-# data$race_eth2 <- ordered(data$race_eth2, 
-#                           levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Black", "Non-Hispanic Asian","Non-Hispanic Other"))
-# data$race_eth3 <- ordered(data$race_eth3, 
-#                           levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Other"))
-# data$health <- ordered(data$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
-# 
-# # subset survey
-# sas <- data %>% 
-#   select(1, 2, 95:113, 128, 129, 132, 133, 171:199)
-# 
-# sas <- sas %>% 
-#   mutate(mh_anx = case_when(mental_health_anxious %in% "Not at all" ~ 0,
-#                             mental_health_anxious %in% "Several days" ~ 1,
-#                             mental_health_anxious %in% "More than half the days" ~ 2,
-#                             mental_health_anxious %in% "Nearly every day" ~ 3),
-#          mh_worry = case_when(mental_health_worry %in% "Not at all" ~ 0,
-#                             mental_health_worry %in% "Several days" ~ 1,
-#                             mental_health_worry %in% "More than half the days" ~ 2,
-#                             mental_health_worry %in% "Nearly every day" ~ 3),
-#          mh_interest = case_when(mental_health_interest %in% "Not at all" ~ 0,
-#                             mental_health_interest %in% "Several days" ~ 1,
-#                             mental_health_interest %in% "More than half the days" ~ 2,
-#                             mental_health_interest %in% "Nearly every day" ~ 3),
-#          mh_down = case_when(mental_health_down %in% "Not at all" ~ 0,
-#                             mental_health_down %in% "Several days" ~ 1,
-#                             mental_health_down %in% "More than half the days" ~ 2,
-#                             mental_health_down %in% "Nearly every day" ~ 3),
-#          mh_gad2 = mh_anx + mh_worry,
-#          mh_phq2 = mh_interest + mh_down,
-#          gad2 = if_else(mh_gad2 >= 3, "Generalized Anxiety", "No GA"),
-#          phq2 = if_else(mh_phq2 >= 3, "Depressive Disorder", "No DD"))
-# 
-# sas <- sas %>%
-#   mutate_at(vars(emp_status), ~if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
-#                                     if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
-#                                             if_else(. %in% c("Retired", "Unable to work"), "retired", "NA"))))
-# 
-# save(sas, file = "~/GitHub/saetus/sas.RData")
-```
+# subset survey and change name to work mental health related variables
+data <- data %>% 
+   select(1, 2, 95:99, 128, 129, 132, 133, 188:197)
 
-```{r load_sas}
-load(file = "~/GitHub/saetus/sas.RData")
+sas <- data %>%
+  mutate(mh_anx = case_when(mental_health_anxious %in% "Not at all" ~ 0,
+                            mental_health_anxious %in% "Several days" ~ 1,
+                            mental_health_anxious %in% "More than half the days" ~ 2,
+                            mental_health_anxious %in% "Nearly every day" ~ 3),
+         mh_worry = case_when(mental_health_worry %in% "Not at all" ~ 0,
+                            mental_health_worry %in% "Several days" ~ 1,
+                            mental_health_worry %in% "More than half the days" ~ 2,
+                            mental_health_worry %in% "Nearly every day" ~ 3),
+         mh_interest = case_when(mental_health_interest %in% "Not at all" ~ 0,
+                            mental_health_interest %in% "Several days" ~ 1,
+                            mental_health_interest %in% "More than half the days" ~ 2,
+                            mental_health_interest %in% "Nearly every day" ~ 3),
+         mh_down = case_when(mental_health_down %in% "Not at all" ~ 0,
+                            mental_health_down %in% "Several days" ~ 1,
+                            mental_health_down %in% "More than half the days" ~ 2,
+                            mental_health_down %in% "Nearly every day" ~ 3),
+         mh_gad2 = mh_anx + mh_worry,
+         mh_phq2 = mh_interest + mh_down,
+         gad2 = if_else(mh_gad2 >= 3, "Generalized Anxiety", "No GA"),
+         phq2 = if_else(mh_phq2 >= 3, "Depressive Disorder", "No DD"))
+
+sas <- sas %>%
+  mutate_at(vars(emp_status), ~if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
+                                    if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
+                                            if_else(. %in% c("Retired", "Unable to work"), "retired", "NA"))))
+
+save(sas, file = "~/GitHub/saetus/sas.RData")
+
+#load(file = "~/GitHub/saetus/sas.RData")
 ```
 
 ```{r unemp_plot, warning=FALSE, message=FALSE, include=FALSE}
