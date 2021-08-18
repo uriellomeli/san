@@ -43,6 +43,39 @@ week27 <- read_csv("C:/Users/Uriel/Downloads/pulse2021_puf_27.csv")
 load(file = "~/GitHub/saetus/data_recode.RData")
 ```
 
+```{r theme, include=FALSE, message=FALSE, warning=FALSE}
+sysfonts::font_add_google(name = 'Lato', family = "foo")
+showtext::showtext_auto()
+
+# themeu <- theme(legend.position = "bottom", 
+#                 legend.text = element_text(size = 15, color = "gray40"), 
+#                 legend.key.size = unit(.5, "cm"),
+#                 panel.background = element_rect(colour = "black"),
+#                 plot.title = element_text(face = "bold", size = 30, hjust = .5, vjust = .5, lineheight = .5), 
+#                 plot.caption = element_text(size = 15),
+#                 plot.subtitle = element_text(colour = "gray50", face = "bold", size = 22, lineheight = .5, hjust = .5, vjust = .5),
+#                 axis.text = element_text(size = 20), 
+#                 text = element_text(family = "foo"))
+# 
+# themeuf <- theme(legend.position = "top", 
+#                  legend.text = element_text(size = 25, color = "gray10"), 
+#                  legend.key.size = grid::unit(.5, "cm"), 
+#                  legend.title = element_text(color = "gray25", face = "bold", size = 20), 
+#                  panel.background = element_rect(colour = "black"),
+#                  plot.title = element_text(face = "bold", size = 32, hjust = .5, vjust = .5, lineheight = .5), 
+#                  plot.caption = element_text(size = 19),
+#                  plot.subtitle = element_text(colour = "gray30", face = "bold", size = 26, lineheight = .5, hjust = .5, vjust = .5),
+#                  axis.text = element_text(size = 27, color = "gray10", face = "bold"),
+#                  strip.text = element_text(size = 25), 
+#                  axis.title.x = element_text(color = "gray10", size = 25), 
+#                  axis.ticks.y = element_blank(),
+#                  panel.grid.major.x = element_blank(),
+#                  panel.grid.minor.x = element_blank(),
+#                  panel.grid.major.y = element_line(colour = "grey70", linetype = "dotted"),
+#                  plot.tag = element_text(size = 30),
+#                  text = element_text(family = "foo"))
+```
+
 ```{r function, include=FALSE}
 week27 <- as.data.frame(week27)
 
@@ -145,10 +178,6 @@ hps <- hps %>%
                              down %in% 2 ~ "Several days",
                              down %in% 3 ~ "More than half the days",
                              down %in% 4 ~ "Nearly every day"),
-         mh_anxious = ifelse(anxious > 0, anxious, NA),
-         mh_worrry = ifelse(worry > 0, worry, NA),
-         mh_interest = ifelse(interest > 0, interest, NA),
-         mh_down = ifelse(down > 0, down, NA),
          age = 2020 - tbirth_year,
          ageg = case_when(age %in% 18:24 ~ "18 to 24",
                           age %in% 25:34 ~ "25 to 34",
@@ -175,8 +204,30 @@ hps$state <- dplyr::recode(hps$est_st,
 ```{r subset, include=FALSE}
 # subset hps
 hps <- hps %>%
-   select(scram, 5:7, anxious:down, hispanic:state)
+   select(scram, 5:7, hispanic:state)
 
+hps <- hps %>% 
+  mutate(mh_anxious = case_when(mh_anxious %in% "Not at all" ~ 0,
+                                mh_anxious %in% "Several days" ~ 1,
+                                mh_anxious %in% "More than half the days" ~ 2,
+                                mh_anxious %in% "Nearly every day" ~ 3),
+         mh_worry = case_when(mh_worry %in% "Not at all" ~ 0,
+                              mh_worry %in% "Several days" ~ 1,
+                              mh_worry %in% "More than half the days" ~ 2,
+                              mh_worry %in% "Nearly every day" ~ 3),
+         mh_interest = case_when(mh_interest %in% "Not at all" ~ 0,
+                                 mh_interest %in% "Several days" ~ 1,
+                                 mh_interest %in% "More than half the days" ~ 2,
+                                 mh_interest %in% "Nearly every day" ~ 3),
+         mh_down = case_when(mh_down %in% "Not at all" ~ 0,
+                             mh_down %in% "Several days" ~ 1,
+                             mh_down %in% "More than half the days" ~ 2,
+                             mh_down %in% "Nearly every day" ~ 3),
+         mh_gad2 = mh_anxious + mh_worry,
+         mh_phq2 = mh_interest + mh_down,
+         gad2 = if_else(mh_gad2 >= 3, "Generalized Anxiety", "No GA"),
+         phq2 = if_else(mh_phq2 >= 3, "Depressive Disorder", "No DD"))
+  
 # subset survey and change name to work mental health related variables
 data <- data %>% 
    select(1, 2, 95:99, 128, 129, 132, 133, 188:197)
@@ -209,7 +260,6 @@ sas <- sas %>%
                                             if_else(. %in% c("Retired", "Unable to work"), "retired", "NA"))))
 
 save(sas, file = "~/GitHub/saetus/sas.RData")
-
 #load(file = "~/GitHub/saetus/sas.RData")
 ```
 
@@ -276,6 +326,23 @@ sas %>%
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() + theme(legend.position = "top")
 
+hps %>%
+  filter(!is.na(gad2), !is.na(metro)) %>% 
+  group_by(metro, gad2) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = metro)) + 
+  geom_point(aes(color = gad2, size = n)) +
+  geom_text(aes(label = lbl), size = 3, color = "gray30", position = position_dodge(width = .9), vjust = -.7, family = "foo") +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .1), label = scales::percent) +
+  scale_color_jama() +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, color = "GAD-2", size = NULL,
+       title = str_wrap("Generalized Anxiety Disorder 2-item by zip code", width = 75),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() + theme(legend.position = "top")
 
 sas %>%
   filter(hardships_1 == 1, !is.na(gad2)) %>% 
@@ -316,6 +383,23 @@ sas %>%
        caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
   theme_classic() + theme(legend.position = "top")
 
+hps %>%
+  filter(!is.na(phq2), !is.na(metro)) %>% 
+  group_by(metro, phq2) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = metro)) + 
+  geom_point(aes(color = phq2, size = n)) +
+  geom_text(aes(label = lbl), size = 5, color = "gray30", position = position_dodge(width = .9), vjust = -.7, family = "foo") +
+  scale_x_continuous(limits = c(0.1, .9), breaks = seq(0, 1, .1), label = scales::percent) +
+  scale_color_jama() +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, fill = NULL,
+       title = str_wrap("Patient Health Questionnaire-2 by zip code", width = 75),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() + theme(legend.position = "top")
 
 sas %>%
   filter(hardships_1 == 1, !is.na(phq2)) %>% 
@@ -357,6 +441,24 @@ sas %>%
   facet_grid(~zipcode) +
   theme_classic() + theme(legend.position = "top")
 
+hps %>%
+  filter(!is.na(gad2), !is.na(metro)) %>% 
+  group_by(metro, gad2, race_eth2) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = reorder(metro, pct))) + 
+  geom_point(aes(color = gad2, size = n)) +
+  geom_text(aes(label = lbl), size = 2, color = "gray30", family = "foo") +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_igv(palette = "alternating") +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, color = NULL, size = NULL,
+       title = str_wrap("Generalized Anxiety Disorder 2-item (GAD-2) by zip code", width = 75),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  facet_grid(~race_eth2) +
+  theme_classic() + theme(legend.position = "top")
 
 sas %>%
   filter(hardships_1 == 1, !is.na(gad2)) %>% 
@@ -399,6 +501,24 @@ sas %>%
   facet_grid(~zipcode) +
   theme_classic() + theme(legend.position = "top")
 
+hps %>%
+  filter(!is.na(phq2), !is.na(metro)) %>% 
+  group_by(metro, phq2, race_eth2) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = reorder(metro, pct))) + 
+  geom_point(aes(color = phq2, size = n)) +
+  geom_text(aes(label = lbl), size = 2, color = "gray30", family = "foo") +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_igv(palette = "alternating") +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, color = NULL, size = NULL,
+       title = str_wrap("Patient Health Questionnaire-2 (PHQ-2) by zip code", width = 75),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  facet_grid(~race_eth2) +
+  theme_classic() + theme(legend.position = "top")
 
 sas %>%
   filter(hardships_1 == 1, !is.na(phq2)) %>% 
@@ -421,19 +541,20 @@ sas %>%
   theme_classic() + theme(legend.position = "top")
 ```
 
-```{r, message=FALSE, warning=FALSE}
+```{r summary_gad_phq, message=FALSE, warning=FALSE}
 set_gtsummary_theme(x = theme_gtsummary_compact())
 set_gtsummary_theme(x = theme_gtsummary_journal("jama"))
 
+########### San Antonio #############
+
 # Generalized Anxiety Disorder 2-item (GAD-2)
 sas %>% 
-  select(2, 3, 22, 24, 26, 44, 48:50, 53, 61) %>% 
+  select(2, 3, 8, 10, 13, 17:19, 21, 28) %>% 
   tbl_summary(by = gad2, 
               label = list(zipcode ~ "Zip code",
                            health ~ "Health status",
                            emp_status ~ "Employment status",
                            frontline ~ "Frontline worker",
-                           hardships_1 ~ "Loss of employment",
                            ageg ~ "Age group",
                            gender2 ~ "Gender",
                            marital_st ~ "Marital status",
@@ -451,13 +572,12 @@ sas %>%
 
 # Patient Health Questionnaire-2 (PHQ-2)
 sas %>% 
-  select(2, 3, 22, 24, 26, 44, 48:50, 53, 62) %>% 
+  select(2, 3, 8, 10, 13, 17:19, 21, 29) %>% 
   tbl_summary(by = phq2, 
               label = list(zipcode ~ "Zip code",
                            health ~ "Health status",
                            emp_status ~ "Employment status",
                            frontline ~ "Frontline worker",
-                           hardships_1 ~ "Loss of employment",
                            ageg ~ "Age group",
                            gender2 ~ "Gender",
                            marital_st ~ "Marital status",
@@ -472,6 +592,48 @@ sas %>%
   bold_labels() %>% 
   as_gt() %>%
   gt::tab_source_note(gt::md("*Source: 2021 San Antonio Energy and Time Use Survey*"))
+
+########### HPS #############
+
+hps$region <- as.factor(hps$region)
+hps$gender <- factor(hps$gender, ordered = F)
+hps$education <- factor(hps$education, ordered = F)
+hps$marital <- factor(hps$marital, ordered = F)
+hps$race_eth2 <- factor(hps$race_eth2, ordered = F)
+hps$work.loss <- factor(hps$work.loss, ordered = F)
+hps$metro <- factor(hps$metro, ordered = F)
+hps$ageg <- factor(hps$ageg, ordered = F)
+hps$state <- factor(hps$state, ordered = F)
+
+options(survey.lonely.psu = "adjust")
+
+# Generalized Anxiety Disorder 2-item (GAD-2)
+hps.tab <- survey::svydesign(ids = ~1, weights = ~pweight, data = hps, strata = NULL) %>%
+  tbl_svysummary(by = "gad2", 
+                 include = c(gender, education, marital, race_eth2, work.loss, metro, ageg, state, gad2), 
+                 percent = "column",
+                 label = list(gender ~ "Gender",
+                              education ~ "Educational level",
+                              marital ~ "Marital status",
+                              race_eth2 ~ "Race and ethnicity",
+                              work.loss ~ "Loss of employment",
+                              metro ~ "Metropolitan area",
+                              ageg ~ "Age group",
+                              state ~ "State")) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  add_overall() %>% 
+  modify_header(label ~ "**Variable**") %>%
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**GAD-2**") %>%
+  modify_caption("**Generalized Anxiety Disorder 2-item (GAD-2)**") %>%
+  bold_labels() %>% 
+  as_gt() %>%
+  gt::tab_source_note(gt::md("*Source: US Census Bureau, Household Pulse Survey, Week 27*"))
+
+```
+
+```{r}
+hps.tab
 ```
 
 ```{r, include=FALSE, message=FALSE}
