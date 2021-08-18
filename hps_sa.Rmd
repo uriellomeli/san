@@ -2,53 +2,56 @@
 title: "hps_sa"
 author: "Uriel Lomelí"
 date: "5/8/2021"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r libs, message=FALSE}
+```{r libs, message=FALSE, include=FALSE}
 library(dplyr)
 library(readr)
 library(readxl)
 library(janitor)
 library(ggplot2)
 library(ggthemes)
-library(ggdark)
+library(ggsci)
 library(magrittr)
-library(hrbrthemes)
+library(wesanderson)
 library(showtext)
-library(ggridges)
+library(ggrepel)
 library(tidyr)
 library(forcats)
-library(Rmisc)
 library(questionr)
 library(survey)
 library(showtext)
 library(sysfonts)
 library(hrbrthemes)
 library(stringr)
+library(expss)
+library(gtsummary)
+library(gt)
 ```
 
-```{r loading}
+```{r load, message=FALSE, include=FALSE}
+# hps
 week27 <- read_csv("C:/Users/Uriel/Downloads/pulse2021_puf_27.csv")
+# sa survey
+load(file = "~/GitHub/saetus/data_recode.RData")
 ```
 
-# Checking if I get the same totals as the US Census tables
-```{r}
-class(week27)
-
+```{r function, include=FALSE}
 week27 <- as.data.frame(week27)
 
+# same national numbers
 week27 %>%
   filter(RECVDVACC==1)%>%
   dplyr::count(estate = EST_ST, wt = PWEIGHT)
-```
 
-# To change column names 
-```{r}
+# simply function
 func1 <- function(week) {
   
   week <- week %>%
@@ -60,14 +63,31 @@ func1 <- function(week) {
 week27 <- func1(week = week27)
 ```
 
-# Recode variables
-```{r}
+```{r recode, include=FALSE}
+# san antionio survey
+data <- data %>% 
+  mutate(race_eth2 = case_when(race_eth %in% "NH-White" ~ "Non-Hispanic White",
+                               race_eth %in% "Hispanic" ~ "Hispanic",
+                               race_eth %in% "NH-Black" ~ "Non-Hispanic Black",
+                               race_eth %in% "NH-Asian" ~ "Non-Hispanic Asian",
+                               race_eth %in% c("NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
+         race_eth3 = case_when(race_eth %in% "NH-White" ~ "Non-Hispanic White",
+                               race_eth %in% "Hispanic" ~ "Hispanic",
+                               race_eth %in% c("NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"))
+
+data$race_eth <- ordered(data$race_eth, levels = c("Hispanic", "NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other"))
+data$race_eth2 <- ordered(data$race_eth2, 
+                          levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Black", "Non-Hispanic Asian","Non-Hispanic Other"))
+data$race_eth3 <- ordered(data$race_eth3, levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Other"))
+data$health <- ordered(data$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
+
+# household pulse survey
 hps <- week27 %>%
   mutate(hispanic = ifelse(rhispanic == 2, "Hispanic", "Non-Hispanic"), 
-         race = case_when(rrace %in% 1 ~ "White, non-Hispanic",
-                          rrace %in% 2 ~ "Black, non-Hispanic",
-                          rrace %in% 3 ~ "Asian, non-Hispanic",
-                          rrace %in% 4 ~ "Any other race"),
+         race = case_when(rrace %in% 1 ~ "Non-Hispanic White",
+                          rrace %in% 2 ~ "Non-Hispanic Black",
+                          rrace %in% 3 ~ "Non-Hispanic Asian",
+                          rrace %in% 4 ~ "Non-Hispanic Any other race"),
          gender = ifelse(egender == 1, "Male", "Female"),
          education = case_when(eeduc %in% 1:2 ~ "Less or some than HS",
                                eeduc %in% 3 ~ "HS graduate",
@@ -78,7 +98,12 @@ hps <- week27 %>%
                              ms %in% 2:4 ~"Separate", # Widow, divorced or separated
                              ms %in% 5 ~ "Single"))
 
-hps$race <- ordered(hps$race, levels = c("White, non-Hispanic", "Black, non-Hispanic", "Asian, non-Hispanic", "Any other race"))
+hps$race_eth <- interaction(hps$race, hps$hispanic)
+
+hps$race_eth2 <- ifelse(str_sub(as.character(hps$race_eth), start = -12) == "Non-Hispanic", as.character(hps$race_eth),"Hispanic")
+
+hps$race <- ordered(hps$race, 
+                    levels = c("Non-Hispanic White", "Non-Hispanic Black", "Non-Hispanic Asian", "Non-Hispanic Any other race"))
 
 hps$gender <- ordered(hps$gender, levels = c("Male", "Female"))
 
@@ -87,7 +112,7 @@ hps$education <- ordered(hps$education,
 
 hps$marital <- ordered(hps$marital, levels = c("Married", "Separate", "Single"))
 
-hps <- hps%>%
+hps <- hps %>%
   mutate(work.loss = if_else(wrkloss == 1, "Yes", "No"),
          metro = case_when(est_msa %in% '35620' ~ "New York-Newark-Jersey City",
                            est_msa %in% '31080' ~ "Los Angeles-Long Beach-Anaheim",
@@ -104,42 +129,7 @@ hps <- hps%>%
                            est_msa %in% '40140' ~ "Riverside-San Bernardino-Ontario",
                            est_msa %in% '19820' ~ "Detroit-Warren-Dearborn",
                            est_msa %in% '42660' ~ "Seattle-Tacoma-Bellevue"),
-         employment = if_else(anywork == 1, "Employed last week", "Not employed last week"),
-         rsn.nowork = case_when(rsnnowrk %in% 1 ~ "I did not want to be employed at this time", 
-                                rsnnowrk %in% 2 ~ "I am/was sick with coronavirus symptoms", 
-                                rsnnowrk %in% 3 ~ "I am/was caring for someone with coronavirus symptoms", 
-                                rsnnowrk %in% 4 ~ "I am/was caring for children not in school or daycare", 
-                                rsnnowrk %in% 5 ~ "I am/was caring for an elderly person", 
-                                rsnnowrk %in% 6 ~ "I am/was sick (not coronavirus related) or disabled", 
-                                rsnnowrk %in% 7 ~ "I am retired", 
-                                rsnnowrk %in% 8 ~ "My employer experienced a reduction in business (including furlough) due to coronavirus pandemic", 
-                                rsnnowrk %in% 9 ~ "I am/was laid off due to coronavirus pandemic", 
-                                rsnnowrk %in% 10 ~ "My employment closed temporarily due to the coronavirus pandemic", 
-                                rsnnowrk %in% 11 ~ "My employment went out of business due to the coronavirus pandemic", 
-                                rsnnowrk %in% 12 ~ "Other reason",
-                                rsnnowrk %in% 13 ~ "I was concerned about getting or spreading the coronavirus"))
-```
-
-```{r}
-# hps <- hps %>%
-#   mutate(eip2 = case_when(eip %in% 1 ~ "Mostly to pay for expenses",
-#                          eip %in% 2 ~ "Mostly to pay off debt",
-#                          eip %in% 3 ~ "Mostly to add to savings",
-#                          eip %in% 4 ~ "I didn't and don't expect to receive it"),
-#          health = case_when(hlthstatus %in% 1 ~ "Excellent",
-#                             hlthstatus %in% 2 ~ "Very good",
-#                             hlthstatus %in% 3 ~ "Good",
-#                             hlthstatus %in% 4 ~ "Fair",
-#                             hlthstatus %in% 5 ~ "Poor"))
-# 
-# hps$health.num <- recode(hps$health, "Excellent" = 1, "Very good" = 2, "Good" = 3, "Fair" = 4, "Poor" = 5)
-
- 
-#-99) Question seen but category not selected
-#-88) Missing / Did not report
-
-hps <- hps %>% 
-  mutate(mh_anxious = case_when(anxious %in% 1 ~ "Not at all",
+         mh_anxious = case_when(anxious %in% 1 ~ "Not at all",
                                 anxious %in% 2 ~ "Several days",
                                 anxious %in% 3 ~ "More than half the days",
                                 anxious %in% 4 ~ "Nearly every day"),
@@ -154,17 +144,13 @@ hps <- hps %>%
          mh_down = case_when(down %in% 1 ~ "Not at all",
                              down %in% 2 ~ "Several days",
                              down %in% 3 ~ "More than half the days",
-                             down %in% 4 ~ "Nearly every day"))
-
-hps <- hps%>%
-  mutate(mh_anxious = ifelse(anxious > 0, anxious, NA),
+                             down %in% 4 ~ "Nearly every day"),
+         mh_anxious = ifelse(anxious > 0, anxious, NA),
          mh_worrry = ifelse(worry > 0, worry, NA),
          mh_interest = ifelse(interest > 0, interest, NA),
-         mh_down = ifelse(down > 0, down, NA))
-
-hps <- hps%>%
-  mutate(age = 2020 - tbirth_year)%>%
-  mutate(ageg = case_when(age %in% 18:24 ~ "18 to 24",
+         mh_down = ifelse(down > 0, down, NA),
+         age = 2020 - tbirth_year,
+         ageg = case_when(age %in% 18:24 ~ "18 to 24",
                           age %in% 25:34 ~ "25 to 34",
                           age %in% 35:44 ~ "35 to 44",
                           age %in% 45:54 ~ "45 to 54",
@@ -174,122 +160,388 @@ hps <- hps%>%
 
 hps$ageg <- ordered(hps$ageg, levels = c("18 to 24", "25 to 34", "35 to 44", "45 to 54", "55 to 64", "65 to 74", "75 or more"))
 
-hps$state <- recode(hps$est_st, '01'='Alabama', '02'='Alaska', '04'='Arizona', '05'='Arkansas', '06'='California',
-                     '08'='Colorado', '09'='Connecticut', '10'='Delaware', '11'='District of Columbia', '12'='Florida',
-                     '13'='Georgia', '15'='Hawaii', '16'='Idaho', '17'='Illinois', '18'='Indiana', '19'='Iowa', '20'='Kansas',
-                     '21'='Kentucky', '22'='Louisiana', '23'='Maine', '24'='Maryland', '25'='Massachusetts', '26'='Michigan',
-                     '27'='Minnesota', '28'='Mississippi', '29'='Missouri', '30'='Montana', '31'='Nebraska', '32'='Nevada',
-                     '33'='New Hampshire', '34'='New Jersey', '35'='New Mexico', '36'='New York', '37'='North Carolina',
-                     '38'='North Dakota', '39'='Ohio', '40'='Oklahoma', '41'='Oregon', '42'='Pennsylvania', '44'='Rhode Island',
-                     '45'='South Carolina', '46'='South Dakota', '47'='Tennessee', '48'='Texas', '49'='Utah', '50'='Vermont',
-                     '51'='Virginia', '53'='Washington', '54'='West Virginia', '55'='Wisconsin', '56'='Wyoming')
+hps$state <- dplyr::recode(hps$est_st, 
+                    '01'='Alabama', '02'='Alaska', '04'='Arizona', '05'='Arkansas', '06'='California',
+                    '08'='Colorado', '09'='Connecticut', '10'='Delaware', '11'='District of Columbia', '12'='Florida',
+                    '13'='Georgia', '15'='Hawaii', '16'='Idaho', '17'='Illinois', '18'='Indiana', '19'='Iowa', '20'='Kansas',
+                    '21'='Kentucky', '22'='Louisiana', '23'='Maine', '24'='Maryland', '25'='Massachusetts', '26'='Michigan',
+                    '27'='Minnesota', '28'='Mississippi', '29'='Missouri', '30'='Montana', '31'='Nebraska', '32'='Nevada',
+                    '33'='New Hampshire', '34'='New Jersey', '35'='New Mexico', '36'='New York', '37'='North Carolina',
+                    '38'='North Dakota', '39'='Ohio', '40'='Oklahoma', '41'='Oregon', '42'='Pennsylvania', '44'='Rhode Island',
+                    '45'='South Carolina', '46'='South Dakota', '47'='Tennessee', '48'='Texas', '49'='Utah', '50'='Vermont',
+                    '51'='Virginia', '53'='Washington', '54'='West Virginia', '55'='Wisconsin', '56'='Wyoming')
 ```
 
-# subset
-```{r}
+```{r, include=FALSE}
 # hps <- hps %>%
 #   select(scram:pweight, prifoodsuf:freefood, anxious:down, enroll1:teach5, income, eip:eipspnd13, hispanic:state)
-
-hps %>%
-  filter(!is.na(mh_anxious)) %>% 
-  dplyr::count(gender, mh_anxious, wt = pweight)
-
-hps %>%
-  filter(!is.na(mh_anxious)) %>% 
-  group_by(gender) %>% 
-  dplyr::count(gender, mh_anxious, wt = pweight) %>% 
-  mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1)) 
-
-hps$race_eth <- interaction(hps$race, hps$hispanic)
-
-hps$race_eth2<-ifelse(str_sub(as.character(hps$race_eth), start = -12)==
-                        "Non-Hispanic", as.character(hps$race_eth),"Hispanic")
-
-
+# 
+# hps %>%
+#   filter(!is.na(mh_anxious)) %>% 
+#   dplyr::count(gender, mh_anxious, wt = pweight)
+# 
+# hps %>%
+#   filter(!is.na(mh_anxious)) %>% 
+#   group_by(gender) %>% 
+#   dplyr::count(gender, mh_anxious, wt = pweight) %>% 
+#   mutate(pct = n/sum(n),
+#          lbl = scales::percent(pct, accuracy = 0.1)) 
+# 
+# hps$race_eth <- interaction(hps$race, hps$hispanic)
+# 
+# hps$race_eth2<-ifelse(str_sub(as.character(hps$race_eth), start = -12)==
+#                         "Non-Hispanic", as.character(hps$race_eth),"Hispanic")
 ```
 
-```{r}
-data %>%
-  filter(!is.na(mental_health_anxious)) %>% 
-  group_by(gender2, mental_health_anxious) %>%
+```{r, include=FALSE}
+# data <- data %>% 
+#   dplyr::mutate_at(vars(hardships_1:hardships_6), funs(recode(., "Yes" = as.numeric(1), "No" = as.numeric(0)))) %>% 
+#   mutate(hards = hardships_1 + hardships_2 + hardships_3 + hardships_4 + hardships_5 + hardships_6, 
+#          race_eth2 = case_when(race_eth %in% "NH-White" ~ "Non-Hispanic White",
+#                                race_eth %in% "Hispanic" ~ "Hispanic",
+#                                race_eth %in% "NH-Black" ~ "Non-Hispanic Black",
+#                                race_eth %in% "NH-Asian" ~ "Non-Hispanic Asian",
+#                                race_eth %in% c("NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
+#          race_eth3 = case_when(race_eth %in% "NH-White" ~ "Non-Hispanic White",
+#                                race_eth %in% "Hispanic" ~ "Hispanic",
+#                                race_eth %in% c("NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other") ~ "Non-Hispanic Other"),
+#          bad = if_else(hards == 1, "One hardship", 
+#                        if_else(hards == 2, "Two hardships",
+#                                if_else(hards > 2, "More than two", NA_character_))))
+# 
+# data$bad <- ordered(data$bad, levels = c("One hardship", "Two hardships", "More than two"))
+# data$race_eth <- ordered(data$race_eth, levels = c("Hispanic", "NH-White", "NH-Black", "NH-Asian", "NH-AIAN", "NH-NHPI", "NH-Other"))
+# data$race_eth2 <- ordered(data$race_eth2, 
+#                           levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Black", "Non-Hispanic Asian","Non-Hispanic Other"))
+# data$race_eth3 <- ordered(data$race_eth3, 
+#                           levels = c("Hispanic", "Non-Hispanic White", "Non-Hispanic Other"))
+# data$health <- ordered(data$health, levels = c("Excellent", "Very good", "Good", "Fair", "Poor"))
+# 
+# # subset survey
+# sas <- data %>% 
+#   select(1, 2, 95:113, 128, 129, 132, 133, 171:199)
+# 
+# sas <- sas %>% 
+#   mutate(mh_anx = case_when(mental_health_anxious %in% "Not at all" ~ 0,
+#                             mental_health_anxious %in% "Several days" ~ 1,
+#                             mental_health_anxious %in% "More than half the days" ~ 2,
+#                             mental_health_anxious %in% "Nearly every day" ~ 3),
+#          mh_worry = case_when(mental_health_worry %in% "Not at all" ~ 0,
+#                             mental_health_worry %in% "Several days" ~ 1,
+#                             mental_health_worry %in% "More than half the days" ~ 2,
+#                             mental_health_worry %in% "Nearly every day" ~ 3),
+#          mh_interest = case_when(mental_health_interest %in% "Not at all" ~ 0,
+#                             mental_health_interest %in% "Several days" ~ 1,
+#                             mental_health_interest %in% "More than half the days" ~ 2,
+#                             mental_health_interest %in% "Nearly every day" ~ 3),
+#          mh_down = case_when(mental_health_down %in% "Not at all" ~ 0,
+#                             mental_health_down %in% "Several days" ~ 1,
+#                             mental_health_down %in% "More than half the days" ~ 2,
+#                             mental_health_down %in% "Nearly every day" ~ 3),
+#          mh_gad2 = mh_anx + mh_worry,
+#          mh_phq2 = mh_interest + mh_down,
+#          gad2 = if_else(mh_gad2 >= 3, "Generalized Anxiety", "No GA"),
+#          phq2 = if_else(mh_phq2 >= 3, "Depressive Disorder", "No DD"))
+# 
+# sas <- sas %>%
+#   mutate_at(vars(emp_status), ~if_else(. %in% c("Work for pay at a job","Temporarily absent from job"), "employed",
+#                                     if_else(. %in% c("Layoff from a job","Actively looking for a job"), "unemployed",
+#                                             if_else(. %in% c("Retired", "Unable to work"), "retired", "NA"))))
+# 
+# save(sas, file = "~/GitHub/saetus/sas.RData")
+```
+
+```{r load_sas}
+load(file = "~/GitHub/saetus/sas.RData")
+```
+
+```{r unemp_plot, warning=FALSE, message=FALSE, include=FALSE}
+total <- sas %>%
+  filter(emp_status != "NA", !is.na(gad2)) %>%
+  group_by(zipcode, race_eth3, gad2) %>%
+  dplyr::summarize(n = n())
+
+unemployed <- sas %>%
+  filter(emp_status == "unemployed", !is.na(gad2)) %>%
+  group_by(zipcode, race_eth3, gad2) %>%
+  dplyr::summarize(unemployed_n = n())
+
+unemployed <- data.frame(unemployed)
+
+colnames(unemployed) <- c("zipcode","race_eth3", "gad", "unemployed_n")
+
+unemployed <- unemployed[with(unemployed, order(zipcode, race_eth3)),] 
+
+unemployed_pct <- data.frame(total[,"zipcode"], total[,"race_eth3"], total[, "gad2"], total[,"n"], unemployed[,"unemployed_n"])
+
+colnames(unemployed_pct) <- c("zipcode","race_eth3","gad", "n","unemployed_n")
+
+unemployed_pct$unemployed_n <- as.numeric(unemployed_pct$unemployed_n)
+
+unemployed_pct <- unemployed_pct %>%
+        mutate(pct = unemployed_n/n,
+               lbl = scales::percent(pct, accuracy = 0.1))
+
+unemployed_pct %>%
+  ggplot(aes(x = pct, y = reorder(race_eth3, -pct), color = zipcode)) + 
+  #geom_errorbar(aes(xmin = lower, xmax = upper), show.legend = F, width = 0.1) +
+  geom_point(aes(size = n, shape = factor(gad))) +
+  geom_text_repel(aes(label = lbl), size = 7, color = "gray10", segment.alpha = 0, family = "foo", nudge_y = .3, nudge_x = .01) +
+  scale_x_continuous(limits = c(0, .60), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_manual(values = wes_palette("Darjeeling2", n = 3)) +
+  guides(color = guide_legend(label.position = "left", label.vjust = 0.5, label.hjust = 1, override.aes = list(size = 5)), 
+         size = F) +
+  labs(y = NULL, x = NULL, color = NULL, 
+       subtitle = "A) Unemployment by race and ethnicity") +
+  theme_classic() +
+  theme(legend.position = "bottom") 
+
+#ggsave(filename = "figure_2.png", plot = last_plot(), path = "~/GitHub/saetus/", width = 6, height = 4.5, units = "in", dpi = "print")
+```
+
+```{r gad, message=FALSE, include=FALSE}
+sas %>%
+  filter(!is.na(gad2)) %>% 
+  group_by(zipcode, gad2) %>%
   dplyr::summarize(n = n()) %>% 
   mutate(pct = n/sum(n),
-         lbl = scales::percent(pct, accuracy = 0.1))  
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = zipcode)) + 
+  geom_point(aes(color = gad2, size = n)) +
+  geom_text(aes(label = lbl), size = 5, color = "gray30", position = position_dodge(width = .9), vjust = -.7, family = "foo") +
+  scale_x_continuous(limits = c(0.3, .7), breaks = seq(0, 1, .1), label = scales::percent) +
+  scale_color_jama() +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, color = "GAD-2", size = NULL,
+       title = str_wrap("Generalized Anxiety Disorder 2-item by zip code", width = 75),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() + theme(legend.position = "top")
+
+
+sas %>%
+  filter(hardships_1 == 1, !is.na(gad2)) %>% 
+  group_by(zipcode, gad2) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = zipcode)) + 
+  geom_point(aes(color = gad2, size = n)) +
+  geom_text(aes(label = lbl), size = 5, color = "gray30", position = position_dodge(width = .9), vjust = -.7, family = "foo") +
+  scale_x_continuous(limits = c(0.3, .7), breaks = seq(0, 1, .1), label = scales::percent) +
+  scale_color_jama() +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, fill = NULL,
+       title = str_wrap("Generalized Anxiety Disorder 2-item by zip code", width = 75), 
+       subtitle = str_wrap("Among those who lost their jobs"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() + theme(legend.position = "top")
 ```
 
-```{r }
-library(gtsummary)
-install.packages("flextable")
-library(flextable)
-options(survey.lonely.psu = "adjust")
-# To have a compact table (not necessary if you need a compact table or can be postprocessed)
-set_gtsummary_theme(theme_gtsummary_compact(set_theme = TRUE))
+```{r phq, message=FALSE, include=FALSE}
+sas %>%
+  filter(!is.na(phq2)) %>% 
+  group_by(zipcode, phq2) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = zipcode)) + 
+  geom_point(aes(color = phq2, size = n)) +
+  geom_text(aes(label = lbl), size = 5, color = "gray30", position = position_dodge(width = .9), vjust = -.7, family = "foo") +
+  scale_x_continuous(limits = c(0.3, .7), breaks = seq(0, 1, .1), label = scales::percent) +
+  scale_color_jama() +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, fill = NULL,
+       title = str_wrap("Patient Health Questionnaire-2 by zip code", width = 75),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() + theme(legend.position = "top")
 
-hps$mh_anxious <- factor(hps$mh_anxious)
-hps$gender <- factor(hps$gender)
 
-table <- survey::svydesign(ids=~1, weights = ~pweight, data = hps, strata = NULL, nest = F) %>%
-  tbl_svysummary(by= "mh_anxious", # stratification variable.
-                 include = c(mh_anxious, gender), 
-                 percent = "column",  #Column or Row percentage, depending on your needs
-                 
-                 digits = list(all_continuous() ~ c(1,1), 
-                               all_categorical() ~ 1))
-
-class(hps$gender)
+sas %>%
+  filter(hardships_1 == 1, !is.na(phq2)) %>% 
+  group_by(zipcode, phq2) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = zipcode)) + 
+  geom_point(aes(color = phq2, size = n)) +
+  geom_text(aes(label = lbl), size = 5, color = "gray30", position = position_dodge(width = .9), vjust = -.7, family = "foo") +
+  scale_x_continuous(limits = c(0.3, .7), breaks = seq(0, 1, .1), label = scales::percent) +
+  scale_color_jama() +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, fill = NULL,
+       title = str_wrap("Patient Health Questionnaire-2 by zip code", width = 75), 
+       subtitle = str_wrap("Among those who lost their jobs"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  theme_classic() + theme(legend.position = "top")
 ```
 
-```{r}
-# install.packages("expss")
-# library(expss)
+```{r gad_race_eth, message=FALSE, include=FALSE}
+sas %>%
+  filter(!is.na(gad2)) %>% 
+  group_by(zipcode, gad2, race_eth3) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth3, pct))) + 
+  geom_point(aes(color = gad2, size = n)) +
+  geom_text_repel(aes(label = lbl), size = 4, color = "gray30", family = "foo") +
+  scale_x_continuous(limits = c(0, .6), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_igv(palette = "alternating") +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, color = NULL, size = NULL,
+       title = str_wrap("Generalized Anxiety Disorder 2-item (GAD-2) by zip code", width = 75),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  facet_grid(~zipcode) +
+  theme_classic() + theme(legend.position = "top")
 
-fre(hps$mh_anxious, weight = hps$pweight)
 
-fre(data$mental_health_anxious)
+sas %>%
+  filter(hardships_1 == 1, !is.na(gad2)) %>% 
+  group_by(zipcode, gad2, race_eth3) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth3, pct))) + 
+  geom_point(aes(color = gad2, size = n)) +
+  geom_text_repel(aes(label = lbl), size = 4, color = "gray30", family = "foo") +
+  scale_x_continuous(limits = c(0, .6), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_igv(palette = "alternating") +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, color = NULL, size = NULL,
+       title = str_wrap("Generalized Anxiety Disorder 2-item by zip code", width = 75), 
+       subtitle = str_wrap("Among those who lost their jobs"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  facet_grid(~zipcode) +
+  theme_classic() + theme(legend.position = "top")
 ```
 
-```{r}
-cro_cpct(cell_vars = hps$mh_anxious, col_vars = hps$gender, weight = hps$pweight)
-cro_cpct(cell_vars = data$mental_health_anxious, col_vars = data$gender2)
+```{r phq_race_eth, message=FALSE, include=FALSE}
+sas %>%
+  filter(!is.na(phq2)) %>% 
+  group_by(zipcode, phq2, race_eth3) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth3, pct))) + 
+  geom_point(aes(color = phq2, size = n)) +
+  geom_text_repel(aes(label = lbl), size = 4, color = "gray30", family = "foo") +
+  scale_x_continuous(limits = c(0, .6), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_igv(palette = "alternating") +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, color = NULL, size = NULL,
+       title = str_wrap("Patient Health Questionnaire-2 (PHQ-2) by zip code", width = 75),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  facet_grid(~zipcode) +
+  theme_classic() + theme(legend.position = "top")
 
-cro_cpct(cell_vars = hps$mh_anxious, col_vars = hps$race_eth2, weight = hps$pweight)
-cro_cpct(cell_vars = data$mental_health_anxious, col_vars = data$race_eth)
+
+sas %>%
+  filter(hardships_1 == 1, !is.na(phq2)) %>% 
+  group_by(zipcode, phq2, race_eth3) %>%
+  dplyr::summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct, accuracy = 0.1)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = pct, y = reorder(race_eth3, pct))) + 
+  geom_point(aes(color = phq2, size = n)) +
+  geom_text_repel(aes(label = lbl), size = 4, color = "gray30", family = "foo") +
+  scale_x_continuous(limits = c(0, .6), breaks = seq(0, 1, .15), label = scales::percent) +
+  scale_color_igv(palette = "alternating") +
+  guides(size = FALSE) +
+  labs(y = NULL, x = NULL, color = NULL, size = NULL,
+       title = str_wrap("Patient Health Questionnaire-2 (PHQ-2) by zip code", width = 75), 
+       subtitle = str_wrap("Among those who lost their jobs"),
+       caption = "Source: 2021 San Antonio Energy and Time Use Survey") +
+  facet_grid(~zipcode) +
+  theme_classic() + theme(legend.position = "top")
 ```
 
-```{r}
-cro_cpct(cell_vars = hps$mh_worry, col_vars = hps$gender, weight = hps$pweight)
+```{r, message=FALSE, warning=FALSE}
+set_gtsummary_theme(x = theme_gtsummary_compact())
+set_gtsummary_theme(x = theme_gtsummary_journal("jama"))
 
-cro_cpct(cell_vars = data$mental_health_worry, col_vars = data$gender2)
+# Generalized Anxiety Disorder 2-item (GAD-2)
+sas %>% 
+  select(2, 3, 22, 24, 26, 44, 48:50, 53, 61) %>% 
+  tbl_summary(by = gad2, 
+              label = list(zipcode ~ "Zip code",
+                           health ~ "Health status",
+                           emp_status ~ "Employment status",
+                           frontline ~ "Frontline worker",
+                           hardships_1 ~ "Loss of employment",
+                           ageg ~ "Age group",
+                           gender2 ~ "Gender",
+                           marital_st ~ "Marital status",
+                           educ ~ "Educational level",
+                           race_eth3 ~ "Race and ethnicity")) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  add_overall() %>% 
+  modify_header(label ~ "**Variable**") %>%
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**GAD-2**") %>%
+  modify_caption("**Generalized Anxiety Disorder 2-item (GAD-2)**") %>%
+  bold_labels() %>% 
+  as_gt() %>%
+  gt::tab_source_note(gt::md("*Source: 2021 San Antonio Energy and Time Use Survey*"))
+
+# Patient Health Questionnaire-2 (PHQ-2)
+sas %>% 
+  select(2, 3, 22, 24, 26, 44, 48:50, 53, 62) %>% 
+  tbl_summary(by = phq2, 
+              label = list(zipcode ~ "Zip code",
+                           health ~ "Health status",
+                           emp_status ~ "Employment status",
+                           frontline ~ "Frontline worker",
+                           hardships_1 ~ "Loss of employment",
+                           ageg ~ "Age group",
+                           gender2 ~ "Gender",
+                           marital_st ~ "Marital status",
+                           educ ~ "Educational level",
+                           race_eth3 ~ "Race and ethnicity")) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  add_overall() %>% 
+  modify_header(label ~ "**Variable**") %>%
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**PHQ-2**") %>%
+  modify_caption("**Patient Health Questionnaire-2 (PHQ-2)**") %>%
+  bold_labels() %>% 
+  as_gt() %>%
+  gt::tab_source_note(gt::md("*Source: 2021 San Antonio Energy and Time Use Survey*"))
 ```
 
-```{r}
-cro_cpct(cell_vars = hps$mh_interest, col_vars = hps$gender, weight = hps$pweight)
+```{r, include=FALSE, message=FALSE}
+sas %>%
+  tbl_cross(row = zipcode,
+            col = gad2,
+            percent = "column", 
+            label = list(gad2 ~ "Generalized Anxiety Disorder 2-item", 
+                         zipcode ~ "Zip code"), 
+            missing = "no") %>%
+  add_p() %>% 
+  bold_labels() %>% 
+  as_gt() %>%
+  gt::tab_source_note(gt::md("*Source: 2021 San Antonio Energy and Time Use Survey*"))
 
-cro_cpct(cell_vars = data$mental_health_interest, col_vars = data$gender2)
+
+sas %>%
+  tbl_cross(row = race_eth3,
+            col = gad2,
+            percent = "column", 
+            label = list(gad2 ~ "Generalized Anxiety Disorder 2-item", 
+                         race_eth3 ~ "Race and ethnicity"), 
+            missing = "no") %>%
+  add_p() %>% 
+  bold_labels() %>% 
+  as_gt() %>%
+  gt::tab_source_note(gt::md("*Source: 2021 San Antonio Energy and Time Use Survey*"))
 ```
-
-```{r}
-cro_cpct(cell_vars = hps$mh_down, col_vars = hps$gender, weight = hps$pweight)
-
-cro_cpct(cell_vars = data$mental_health_down, col_vars = data$gender2)
-```
-
-
-```{r}
-
-```
-
-
-
-
-
-
-
-
-
-
-
 
 
 
