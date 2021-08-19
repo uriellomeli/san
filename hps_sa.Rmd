@@ -612,14 +612,13 @@ hps.tab <- survey::svydesign(ids = ~1, weights = ~pweight, data = hps, strata = 
   tbl_svysummary(by = "gad2", 
                  include = c(gender, education, marital, race_eth2, work.loss, metro, ageg, state, gad2), 
                  percent = "column",
-                 label = list(gender ~ "Gender",
-                              education ~ "Educational level",
-                              marital ~ "Marital status",
-                              race_eth2 ~ "Race and ethnicity",
-                              work.loss ~ "Loss of employment",
-                              metro ~ "Metropolitan area",
+                 label = list(metro ~ "Metropolitan area",
+                              state ~ "State",
                               ageg ~ "Age group",
-                              state ~ "State")) %>% 
+                              gender ~ "Gender",
+                              marital ~ "Marital status",
+                              education ~ "Educational level",
+                              race_eth2 ~ "Race and ethnicity")) %>% 
   add_n() %>% 
   add_p() %>% 
   add_overall() %>% 
@@ -630,45 +629,40 @@ hps.tab <- survey::svydesign(ids = ~1, weights = ~pweight, data = hps, strata = 
   as_gt() %>%
   gt::tab_source_note(gt::md("*Source: US Census Bureau, Household Pulse Survey, Week 27*"))
 
+# Patient Health Questionnaire-2 (PHQ-2)
+hps.tab2 <- survey::svydesign(ids = ~1, weights = ~pweight, data = hps, strata = NULL) %>%
+  tbl_svysummary(by = "phq2", 
+                 include = c(gender, education, marital, race_eth2, work.loss, metro, ageg, state, phq2), 
+                 percent = "column",
+                 label = list(metro ~ "Metropolitan area",
+                              state ~ "State",
+                              ageg ~ "Age group",
+                              gender ~ "Gender",
+                              marital ~ "Marital status",
+                              education ~ "Educational level",
+                              race_eth2 ~ "Race and ethnicity")) %>% 
+  add_n() %>% 
+  add_p() %>% 
+  add_overall() %>% 
+  modify_header(label ~ "**Variable**") %>%
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**PHQ-2**") %>%
+  modify_caption("**Patient Health Questionnaire-2 (PHQ-2)**") %>%
+  bold_labels() %>% 
+  as_gt() %>%
+  gt::tab_source_note(gt::md("*Source: US Census Bureau, Household Pulse Survey, Week 27*"))
 ```
 
 ```{r}
 hps.tab
-```
 
-```{r, include=FALSE, message=FALSE}
-sas %>%
-  tbl_cross(row = zipcode,
-            col = gad2,
-            percent = "column", 
-            label = list(gad2 ~ "Generalized Anxiety Disorder 2-item", 
-                         zipcode ~ "Zip code"), 
-            missing = "no") %>%
-  add_p() %>% 
-  bold_labels() %>% 
-  as_gt() %>%
-  gt::tab_source_note(gt::md("*Source: 2021 San Antonio Energy and Time Use Survey*"))
-
-
-sas %>%
-  tbl_cross(row = race_eth3,
-            col = gad2,
-            percent = "column", 
-            label = list(gad2 ~ "Generalized Anxiety Disorder 2-item", 
-                         race_eth3 ~ "Race and ethnicity"), 
-            missing = "no") %>%
-  add_p() %>% 
-  bold_labels() %>% 
-  as_gt() %>%
-  gt::tab_source_note(gt::md("*Source: 2021 San Antonio Energy and Time Use Survey*"))
+hps.tab2
 ```
 
 
 
-
-
-
-
+race/state
+income
+recent week
 
 
 
