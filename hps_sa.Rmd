@@ -16,9 +16,9 @@ pacman::p_load(tidyverse, readxl, janitor, ggthemes, ggsci, magrittr, wesanderso
 ```
 
 ```{r load, message=FALSE, include=FALSE}
-# hps
+# hps - this need to change to your directory
 week27 <- read_csv("C:/Users/Uriel/Downloads/pulse2021_puf_27.csv")
-# sa survey
+# sa survey - this need to change to your directory
 load(file = "~/GitHub/saetus/data_recode.RData")
 ```
 
