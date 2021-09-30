@@ -12,28 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r libs, message=FALSE, include=FALSE}
-library(dplyr)
-library(readr)
-library(readxl)
-library(janitor)
-library(ggplot2)
-library(ggthemes)
-library(ggsci)
-library(magrittr)
-library(wesanderson)
-library(showtext)
-library(ggrepel)
-library(tidyr)
-library(forcats)
-library(questionr)
-library(survey)
-library(showtext)
-library(sysfonts)
-library(hrbrthemes)
-library(stringr)
-library(expss)
-library(gtsummary)
-library(gt)
+pacman::p_load(tidyverse, readxl, janitor, ggthemes, ggsci, magrittr, wesanderson, showtext, ggrepel, tidyr, forcats, questionr, survey, sysfonts, hrbrthemes, expss, gtsummary, gt)
 ```
 
 ```{r load, message=FALSE, include=FALSE}
@@ -651,18 +630,6 @@ hps.tab2 <- survey::svydesign(ids = ~1, weights = ~pweight, data = hps, strata =
   as_gt() %>%
   gt::tab_source_note(gt::md("*Source: US Census Bureau, Household Pulse Survey, Week 27*"))
 ```
-
-```{r}
-hps.tab
-
-hps.tab2
-```
-
-
-
-race/state
-income
-recent week
 
 
 
